@@ -76,8 +76,9 @@ function buildMix(levels) {
   const G = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
   const Sx = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i))));
   const g = k => G[k % G.length], s = k => Sx[k % Sx.length];
-  return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
-    {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
+  const vb = verbItems(2);
+  return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, vb[0], {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
+    {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, vb[1], {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
 }
 function buildRecap(levels) {
   const Wd = shuffle(levels.flatMap(l => l.w.map((_, i) => W(l, i))));
@@ -141,22 +142,58 @@ function markTile(i, starsN) {
 }
 
 /* --- postać: pilotka w wiatrakowcu (własny rysunek) --- */
-const HERO = `<svg viewBox="0 0 84 64" aria-hidden="true">
+/* Hangar: co 5 ukończonych leveli nowy model wiatrakowca – nazwy to bułgarskie ptaki (przy okazji słówka). */
+const GYROS = [['врабче','wróbel'],['синигер','sikorka'],['лястовица','jaskółka'],['кос','kos'],['славей','słowik'],['гугутка','sierpówka'],['кукувица','kukułka'],['кълвач','dzięcioł'],['сврака','sroka'],['гарван','kruk'],['чапла','czapla'],['щъркел','bocian'],['пеликан','pelikan'],['сокол','sokół'],['ястреб','jastrząb'],['сова','sowa'],['бухал','puchacz'],['лебед','łabędź'],['орел','orzeł']];
+const GYRO_STEP = 5;
+const capF = s => s[0].toUpperCase() + s.slice(1);
+const levelsDone = () => LEVELS.filter(l => isDone(l.id)).length;
+const gyroTier = (n = levelsDone()) => Math.min(GYROS.length - 1, Math.floor(n / GYRO_STEP));
+const plLv = n => n === 1 ? 'level' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'levele' : 'leveli';
+function heroSVG(t = gyroTier()) {
+  const body = ['var(--earth)', 'var(--sky)', 'var(--ok)', 'var(--gold)'][t % 4];
+  const fin = t >= 16 ? '<path d="M68 15h8v8h-8z" fill="var(--surface)"/><path d="M68 23h8v8h-8z" fill="var(--ok)"/><path d="M68 31h8v9l-8-3z" fill="var(--bad)"/>'
+    : t >= 10 ? `<path d="M68 15h8v25l-8-3z" fill="${t % 4 === 1 ? 'var(--earth)' : 'var(--sky)'}"/>` : `<path d="M69 21h6.5v19l-6.5-2.5z" fill="${t % 4 === 1 ? 'var(--earth)' : 'var(--sky)'}"/>`;
+  return `<svg viewBox="0 0 88 64" aria-hidden="true">
+  ${t >= 12 ? '<g fill="var(--surface)" stroke="var(--line)" opacity=".85"><circle cx="80" cy="36" r="3"/><circle cx="85" cy="33" r="2.2"/></g>' : ''}
   <rect x="38" y="9" width="3.5" height="17" rx="1" fill="var(--ink)"/>
-  <g class="rotor"><ellipse cx="40" cy="9" rx="36" ry="2.6" fill="var(--ink)" opacity=".8"/></g>
+  <g class="rotor"><ellipse cx="40" cy="9" rx="36" ry="2.6" fill="var(--ink)" opacity=".8"/>${t >= 14 ? '<ellipse cx="6" cy="9" rx="3.5" ry="2.6" fill="var(--gold)"/><ellipse cx="74" cy="9" rx="3.5" ry="2.6" fill="var(--gold)"/>' : ''}</g>
   <circle cx="40" cy="9" r="3" fill="var(--ink)"/>
   <rect x="56" y="33" width="17" height="3.5" rx="1.5" fill="var(--ink)"/>
-  <path d="M69 21h6.5v19l-6.5-2.5z" fill="var(--sky)"/>
+  ${fin}${t >= 3 && t < 16 ? '<rect x="69" y="27" width="6.5" height="2.2" fill="var(--surface)"/>' : ''}
   <g class="prop"><ellipse cx="63" cy="35" rx="2" ry="10" fill="var(--muted)"/></g>
-  <path d="M14 37c0-9 7-14 19-14h14c8 0 13 5 13 12 0 5-4 8-11 8H24c-6 0-10-2-10-6z" fill="var(--earth)"/>
+  <path d="M14 37c0-9 7-14 19-14h14c8 0 13 5 13 12 0 5-4 8-11 8H24c-6 0-10-2-10-6z" fill="${body}" stroke="var(--ink)" stroke-width="1.2"/>
+  ${t >= 3 ? '<path d="M16 39h42" stroke="var(--surface)" stroke-width="2"/>' : ''}
+  ${t >= 18 ? '<path d="M44 32l1.6 3.2 3.5.4-2.6 2.4.7 3.4-3.2-1.7-3.1 1.7.7-3.4-2.6-2.4 3.5-.4z" fill="var(--gold)" stroke="var(--ink)" stroke-width=".6"/>' : ''}
   <path d="M18 33c1-6 6-9 13-9v10H18z" fill="var(--sky-soft)" stroke="var(--ink)" stroke-width="1"/>
+  ${t >= 8 ? '<circle cx="47" cy="24" r="5.2" fill="#F1C7A1"/><path d="M41.8 23.6a5.2 5.2 0 0 1 10.4 0z" fill="var(--earth)"/>' : ''}
   <circle cx="36" cy="23" r="6.5" fill="#F1C7A1"/>
   <path d="M29.5 22.5a6.5 6.5 0 0 1 13 0z" fill="var(--sky)"/>
   <path d="M41 24c3 1 5 4 5.5 7" stroke="#7A4A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>
   <rect x="33" y="22" width="5" height="2.4" rx="1" fill="var(--ink)"/>
+  ${t >= 1 && t < 4 ? '<path d="M26 25l3-8h2.5l-2 8z" fill="var(--sky-soft)" stroke="var(--ink)" stroke-width="1"/>' : ''}
+  ${t >= 4 ? `<path d="M23 27c1-10 9-14 18-13 7 1 11 5 12 12" fill="var(--sky-soft)" fill-opacity=".45" stroke="var(--ink)" stroke-width="1.2"/>` : ''}
+  ${t >= 6 ? '<circle cx="14.6" cy="37.5" r="1.7" fill="var(--bad)"/><circle cx="74" cy="17" r="1.5" fill="var(--ok)"/>' : ''}
   <path d="M24 43l-3 6M46 43l3 6" stroke="var(--ink)" stroke-width="2"/>
   <circle cx="21" cy="51" r="4.5" fill="var(--ink)"/><circle cx="49" cy="51" r="4.5" fill="var(--ink)"/>
+  ${t >= 2 ? `<path d="M15 51a6 5 0 0 1 12 0zM43 51a6 5 0 0 1 12 0z" fill="${body}" stroke="var(--ink)" stroke-width="1"/>` : ''}
 </svg>`;
+}
+function gyroCard() {
+  const n = levelsDone(), t = gyroTier(n), [bg, pl] = GYROS[t];
+  const max = t >= GYROS.length - 1, need = max ? 0 : (t + 1) * GYRO_STEP - n;
+  const pctv = max ? 100 : Math.round(100 * (GYRO_STEP - need) / GYRO_STEP);
+  return `<section class="gyrocard"><a href="#profil" class="gyro-pic" aria-label="Hangar">${heroSVG(t)}</a><div class="gyro-txt">
+    <span class="eyebrow">Twój wiatrakowiec · model ${t + 1}/${GYROS.length}</span>
+    <b><span lang="bg">„${esc(capF(bg))}”</span> <span class="muted">– ${esc(pl)}</span></b>
+    <div class="bar"><i style="width:${pctv}%"></i></div>
+    <small>${max ? 'Masz najlepszy model w hangarze!' : `Jeszcze <b>${need}</b> ${plLv(need)} do modelu <span lang="bg">„${esc(capF(GYROS[t + 1][0]))}”</span> (${esc(GYROS[t + 1][1])})`}</small></div></section>`;
+}
+function hangarHTML() {
+  const n = levelsDone(), t = gyroTier(n);
+  return `<section class="card stack"><div><div class="eyebrow">Hangar</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Twoje wiatrakowce</h3>
+    <p class="muted" style="margin:4px 0 0">Co ${GYRO_STEP} ukończonych leveli dostajesz nowy model. Każdy nosi imię bułgarskiego ptaka. Ukończone levele: ${n}.</p></div>
+    <div class="hangar">${GYROS.map(([bg, pl], i) => `<div class="hg ${i <= t ? 'on' : ''} ${i === t ? 'cur' : ''}">${i <= t ? heroSVG(i) : `<span class="hg-lock">${ICON.lock}</span>`}<b lang="bg">${i <= t ? esc(capF(bg)) : '?'}</b><small>${i <= t ? esc(pl) : `po ${i * GYRO_STEP} levelach`}</small></div>`).join('')}</div></section>`;
+}
 let heroShown = {key:'', idx:-1};
 
 function viewBoard() {
@@ -188,6 +225,7 @@ function viewBoard() {
   html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · dziś</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
     <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+   ${gyroCard()}
    <div class="board" id="board">
     <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">
       <rect width="360" height="640" fill="var(--map)"/>
@@ -216,7 +254,7 @@ function viewBoard() {
         <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
         <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
     }).join('')}
-    <div class="hero" id="hero" style="${pct(P[startIdx])}">${HERO}</div>
+    <div class="hero" id="hero" style="${pct(P[startIdx])}">${heroSVG()}</div>
    </div>`;
   if (d.finished) {
     html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
@@ -254,6 +292,7 @@ function finishLesson() {
   const starsN = acc >= 0.9 ? 3 : acc >= 0.75 ? 2 : acc >= 0.6 ? 1 : 0;
   const pass = L.mode === 'review' || starsN > 0;
   let xp = L.right * 2, nextId = null;
+  const tier0 = gyroTier();
   if (L.mode === 'level') {
     if (starsN > 0) xp += 5 + (starsN === 3 ? 5 : 0);
     const prev = S.lv[L.lv.id] || {stars:0};
@@ -269,20 +308,23 @@ function finishLesson() {
   const name = L.mode === 'level' ? L.lv.t : L.mode === 'practice' ? L.title : 'Powtórka';
   const title = landed ? `Lądowanie: ${landed.bg}!` : L.mode === 'review' ? 'Powtórka zakończona' : pass ? (starsN === 3 ? 'Idealnie!' : 'Zaliczone!') : 'Odejście na drugi krąg';
   const sub = landed ? `Wylądowałaś w mieście ${landed.pl}. Cała dzisiejsza plansza zaliczona – brawo!` : L.mode === 'review' ? 'Błędy, które poprawiłaś, zniknęły z listy.' : pass ? `„${name}” zaliczone.${onBoard ? ' Wiatrakowiec leci na następne pole.' : ''}` : 'Do zaliczenia potrzeba 60% poprawnych odpowiedzi. Spróbuj jeszcze raz – tym razem pójdzie lepiej.';
+  const tier1 = gyroTier(), upg = tier1 > tier0 ? GYROS[tier1] : null;
   $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span style="flex:1"></span></div>
    <div class="lesson-body"><div class="wrap result">
+    ${L.mode === 'level' ? illus(L.lv.unit, 'big') : ''}
     <div class="prompt-kind">${esc(L.mode === 'level' ? L.lv.unit.t : name)}</div>
     <h2 class="view" style="font-size:28px">${esc(title)}</h2>
     ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
     <p class="muted">${esc(sub)}</p>
     ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
+    ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b><span lang="bg">„${esc(capF(upg[0]))}”</span> <span class="muted">– ${esc(upg[1])}</span></b><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
     <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
    </div></div>
    <div class="lesson-foot"><div class="wrap foot-in"><div class="foot-btns">
     ${!pass || !onBoard ? `<button class="btn ghost" id="again">${pass ? 'Powtórz' : 'Spróbuj ponownie'}</button>` : ''}
     ${onBoard ? `<button class="btn" id="toBoard">Wróć na planszę</button>` : (L.mode === 'level' && pass && nextId ? `<button class="btn" id="goNext">Następny level</button>` : `<button class="btn" id="toMap">Zamknij</button>`)}
    </div></div></div>`;
-  if (landed || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
+  if (landed || upg || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
   const lvId = L.lv && L.lv.id, tile = L.tile, again = L.again, mode = L.mode;
   $('#lx').onclick = closeLesson;
   const a = $('#again'); if (a) a.onclick = () => { if (mode === 'level') openBriefing(lvId, tile); else if (mode === 'review') startReview(); else if (again) again(); };

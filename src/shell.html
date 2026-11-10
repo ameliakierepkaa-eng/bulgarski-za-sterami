@@ -293,6 +293,47 @@ h2.view{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.003em}
 .ill .w{fill:var(--surface)} .ill .k{fill:var(--ink);stroke:none}
 .ill text{fill:var(--ink);stroke:none;font-family:var(--f-display);font-weight:800}
 .ill.big{width:96px;height:96px}
+.ill.tiny{width:30px;height:30px;stroke-width:2.6}
+.result .ill.big{display:block;margin:4px auto 6px}
+/* piosenka z luką */
+.song-title b{font-family:var(--f-display);font-size:20px;font-weight:800}
+.gap{display:inline-block;min-width:64px;border-bottom:3px solid var(--earth);text-align:center;color:var(--earth);margin:0 2px}
+.gap.filled{min-width:0;border-bottom-color:var(--ok);color:var(--ok);padding:0 2px}
+/* memory */
+.memo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc{min-height:76px;border:2px solid var(--ink);border-radius:8px;background:var(--sky);color:var(--on-sky);display:grid;place-items:center;padding:6px;font-weight:700;font-size:15px;line-height:1.2;overflow-wrap:anywhere;transition:transform .15s}
+.mc-back{width:26px;height:26px;background:var(--on-sky);opacity:.35;-webkit-mask:var(--stitch) center/26px 12px no-repeat;mask:var(--stitch) center/26px 12px no-repeat}
+.mc.up{background:var(--surface);color:var(--ink);transform:rotateY(0)}
+.mc.up.isbg{border-color:var(--earth);font-size:17px}
+.mc.got{background:var(--ok-soft);border-color:var(--ok);color:var(--ink);opacity:.8}
+@media (min-width:560px){.memo{grid-template-columns:repeat(4,1fr)}}
+/* ściąga czasowników */
+.verbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.vb{border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:6px 10px}
+.vb summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:baseline}
+.vb summary::-webkit-details-marker{display:none}
+.vb summary::before{content:"+";font-family:var(--f-mono);color:var(--earth);width:12px}
+.vb[open] summary::before{content:"–"}
+.vb[open]{grid-column:1/-1;background:var(--surface)}
+/* wiatrakowiec: karta postępu i hangar */
+.gyrocard{display:flex;gap:12px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 14px;margin:0 0 14px}
+.gyrocard.upgrade{border:2px solid var(--earth);background:var(--earth-soft);margin:14px 0 0}
+.gyro-pic{flex:none;width:86px;display:block}
+.gyro-pic svg{display:block;width:100%;height:auto}
+.gyro-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gyro-txt b{font-family:var(--f-display);font-size:19px;font-weight:800;line-height:1.1}
+.gyro-txt b .muted{font-family:var(--f-body);font-size:14px;font-weight:500}
+.gyro-txt small{font-size:13px;color:var(--muted)}
+.gyro-txt small b{font-family:var(--f-mono);font-size:13px;color:var(--earth)}
+.hangar{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.hg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;border:1.5px dashed var(--line);border-radius:8px;padding:8px 4px;min-width:0}
+.hg>svg{width:72px;height:auto}
+.hg.on{border-style:solid;background:var(--surface)}
+.hg.cur{border-color:var(--earth);box-shadow:0 0 0 3px var(--earth-soft)}
+.hg b{font-family:var(--f-display);font-size:15px;font-weight:800}
+.hg small{font-size:11px;color:var(--muted)}
+.hg-lock{height:52px;display:grid;place-items:center;color:var(--muted)}
+.hg-lock .icon{width:22px;height:22px}
 .unit-head{flex-wrap:nowrap;align-items:center;gap:14px}
 .unit-head>div{display:flex;flex-direction:column;min-width:0}
 .unit-head h3{font-size:24px;line-height:1.1;margin:2px 0}

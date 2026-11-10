@@ -354,6 +354,7 @@ function viewProfile() {
     <div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>
     <div class="muted" style="font-size:14px">${nr ? `${S.xp} / ${nr[0]} XP do rangi <span lang="bg">${nr[1]}</span> (${nr[2]})` : 'Najwyższa ranga. Gratulacje!'}</div></div>
    <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
+   ${hangarHTML()}
    ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
    <div class="card">
     <div class="setrow"><div><b>Lektor po odpowiedzi</b><div class="muted" style="font-size:14px">Odczytuje poprawną odpowiedź po bułgarsku.</div></div>
@@ -558,7 +559,7 @@ function startLesson(id, tile = null) {
   renderLessonShell(); renderEx();
 }
 function renderLessonShell() {
-  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Przerwij lekcję">${ICON.x}</button><div class="pbar"><i id="pb" style="width:0"></i></div><span class="qcount" id="qc"></span></div>
+  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Przerwij lekcję">${ICON.x}</button>${L.lv ? illus(L.lv.unit, 'tiny') : ''}<div class="pbar"><i id="pb" style="width:0"></i></div><span class="qcount" id="qc"></span></div>
    <div class="lesson-body" id="lbody"><div class="wrap" id="ex"></div></div>
    <div class="lesson-foot" id="lfoot"><div class="wrap foot-in"><div class="fb" id="fb"></div><div class="foot-btns" id="fbtns"></div></div></div>`;
   $('#lx').onclick = closeLesson;
@@ -623,7 +624,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* --- typy zadań --- */
-function optsHTML(opts, bg) { return `<div class="opts">${opts.map((o, i) => `<button class="opt" data-v="${esc(o)}"><span class="k">${i + 1}</span><span ${bg ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}</div>`; }
+function optsHTML(opts, bg, abc) { return `<div class="opts">${opts.map((o, i) => `<button class="opt" data-v="${esc(o)}"><span class="k">${abc ? 'ABCD'[i] : i + 1}</span><span ${bg ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}</div>`; }
 function wireOpts(box, correct, mk) {
   let sel = null;
   $$('.opt', box).forEach(b => b.onclick = () => { if (CUR.checked) return; $$('.opt', box).forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); sel = b.dataset.v; setReady(true); });

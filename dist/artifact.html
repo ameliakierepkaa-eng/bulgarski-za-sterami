@@ -293,6 +293,47 @@ h2.view{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.003em}
 .ill .w{fill:var(--surface)} .ill .k{fill:var(--ink);stroke:none}
 .ill text{fill:var(--ink);stroke:none;font-family:var(--f-display);font-weight:800}
 .ill.big{width:96px;height:96px}
+.ill.tiny{width:30px;height:30px;stroke-width:2.6}
+.result .ill.big{display:block;margin:4px auto 6px}
+/* piosenka z luką */
+.song-title b{font-family:var(--f-display);font-size:20px;font-weight:800}
+.gap{display:inline-block;min-width:64px;border-bottom:3px solid var(--earth);text-align:center;color:var(--earth);margin:0 2px}
+.gap.filled{min-width:0;border-bottom-color:var(--ok);color:var(--ok);padding:0 2px}
+/* memory */
+.memo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc{min-height:76px;border:2px solid var(--ink);border-radius:8px;background:var(--sky);color:var(--on-sky);display:grid;place-items:center;padding:6px;font-weight:700;font-size:15px;line-height:1.2;overflow-wrap:anywhere;transition:transform .15s}
+.mc-back{width:26px;height:26px;background:var(--on-sky);opacity:.35;-webkit-mask:var(--stitch) center/26px 12px no-repeat;mask:var(--stitch) center/26px 12px no-repeat}
+.mc.up{background:var(--surface);color:var(--ink);transform:rotateY(0)}
+.mc.up.isbg{border-color:var(--earth);font-size:17px}
+.mc.got{background:var(--ok-soft);border-color:var(--ok);color:var(--ink);opacity:.8}
+@media (min-width:560px){.memo{grid-template-columns:repeat(4,1fr)}}
+/* ściąga czasowników */
+.verbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.vb{border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:6px 10px}
+.vb summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:baseline}
+.vb summary::-webkit-details-marker{display:none}
+.vb summary::before{content:"+";font-family:var(--f-mono);color:var(--earth);width:12px}
+.vb[open] summary::before{content:"–"}
+.vb[open]{grid-column:1/-1;background:var(--surface)}
+/* wiatrakowiec: karta postępu i hangar */
+.gyrocard{display:flex;gap:12px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 14px;margin:0 0 14px}
+.gyrocard.upgrade{border:2px solid var(--earth);background:var(--earth-soft);margin:14px 0 0}
+.gyro-pic{flex:none;width:86px;display:block}
+.gyro-pic svg{display:block;width:100%;height:auto}
+.gyro-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gyro-txt b{font-family:var(--f-display);font-size:19px;font-weight:800;line-height:1.1}
+.gyro-txt b .muted{font-family:var(--f-body);font-size:14px;font-weight:500}
+.gyro-txt small{font-size:13px;color:var(--muted)}
+.gyro-txt small b{font-family:var(--f-mono);font-size:13px;color:var(--earth)}
+.hangar{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.hg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;border:1.5px dashed var(--line);border-radius:8px;padding:8px 4px;min-width:0}
+.hg>svg{width:72px;height:auto}
+.hg.on{border-style:solid;background:var(--surface)}
+.hg.cur{border-color:var(--earth);box-shadow:0 0 0 3px var(--earth-soft)}
+.hg b{font-family:var(--f-display);font-size:15px;font-weight:800}
+.hg small{font-size:11px;color:var(--muted)}
+.hg-lock{height:52px;display:grid;place-items:center;color:var(--muted)}
+.hg-lock .icon{width:22px;height:22px}
 .unit-head{flex-wrap:nowrap;align-items:center;gap:14px}
 .unit-head>div{display:flex;flex-direction:column;min-width:0}
 .unit-head h3{font-size:24px;line-height:1.1;margin:2px 0}
@@ -1365,31 +1406,84 @@ const NOUNS = [
  ['кула','wieża','f','кулата','a2-2'],['разрешение','zezwolenie','n','разрешението','a2-2']
 ];
 
-/* ---------------- GRY: PIOSENKI I WIERSZE ----------------
-   Cytaty tylko z utworów sprzed 1929 r. (domena publiczna). Współczesne hity – pytania o tytuł i wykonawcę, bez tekstów. */
-const SONGS = [
- {line:'Горда Стара планина, до ней Дунава синей', tr:'Dumna Stara Płanina, a obok niej błękitnieje Dunaj', o:['Мила Родино','Шуми Марица','Тих бял Дунав'], who:'Cwetan Radosławow, 1885', fact:'Od 1964 r. hymn Bułgarii. Napisał go student, który tęsknił za domem.'},
- {line:'Мила Родино, ти си земен рай', tr:'Miła Ojczyzno, jesteś rajem na ziemi', o:['Мила Родино','Хубава си, моя горо','Шуми Марица'], who:'refren hymnu Bułgarii', fact:'„Родина” to ojczyzna; forma „Родино” to wołacz – zwracamy się do niej.'},
- {line:'Шуми Марица окървавена', tr:'Szumi Marica, zakrwawiona', o:['Шуми Марица','Мила Родино','Тих бял Дунав'], who:'dawny hymn Bułgarii', fact:'Marica to rzeka płynąca przez Płowdiw. Pieśń była hymnem przed „Мила Родино”.'},
- {line:'Тих бял Дунав се вълнува', tr:'Cichy biały Dunaj faluje', o:['Радецки','Мила Родино','Излел е Дельо хайдутин'], who:'wiersz Iwana Wazowa, 1876', fact:'Pieśń o statku Radetzky, którym powstańcy Christo Botewa przepłynęli Dunaj.'},
- {line:'Хубава си, моя горо', tr:'Piękny jesteś, mój lesie', o:['Хубава си, моя горо','Шуми Марица','Радецки'], who:'wiersz Lubena Karawełowa', fact:'Pułapka: „гора” to LAS, nie góra. „горо” to wołacz od „гора”.'},
- {line:'Жив е той, жив е!', tr:'Żyje on, żyje!', o:['Хаджи Димитър','Радецки','Мила Родино'], who:'wiersz Christo Botewa, 1873', fact:'Najsłynniejszy bułgarski wiersz o powstańcu, który nie umiera w pamięci ludzi.'},
- {line:'Излел е Дельо хайдутин', tr:'Wyruszył Delo, hajduk', o:['Валя Балканска','Лили Иванова','Емил Димитров'], q:'Kto zaśpiewał tę pieśń ludową z Rodopów?', who:'pieśń ludowa, śpiew: Wala Bałkanska', fact:'Nagranie poleciało w kosmos na Złotej Płycie sond Voyager (1977).'}
+/* ---------------- ODMIANA CZASOWNIKÓW ----------------
+   [polski, bułgarski (hasło), czas teraźniejszy: аз ти той ние вие те, czas przeszły (aoryst): to samo, uwaga?, dokonany?, zwrotny (се)?]
+   Dla par niedokonany/dokonany teraźniejszy jest od niedokonanego, przeszły od dokonanego. pf:true = czasownik dokonany (teraźniejszy tylko po „да” / „ще”). */
+const VERBS = [
+ ['być','съм','съм си е сме сте са','бях беше беше бяхме бяхте бяха','W przeszłości zwykle mówi się „беше” (on/ty był).'],
+ ['mieć','имам','имам имаш има имаме имате имат','имах имаше имаше имахме имахте имаха'],
+ ['chcieć','искам','искам искаш иска искаме искате искат','исках иска иска искахме искахте искаха'],
+ ['mówić','говоря','говоря говориш говори говорим говорите говорят','говорих говори говори говорихме говорихте говориха'],
+ ['latać / lecieć','летя','летя летиш лети летим летите летят','летях летя летя летяхме летяхте летяха'],
+ ['czytać','чета','чета четеш чете четем четете четат','четох чете чете четохме четохте четоха'],
+ ['pisać','пиша','пиша пишеш пише пишем пишете пишат','писах писа писа писахме писахте писаха'],
+ ['mieszkać / żyć','живея','живея живееш живее живеем живеете живеят','живях живя живя живяхме живяхте живяха'],
+ ['pić','пия','пия пиеш пие пием пиете пият','пих пи пи пихме пихте пиха'],
+ ['jeść','ям','ям ядеш яде ядем ядете ядат','ядох яде яде ядохме ядохте ядоха'],
+ ['móc','мога','мога можеш може можем можете могат','можах можа можа можахме можахте можаха'],
+ ['robić','правя','правя правиш прави правим правите правят','правих прави прави правихме правихте правиха'],
+ ['pracować','работя','работя работиш работи работим работите работят','работих работи работи работихме работихте работиха'],
+ ['uczyć się','уча','уча учиш учи учим учите учат','учих учи учи учихме учихте учиха'],
+ ['chodzić','ходя','ходя ходиш ходи ходим ходите ходят','ходих ходи ходи ходихме ходихте ходиха'],
+ ['spać','спя','спя спиш спи спим спите спят','спах спа спа спахме спахте спаха'],
+ ['stać','стоя','стоя стоиш стои стоим стоите стоят','стоях стоя стоя стояхме стояхте стояха'],
+ ['śpiewać','пея','пея пееш пее пеем пеете пеят','пях пя пя пяхме пяхте пяха'],
+ ['kochać / lubić','обичам','обичам обичаш обича обичаме обичате обичат','обичах обича обича обичахме обичахте обичаха'],
+ ['czekać','чакам','чакам чакаш чака чакаме чакате чакат','чаках чака чака чакахме чакахте чакаха'],
+ ['widzieć','виждам / видя','виждам виждаш вижда виждаме виждате виждат','видях видя видя видяхме видяхте видяха'],
+ ['dawać / dać','давам / дам','давам даваш дава даваме давате дават','дадох даде даде дадохме дадохте дадоха'],
+ ['mówić / powiedzieć','казвам / кажа','казвам казваш казва казваме казвате казват','казах каза каза казахме казахте казаха'],
+ ['kupować / kupić','купувам / купя','купувам купуваш купува купуваме купувате купуват','купих купи купи купихме купихте купиха'],
+ ['brać / wziąć','вземам / взема','вземам вземаш взема вземаме вземате вземат','взех взе взе взехме взехте взеха'],
+ ['rozumieć / zrozumieć','разбирам / разбера','разбирам разбираш разбира разбираме разбирате разбират','разбрах разбра разбра разбрахме разбрахте разбраха'],
+ ['lądować / wylądować','кацам / кацна','кацам кацаш каца кацаме кацате кацат','кацнах кацна кацна кацнахме кацнахте кацнаха'],
+ ['startować / wystartować','излитам / излетя','излитам излиташ излита излитаме излитате излитат','излетях излетя излетя излетяхме излетяхте излетяха'],
+ ['płacić / zapłacić','плащам / платя','плащам плащаш плаща плащаме плащате плащат','платих плати плати платихме платихте платиха'],
+ ['pomagać / pomóc','помагам / помогна','помагам помагаш помага помагаме помагате помагат','помогнах помогна помогна помогнахме помогнахте помогнаха'],
+ ['pójść','отида','отида отидеш отиде отидем отидете отидат','отидох отиде отиде отидохме отидохте отидоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
+ ['przyjść','дойда','дойда дойдеш дойде дойдем дойдете дойдат','дойдох дойде дойде дойдохме дойдохте дойдоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
+ ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
 ];
-const TRIVIA = [
- {q:'Kto śpiewa „Моя страна, моя България”?', o:['Емил Димитров','Лили Иванова','Щурците'], fact:'Emil Dimitrow nagrał ją w 1970 r.; tytuł znaczy „Mój kraj, moja Bułgaria”.'},
- {q:'Kto skomponował „Арлекино”, z którym Ałła Pugaczowa wygrała Złotego Orfeusza w 1975 r.?', o:['Емил Димитров','Васил Найденов','Валя Балканска'], fact:'Złoty Orfeusz to festiwal piosenki nad Morzem Czarnym, w Słonecznym Brzegu.'},
- {q:'Jak nazywa się legendarny bułgarski zespół rockowy, założony w 1967 r.?', o:['Щурците','ФСБ','Сигнал'], fact:'„Щурците” znaczy „Świerszcze”. Jeden z ich hitów to „Клетва” – „Przysięga”.'},
- {q:'Która piosenka jest jednym z wielkich przebojów Lili Iwanowej?', o:['Камино','Клетва','Вода'], fact:'Lili Iwanowa śpiewa od lat 60. i jest nazywana primadonną bułgarskiej estrady.'},
- {q:'Który utwór dał Bułgarii najlepszy wynik na Eurowizji – 2. miejsce w 2017 r.?', o:['Beautiful Mess','If Love Was a Crime','Вода'], fact:'Zaśpiewał go Kristian Kostow, miał wtedy 17 lat.'},
- {q:'Jak nazywał się bułgarski utwór z Eurowizji 2007 (5. miejsce) z bębnami i śpiewem ludowym?', o:['Вода','Камино','Арлекино'], fact:'„Вода” znaczy „woda”. Wykonali go Elica Todorowa i Stojan Jankułow.'}
-];
-/* fałszywi i prawdziwi przyjaciele: [bg, polski „podobny”, prawdziwe znaczenie] */
-const FRIENDS = [
- ['маса','masa','stół'],['стол','stół','krzesło'],['направо','w prawo','prosto'],['час','czas','godzina'],['рано','rano','wcześnie'],['закуска','zakąska','śniadanie'],
- ['гора','góra','las'],['булка','bułka','panna młoda'],['ягода','jagoda','truskawka'],['дума','duma','słowo'],['кола','koło','samochód'],['сирене','syrena','biały ser'],
- ['лук','łuk','cebula'],['живот','brzuch','życie'],
- ['мляко','mleko','mleko'],['вода','woda','woda'],['хляб','chleb','chleb'],['майка','matka','matka'],['брат','brat','brat'],['питам','pytam','pytam'],['пилот','pilot','pilot'],['сестра','siostra','siostra']
+
+/* ---------------- GRY: PIOSENKI Z LUKĄ ----------------
+   Tylko utwory sprzed 1929 r. (pieśni ludowe, hymny i wiersze śpiewane jako pieśni – domena publiczna).
+   Współczesnych tekstów nie cytujemy (prawa autorskie). gaps: [słowo z tekstu, 3 błędne odpowiedzi] */
+const LYRICS = [
+ {song:'Мила Родино', who:'hymn Bułgarii, sł. Cwetan Radosławow (1885)', text:'Горда Стара планина, до ней Дунава синей', tr:'Dumna Stara Płanina, obok niej błękitnieje Dunaj', gaps:[['Горда',['Мила','Бяла','Тиха']],['планина',['река','гора','страна']],['Дунава',['Марица','Искъра','Янтра']],['синей',['шуми','тече','пее']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii', text:'слънце Тракия огрява, над Пирина пламеней', tr:'słońce oświetla Trację, nad Pirinem płonie zorza', gaps:[['слънце',['луна','звезда','вятър']],['Тракия',['Добруджа','Родопа','Варна']],['Пирина',['Балкана','Дунава','Витоша']]]},
+ {song:'Мила Родино', who:'refren hymnu Bułgarii', text:'Мила Родино, ти си земен рай', tr:'Miła Ojczyzno, jesteś rajem na ziemi', gaps:[['Родино',['Марийо','горо','майко']],['земен',['морски','горски','вечен']],['рай',['край','дом','град']]]},
+ {song:'Мила Родино', who:'refren hymnu Bułgarii', text:'твойта хубост, твойта прелест, ах, те нямат край', tr:'twoje piękno, twój urok – ach, nie mają końca', gaps:[['хубост',['младост','радост','сила']],['прелест',['песен','слава','мъка']],['край',['рай','брой','ден']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii, 2. zwrotka', text:'Паднаха борци безчет за народа наш любим', tr:'Polegli niezliczeni bojownicy za nasz ukochany naród', gaps:[['борци',['деца','птици','майки']],['народа',['града','царя','морето']],['любим',['далечен','малък','стар']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii, 2. zwrotka', text:'майко, дай ни мъжка сила пътя им да продължим', tr:'matko, daj nam męską siłę, byśmy kontynuowali ich drogę', gaps:[['сила',['вяра','радост','песен']],['пътя',['песента','войната','града']],['продължим',['забравим','изгубим','спрем']]]},
+ {song:'Шуми Марица', who:'dawny hymn Bułgarii, sł. Nikoła Żiwkow (1876)', text:'Шуми Марица окървавена, плаче вдовица люто ранена', tr:'Szumi Marica zakrwawiona, płacze wdowa ciężko zraniona', gaps:[['Шуми',['Пее','Спи','Мълчи']],['Марица',['Янтра','Искър','Тунджа']],['плаче',['пее','шета','спи']],['вдовица',['девица','майка','сестра']]]},
+ {song:'Шуми Марица', who:'refren dawnego hymnu', text:'Марш, марш, с генерала наш! Раз, два, три, марш, войници!', tr:'Marsz, marsz z naszym generałem! Raz, dwa, trzy – marsz, żołnierze!', gaps:[['генерала',['войника','капитана','народа']],['войници',['деца','юнаци','моми']]]},
+ {song:'Тих бял Дунав (Радецки)', who:'sł. Iwan Wazow (1876)', text:'Тих бял Дунав се вълнува, весело шуми', tr:'Cichy biały Dunaj faluje, wesoło szumi', gaps:[['бял',['син','стар','мил']],['вълнува',['усмихва','събужда','връща']],['весело',['тъжно','тихо','силно']],['шуми',['пее','плаче','спи']]]},
+ {song:'Тих бял Дунав (Радецки)', who:'sł. Iwan Wazow (1876)', text:'и Радецки гордо плува над златни вълни', tr:'a Radetzky dumnie płynie po złotych falach', gaps:[['гордо',['тихо','бавно','тъжно']],['плува',['лети','тича','спи']],['златни',['сини','бели','сребърни']],['вълни',['поля','гори','планини']]]},
+ {song:'Аз съм българче', who:'wiersz Iwana Wazowa – śpiewany przez dzieci', text:'Аз съм българче и обичам наште планини зелени', tr:'Jestem małym Bułgarem i kocham nasze zielone góry', gaps:[['българче',['полякиня','пилот','юначе']],['обичам',['виждам','помня','питам']],['планини',['градове','реки','поля']],['зелени',['високи','сини','бели']]]},
+ {song:'Аз съм българче', who:'wiersz Iwana Wazowa', text:'българин да се наричам – първа радост е за мене', tr:'nazywać się Bułgarem – to dla mnie pierwsza radość', gaps:[['наричам',['срещам','обаждам','връщам']],['първа',['втора','последна','голяма']],['радост',['мъка','обич','слава']]]},
+ {song:'Върви, народе възродени', who:'hymn Cyryla i Metodego, sł. Stojan Michajłowski (1892)', text:'Върви, народе възродени, към светла бъднина върви', tr:'Idź, narodzie odrodzony, ku jasnej przyszłości idź', gaps:[['народе',['юнако','майко','горо']],['възродени',['свободни','велики','любими']],['светла',['тъмна','стара','далечна']],['бъднина',['планина','родина','вечност']]]},
+ {song:'Върви, народе възродени', who:'śpiewany 24 maja', text:'с книжовността, таз сила нова, съдбините си ти поднови', tr:'piśmiennictwem, tą nową siłą, odnów swój los', gaps:[['сила',['песен','вяра','дума']],['нова',['стара','тиха','вечна']],['поднови',['забрави','изгуби','продаде']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873) – śpiewany jako pieśń', text:'Жив е той, жив е! Там на Балкана', tr:'On żyje, żyje! Tam, na Bałkanie', gaps:[['Жив',['Млад','Тих','Сам']],['Балкана',['Дунава','полето','морето']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'потънал в кърви, лежи и пъшка юнак със дълбока на гърди рана', tr:'zalany krwią, leży i jęczy junak z głęboką raną na piersi', gaps:[['кърви',['сълзи','рози','мъгли']],['лежи',['пее','стои','тича']],['юнак',['старец','овчар','момък']],['рана',['песен','кърпа','звезда']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'юнак във младост и в сила мъжка', tr:'junak w młodości i w męskiej sile', gaps:[['младост',['старост','радост','слава']],['сила',['мъка','песен','вяра']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'Тоз, който падне в бой за свобода, той не умира', tr:'Ten, kto padnie w boju o wolność, nie umiera', gaps:[['падне',['пее','стои','бяга']],['свобода',['пари','слава','любов']],['умира',['забравя','плаче','спи']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'него жалеят земя и небо, звяр и природа', tr:'opłakują go ziemia i niebo, zwierz i przyroda', gaps:[['земя',['море','гора','град']],['небо',['слънце','река','поле']],['звяр',['човек','цар','кон']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'и певци песни за него пеят', tr:'a śpiewacy pieśni o nim śpiewają', gaps:[['певци',['деца','майки','войници']],['песни',['приказки','молитви','думи']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'Настане вечер – месец изгрее, звезди обсипят сводът небесен', tr:'Zapada wieczór – wschodzi księżyc, gwiazdy obsypują niebieskie sklepienie', gaps:[['вечер',['утро','лято','зима']],['месец',['слънце','вятър','облак']],['звезди',['птици','листа','капки']],['небесен',['морски','горски','земен']]]},
+ {song:'Обесването на Васил Левски', who:'Christo Botew (1876)', text:'О, майко моя, родино мила, защо тъй жално, тъй милно плачеш?', tr:'O, matko moja, ojczyzno miła, czemu tak żałośnie, tak rzewnie płaczesz?', gaps:[['майко',['горо','сестро','Марийо']],['родино',['планино','свобода','Тодоро']],['мила',['стара','бяла','тиха']],['плачеш',['пееш','шумиш','спиш']]]},
+ {song:'На прощаване', who:'Christo Botew (1868)', text:'Не плачи, майко, не тъжи, че станах ази хайдутин', tr:'Nie płacz, matko, nie smuć się, że zostałem hajdukiem', gaps:[['плачи',['пей','спи','питай']],['тъжи',['бързай','мълчи','чакай']],['хайдутин',['учител','овчар','войник']]]},
+ {song:'Моята молитва', who:'Christo Botew (1873)', text:'О, мой боже, правий боже! Не ти, що си в небесата', tr:'O, mój Boże, sprawiedliwy Boże! Nie ty, który jesteś w niebiosach', gaps:[['правий',['мили','стари','далечни']],['небесата',['горите','водите','градовете']]]},
+ {song:'Българският език', who:'Iwan Wazow (1883)', text:'Език свещен на моите деди', tr:'Święty języku moich przodków', gaps:[['свещен',['забравен','чужд','нов']],['деди',['деца','приятели','съседи']]]},
+ {song:'Българският език', who:'Iwan Wazow (1883)', text:'език на мъки, стонове вековни', tr:'języku mąk, wiekowych jęków', gaps:[['мъки',['песни','радост','приказки']],['вековни',['весели','нови','тихи']]]},
+ {song:'Отечество любезно', who:'Iwan Wazow – wiersz śpiewany w szkołach', text:'Отечество любезно, как хубаво си ти!', tr:'Ojczyzno umiłowana, jakaż jesteś piękna!', gaps:[['любезно',['далечно','малко','студено']],['хубаво',['тъжно','тихо','старо']]]},
+ {song:'Отечество любезно', who:'Iwan Wazow', text:'Как чудно се синее небето ти безкрай!', tr:'Jak cudnie błękitnieje twoje niebo bez końca!', gaps:[['синее',['смее','пее','мръщи']],['небето',['морето','полето','реката']]]},
+ {song:'Стани, стани, юнак балкански', who:'Dobri Czintułow (ok. 1860)', text:'Стани, стани, юнак балкански, от сън дълбок се събуди', tr:'Wstań, wstań, bałkański junaku, z głębokiego snu się zbudź', gaps:[['Стани',['Седни','Легни','Мълчи']],['балкански',['морски','горски','дунавски']],['сън',['мрак','път','град']],['събуди',['скрий','спри','върни']]]},
+ {song:'Излел е Дельо хайдутин', who:'pieśń ludowa z Rodopów – nagranie poleciało w kosmos na sondzie Voyager', text:'Излел е Дельо хайдутин', tr:'Wyszedł Delo, hajduk', gaps:[['Дельо',['Стоян','Марко','Иван']],['хайдутин',['овчар','свирач','търговец']]]},
+ {song:'Полегнала е Тодора', who:'pieśń ludowa', text:'Полегнала е Тодора', tr:'Położyła się (do snu) Todora', gaps:[['Тодора',['Марийка','Радка','Яна']],['Полегнала',['Заплакала','Запяла','Тръгнала']]]},
+ {song:'Хубава си, моя горо', who:'sł. Luben Karawełow – pieśń znana z Bałkanów', text:'Хубава си, моя горо', tr:'Piękny jesteś, mój lesie', gaps:[['горо',['майко','Родино','моме']],['Хубава',['Тъжна','Стара','Тиха']]]},
+ {song:'Две хубави очи', who:'Pejo Jaworow (1907) – wiersz śpiewany jako romans', text:'Две хубави очи. Душата на дете в две хубави очи', tr:'Dwoje pięknych oczu. Dusza dziecka w dwojgu pięknych oczach', gaps:[['хубави',['тъжни','сини','стари']],['Душата',['Сърцето','Песента','Мечтата']],['дете',['майка','птица','мома']]]},
+ {song:'Да се завърнеш…', who:'Dimczo Debelanow (1915)', text:'Да се завърнеш в бащината къща', tr:'Wrócić do ojcowskiego domu', gaps:[['завърнеш',['изгубиш','скриеш','разплачеш']],['бащината',['майчината','старата','новата']],['къща',['градина','църква','нива']]]},
+ {song:'Помниш ли, помниш ли…', who:'Dimczo Debelanow', text:'Помниш ли, помниш ли тихия двор', tr:'Pamiętasz, pamiętasz to ciche podwórze', gaps:[['тихия',['шумния','стария','малкия']],['двор',['град','път','мост']]]}
 ];
 
 /* ===== NARZĘDZIA ===== */
@@ -1748,6 +1842,7 @@ function viewProfile() {
     <div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>
     <div class="muted" style="font-size:14px">${nr ? `${S.xp} / ${nr[0]} XP do rangi <span lang="bg">${nr[1]}</span> (${nr[2]})` : 'Najwyższa ranga. Gratulacje!'}</div></div>
    <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
+   ${hangarHTML()}
    ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
    <div class="card">
     <div class="setrow"><div><b>Lektor po odpowiedzi</b><div class="muted" style="font-size:14px">Odczytuje poprawną odpowiedź po bułgarsku.</div></div>
@@ -1952,7 +2047,7 @@ function startLesson(id, tile = null) {
   renderLessonShell(); renderEx();
 }
 function renderLessonShell() {
-  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Przerwij lekcję">${ICON.x}</button><div class="pbar"><i id="pb" style="width:0"></i></div><span class="qcount" id="qc"></span></div>
+  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Przerwij lekcję">${ICON.x}</button>${L.lv ? illus(L.lv.unit, 'tiny') : ''}<div class="pbar"><i id="pb" style="width:0"></i></div><span class="qcount" id="qc"></span></div>
    <div class="lesson-body" id="lbody"><div class="wrap" id="ex"></div></div>
    <div class="lesson-foot" id="lfoot"><div class="wrap foot-in"><div class="fb" id="fb"></div><div class="foot-btns" id="fbtns"></div></div></div>`;
   $('#lx').onclick = closeLesson;
@@ -2017,7 +2112,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* --- typy zadań --- */
-function optsHTML(opts, bg) { return `<div class="opts">${opts.map((o, i) => `<button class="opt" data-v="${esc(o)}"><span class="k">${i + 1}</span><span ${bg ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}</div>`; }
+function optsHTML(opts, bg, abc) { return `<div class="opts">${opts.map((o, i) => `<button class="opt" data-v="${esc(o)}"><span class="k">${abc ? 'ABCD'[i] : i + 1}</span><span ${bg ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}</div>`; }
 function wireOpts(box, correct, mk) {
   let sel = null;
   $$('.opt', box).forEach(b => b.onclick = () => { if (CUR.checked) return; $$('.opt', box).forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); sel = b.dataset.v; setReady(true); });
@@ -2292,8 +2387,9 @@ function buildMix(levels) {
   const G = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
   const Sx = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i))));
   const g = k => G[k % G.length], s = k => Sx[k % Sx.length];
-  return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
-    {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
+  const vb = verbItems(2);
+  return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, vb[0], {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
+    {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, vb[1], {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
 }
 function buildRecap(levels) {
   const Wd = shuffle(levels.flatMap(l => l.w.map((_, i) => W(l, i))));
@@ -2357,22 +2453,58 @@ function markTile(i, starsN) {
 }
 
 /* --- postać: pilotka w wiatrakowcu (własny rysunek) --- */
-const HERO = `<svg viewBox="0 0 84 64" aria-hidden="true">
+/* Hangar: co 5 ukończonych leveli nowy model wiatrakowca – nazwy to bułgarskie ptaki (przy okazji słówka). */
+const GYROS = [['врабче','wróbel'],['синигер','sikorka'],['лястовица','jaskółka'],['кос','kos'],['славей','słowik'],['гугутка','sierpówka'],['кукувица','kukułka'],['кълвач','dzięcioł'],['сврака','sroka'],['гарван','kruk'],['чапла','czapla'],['щъркел','bocian'],['пеликан','pelikan'],['сокол','sokół'],['ястреб','jastrząb'],['сова','sowa'],['бухал','puchacz'],['лебед','łabędź'],['орел','orzeł']];
+const GYRO_STEP = 5;
+const capF = s => s[0].toUpperCase() + s.slice(1);
+const levelsDone = () => LEVELS.filter(l => isDone(l.id)).length;
+const gyroTier = (n = levelsDone()) => Math.min(GYROS.length - 1, Math.floor(n / GYRO_STEP));
+const plLv = n => n === 1 ? 'level' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'levele' : 'leveli';
+function heroSVG(t = gyroTier()) {
+  const body = ['var(--earth)', 'var(--sky)', 'var(--ok)', 'var(--gold)'][t % 4];
+  const fin = t >= 16 ? '<path d="M68 15h8v8h-8z" fill="var(--surface)"/><path d="M68 23h8v8h-8z" fill="var(--ok)"/><path d="M68 31h8v9l-8-3z" fill="var(--bad)"/>'
+    : t >= 10 ? `<path d="M68 15h8v25l-8-3z" fill="${t % 4 === 1 ? 'var(--earth)' : 'var(--sky)'}"/>` : `<path d="M69 21h6.5v19l-6.5-2.5z" fill="${t % 4 === 1 ? 'var(--earth)' : 'var(--sky)'}"/>`;
+  return `<svg viewBox="0 0 88 64" aria-hidden="true">
+  ${t >= 12 ? '<g fill="var(--surface)" stroke="var(--line)" opacity=".85"><circle cx="80" cy="36" r="3"/><circle cx="85" cy="33" r="2.2"/></g>' : ''}
   <rect x="38" y="9" width="3.5" height="17" rx="1" fill="var(--ink)"/>
-  <g class="rotor"><ellipse cx="40" cy="9" rx="36" ry="2.6" fill="var(--ink)" opacity=".8"/></g>
+  <g class="rotor"><ellipse cx="40" cy="9" rx="36" ry="2.6" fill="var(--ink)" opacity=".8"/>${t >= 14 ? '<ellipse cx="6" cy="9" rx="3.5" ry="2.6" fill="var(--gold)"/><ellipse cx="74" cy="9" rx="3.5" ry="2.6" fill="var(--gold)"/>' : ''}</g>
   <circle cx="40" cy="9" r="3" fill="var(--ink)"/>
   <rect x="56" y="33" width="17" height="3.5" rx="1.5" fill="var(--ink)"/>
-  <path d="M69 21h6.5v19l-6.5-2.5z" fill="var(--sky)"/>
+  ${fin}${t >= 3 && t < 16 ? '<rect x="69" y="27" width="6.5" height="2.2" fill="var(--surface)"/>' : ''}
   <g class="prop"><ellipse cx="63" cy="35" rx="2" ry="10" fill="var(--muted)"/></g>
-  <path d="M14 37c0-9 7-14 19-14h14c8 0 13 5 13 12 0 5-4 8-11 8H24c-6 0-10-2-10-6z" fill="var(--earth)"/>
+  <path d="M14 37c0-9 7-14 19-14h14c8 0 13 5 13 12 0 5-4 8-11 8H24c-6 0-10-2-10-6z" fill="${body}" stroke="var(--ink)" stroke-width="1.2"/>
+  ${t >= 3 ? '<path d="M16 39h42" stroke="var(--surface)" stroke-width="2"/>' : ''}
+  ${t >= 18 ? '<path d="M44 32l1.6 3.2 3.5.4-2.6 2.4.7 3.4-3.2-1.7-3.1 1.7.7-3.4-2.6-2.4 3.5-.4z" fill="var(--gold)" stroke="var(--ink)" stroke-width=".6"/>' : ''}
   <path d="M18 33c1-6 6-9 13-9v10H18z" fill="var(--sky-soft)" stroke="var(--ink)" stroke-width="1"/>
+  ${t >= 8 ? '<circle cx="47" cy="24" r="5.2" fill="#F1C7A1"/><path d="M41.8 23.6a5.2 5.2 0 0 1 10.4 0z" fill="var(--earth)"/>' : ''}
   <circle cx="36" cy="23" r="6.5" fill="#F1C7A1"/>
   <path d="M29.5 22.5a6.5 6.5 0 0 1 13 0z" fill="var(--sky)"/>
   <path d="M41 24c3 1 5 4 5.5 7" stroke="#7A4A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>
   <rect x="33" y="22" width="5" height="2.4" rx="1" fill="var(--ink)"/>
+  ${t >= 1 && t < 4 ? '<path d="M26 25l3-8h2.5l-2 8z" fill="var(--sky-soft)" stroke="var(--ink)" stroke-width="1"/>' : ''}
+  ${t >= 4 ? `<path d="M23 27c1-10 9-14 18-13 7 1 11 5 12 12" fill="var(--sky-soft)" fill-opacity=".45" stroke="var(--ink)" stroke-width="1.2"/>` : ''}
+  ${t >= 6 ? '<circle cx="14.6" cy="37.5" r="1.7" fill="var(--bad)"/><circle cx="74" cy="17" r="1.5" fill="var(--ok)"/>' : ''}
   <path d="M24 43l-3 6M46 43l3 6" stroke="var(--ink)" stroke-width="2"/>
   <circle cx="21" cy="51" r="4.5" fill="var(--ink)"/><circle cx="49" cy="51" r="4.5" fill="var(--ink)"/>
+  ${t >= 2 ? `<path d="M15 51a6 5 0 0 1 12 0zM43 51a6 5 0 0 1 12 0z" fill="${body}" stroke="var(--ink)" stroke-width="1"/>` : ''}
 </svg>`;
+}
+function gyroCard() {
+  const n = levelsDone(), t = gyroTier(n), [bg, pl] = GYROS[t];
+  const max = t >= GYROS.length - 1, need = max ? 0 : (t + 1) * GYRO_STEP - n;
+  const pctv = max ? 100 : Math.round(100 * (GYRO_STEP - need) / GYRO_STEP);
+  return `<section class="gyrocard"><a href="#profil" class="gyro-pic" aria-label="Hangar">${heroSVG(t)}</a><div class="gyro-txt">
+    <span class="eyebrow">Twój wiatrakowiec · model ${t + 1}/${GYROS.length}</span>
+    <b><span lang="bg">„${esc(capF(bg))}”</span> <span class="muted">– ${esc(pl)}</span></b>
+    <div class="bar"><i style="width:${pctv}%"></i></div>
+    <small>${max ? 'Masz najlepszy model w hangarze!' : `Jeszcze <b>${need}</b> ${plLv(need)} do modelu <span lang="bg">„${esc(capF(GYROS[t + 1][0]))}”</span> (${esc(GYROS[t + 1][1])})`}</small></div></section>`;
+}
+function hangarHTML() {
+  const n = levelsDone(), t = gyroTier(n);
+  return `<section class="card stack"><div><div class="eyebrow">Hangar</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Twoje wiatrakowce</h3>
+    <p class="muted" style="margin:4px 0 0">Co ${GYRO_STEP} ukończonych leveli dostajesz nowy model. Każdy nosi imię bułgarskiego ptaka. Ukończone levele: ${n}.</p></div>
+    <div class="hangar">${GYROS.map(([bg, pl], i) => `<div class="hg ${i <= t ? 'on' : ''} ${i === t ? 'cur' : ''}">${i <= t ? heroSVG(i) : `<span class="hg-lock">${ICON.lock}</span>`}<b lang="bg">${i <= t ? esc(capF(bg)) : '?'}</b><small>${i <= t ? esc(pl) : `po ${i * GYRO_STEP} levelach`}</small></div>`).join('')}</div></section>`;
+}
 let heroShown = {key:'', idx:-1};
 
 function viewBoard() {
@@ -2404,6 +2536,7 @@ function viewBoard() {
   html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · dziś</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
     <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+   ${gyroCard()}
    <div class="board" id="board">
     <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">
       <rect width="360" height="640" fill="var(--map)"/>
@@ -2432,7 +2565,7 @@ function viewBoard() {
         <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
         <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
     }).join('')}
-    <div class="hero" id="hero" style="${pct(P[startIdx])}">${HERO}</div>
+    <div class="hero" id="hero" style="${pct(P[startIdx])}">${heroSVG()}</div>
    </div>`;
   if (d.finished) {
     html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
@@ -2470,6 +2603,7 @@ function finishLesson() {
   const starsN = acc >= 0.9 ? 3 : acc >= 0.75 ? 2 : acc >= 0.6 ? 1 : 0;
   const pass = L.mode === 'review' || starsN > 0;
   let xp = L.right * 2, nextId = null;
+  const tier0 = gyroTier();
   if (L.mode === 'level') {
     if (starsN > 0) xp += 5 + (starsN === 3 ? 5 : 0);
     const prev = S.lv[L.lv.id] || {stars:0};
@@ -2485,20 +2619,23 @@ function finishLesson() {
   const name = L.mode === 'level' ? L.lv.t : L.mode === 'practice' ? L.title : 'Powtórka';
   const title = landed ? `Lądowanie: ${landed.bg}!` : L.mode === 'review' ? 'Powtórka zakończona' : pass ? (starsN === 3 ? 'Idealnie!' : 'Zaliczone!') : 'Odejście na drugi krąg';
   const sub = landed ? `Wylądowałaś w mieście ${landed.pl}. Cała dzisiejsza plansza zaliczona – brawo!` : L.mode === 'review' ? 'Błędy, które poprawiłaś, zniknęły z listy.' : pass ? `„${name}” zaliczone.${onBoard ? ' Wiatrakowiec leci na następne pole.' : ''}` : 'Do zaliczenia potrzeba 60% poprawnych odpowiedzi. Spróbuj jeszcze raz – tym razem pójdzie lepiej.';
+  const tier1 = gyroTier(), upg = tier1 > tier0 ? GYROS[tier1] : null;
   $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span style="flex:1"></span></div>
    <div class="lesson-body"><div class="wrap result">
+    ${L.mode === 'level' ? illus(L.lv.unit, 'big') : ''}
     <div class="prompt-kind">${esc(L.mode === 'level' ? L.lv.unit.t : name)}</div>
     <h2 class="view" style="font-size:28px">${esc(title)}</h2>
     ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
     <p class="muted">${esc(sub)}</p>
     ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
+    ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b><span lang="bg">„${esc(capF(upg[0]))}”</span> <span class="muted">– ${esc(upg[1])}</span></b><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
     <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
    </div></div>
    <div class="lesson-foot"><div class="wrap foot-in"><div class="foot-btns">
     ${!pass || !onBoard ? `<button class="btn ghost" id="again">${pass ? 'Powtórz' : 'Spróbuj ponownie'}</button>` : ''}
     ${onBoard ? `<button class="btn" id="toBoard">Wróć na planszę</button>` : (L.mode === 'level' && pass && nextId ? `<button class="btn" id="goNext">Następny level</button>` : `<button class="btn" id="toMap">Zamknij</button>`)}
    </div></div></div>`;
-  if (landed || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
+  if (landed || upg || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
   const lvId = L.lv && L.lv.id, tile = L.tile, again = L.again, mode = L.mode;
   $('#lx').onclick = closeLesson;
   const a = $('#again'); if (a) a.onclick = () => { if (mode === 'level') openBriefing(lvId, tile); else if (mode === 'review') startReview(); else if (again) again(); };
@@ -2667,7 +2804,36 @@ function drawDict() {
 }
 
 /* ===== ZAKŁADKA: GRAMATYKA (ćwiczenia + ściąga) ===== */
+/* ===== ODMIANA CZASOWNIKÓW ===== */
+const PRON = [['аз','ja'],['ти','ty'],['той','on'],['ние','my'],['вие','wy'],['те','oni']];
+const TENSE_PL = {pres:'czas teraźniejszy', past:'czas przeszły', fut:'czas przyszły'};
+const vForms = (v, tense) => (tense === 'past' ? v[3] : v[2]).split(' ');
+function verbTenses(v) { const pair = v[1].includes(' / '); return v[5] ? ['fut', 'past'] : pair ? ['pres', 'past'] : ['pres', 'past', 'fut']; }
+function verbItem(vi, tense, p) {
+  const v = VERBS[vi], forms = vForms(v, tense), refl = v[6] ? 'се ' : '';
+  let pron = PRON[p][0], plp = PRON[p][1];
+  if (p === 2 && Math.random() < 0.5) { pron = 'тя'; plp = 'ona'; }
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  const s = tense === 'past' ? `Вчера ${pron} ${refl}___.` : tense === 'fut' ? `Утре ${pron} ще ${refl}___.` : `${cap(pron)} ${refl}___.`;
+  const correct = forms[p];
+  const others = [...new Set([...vForms(v, 'pres'), ...vForms(v, 'past')])].filter(f => f !== correct);
+  const o = [correct, ...shuffle(others).slice(0, 3)];
+  const table = vForms(v, tense).map((f, i) => `${PRON[i][0]} ${tense === 'fut' ? 'ще ' : ''}${refl}${f}`).join(', ');
+  return {t:'gram', it:{kind:'g', lv:null, i:0, ref:`v:${vi}:${tense}:${p}`, g:{s, o, pl:`${TENSE_PL[tense]} · ${plp} · ${v[0]} (${v[1]})`, why:`Odmiana: <span lang="bg">${esc(table)}</span>.${v[4] ? ' ' + esc(v[4]) : ''}`}}};
+}
+function verbItems(n) {
+  const all = VERBS.flatMap((v, vi) => verbTenses(v).flatMap(t => [0,1,2,3,4,5].map(p => ({vi, t, p}))));
+  const sorted = shuffle(all).sort((a, b) => (S.mistakes[`v:${b.vi}:${b.t}:${b.p}`] || 0) - (S.mistakes[`v:${a.vi}:${a.t}:${a.p}`] || 0));
+  const out = [], usedV = new Set();
+  for (const x of sorted) { if (usedV.has(x.vi) && usedV.size < VERBS.length) continue; usedV.add(x.vi); out.push(verbItem(x.vi, x.t, x.p)); if (out.length >= n) break; }
+  return out;
+}
+function verbsCheat() {
+  return `<article class="card gcard"><h3>Odmiana czasowników (${VERBS.length})</h3><p class="muted" style="margin-top:0">Kliknij czasownik, żeby zobaczyć odmianę. Czas przyszły: <span lang="bg">ще</span> + forma teraźniejsza (<span lang="bg">ще летя, ще летиш…</span>).</p>
+    <div class="verbs">${VERBS.map(v => `<details class="vb"><summary><b lang="bg">${esc(v[1])}</b> <span class="muted">${esc(v[0])}</span></summary><div class="tblwrap"><table class="mini"><tr><td></td><td><b>${v[5] ? 'po да / ще' : 'teraz'}</b></td><td><b>wczoraj (aoryst)</b></td></tr>${PRON.map(([bg, pl], i) => `<tr><td>${pl}</td><td lang="bg">${bg} ${v[5] ? 'ще ' : ''}${v[6] ? 'се ' : ''}${esc(vForms(v, 'pres')[i])}</td><td lang="bg">${bg} ${v[6] ? 'се ' : ''}${esc(vForms(v, 'past')[i])}</td></tr>`).join('')}</table></div>${v[4] ? `<p class="muted" style="margin:4px 0 0;font-size:14px">${esc(v[4])}</p>` : ''}</details>`).join('')}</div></article>`;
+}
 function grammarItems(kind) {
+  if (kind === 'verbs') return verbItems(12);
   const lv = reachedLevels();
   if (kind === 'order') {
     const pool = byMistakes([...lv.flatMap(l => l.s.map((_, i) => SN(l, i))), ...PHRASES.map((c, ci) => catUnlocked(c.n) ? LV['ph' + ci].s.map((_, i) => SN(LV['ph' + ci], i)) : []).flat()]);
@@ -2677,7 +2843,7 @@ function grammarItems(kind) {
   if (kind === 'article') return take(byMistakes(reachedNouns().map(NI)), 10).map(it => ({t:'article', it}));
   return take(byMistakes(lv.flatMap(l => l.g.map((_, i) => GR(l, i)))), 10).map(it => ({t:'gram', it}));
 }
-const GTITLE = {order:'Ułóż zdanie', gender:'Rodzaj: męski, żeński, nijaki', article:'Rodzajnik: -ът / -та / -то', gram:'Gramatyka z leveli'};
+const GTITLE = {verbs:'Odmiana czasowników', order:'Ułóż zdanie', gender:'Rodzaj: męski, żeński, nijaki', article:'Rodzajnik: -ът / -та / -то', gram:'Gramatyka z leveli'};
 function viewGrammar() {
   const lv = reachedLevels();
   const nS = lv.reduce((a, l) => a + l.s.length, 0) + PHRASES.filter(c => catUnlocked(c.n)).reduce((a, c) => a + LV['ph' + PHRASES.indexOf(c)].s.length, 0);
@@ -2685,13 +2851,14 @@ function viewGrammar() {
   const card = (k, icon, desc, cnt) => `<button class="gamecard" data-g="${k}"><span class="gicon">${icon}</span><b>${GTITLE[k]}</b><span class="muted">${desc}</span><span class="qcount">z Twoich leveli: ${cnt}</span><span class="btn">Ćwicz</span></button>`;
   $('#view').innerHTML = `<h2 class="view">Gramatyka</h2><p class="muted" style="margin-top:0">Ćwiczenia biorą zdania i słowa z leveli, które masz odblokowane – każdy nowy level dokłada materiał.</p>
    <div class="gamegrid">
+    ${card('verbs', '<span class="glyph" lang="bg">аз ти той</span>', 'Teraz, wczoraj i jutro: wybierz dobrą formę czasownika. Po każdym zadaniu widzisz całą odmianę.', VERBS.length + ' czasowników')}
     ${card('order', '<span class="glyph" lang="bg">а б в</span>', 'U góry zdanie po polsku, na dole kafelki po bułgarsku. Ułóż je w dobrej kolejności.', nS + ' zdań')}
     ${card('gender', '<span class="glyph" lang="bg">той тя то</span>', 'Czy słowo jest męskie, żeńskie czy nijakie? Po bułgarsku rodzaj często jest inny niż po polsku.', nN + ' rzeczowników')}
     ${card('article', '<span class="glyph" lang="bg">-ът -та -то</span>', 'Bułgarzy doklejają końcówkę, gdy mówią o czymś konkretnym: самолет → самолетът.', nN + ' rzeczowników')}
     ${card('gram', '<span class="glyph">___</span>', 'Uzupełnianie luk: formy czasowników, przyimki, czas przyszły i przeszły.', nG + ' zadań')}
    </div>
    <h3 class="eyebrow" style="margin:26px 0 8px">Ściąga</h3>
-   <div class="stack">${GRAMMAR.map(g => `<article class="card gcard"><h3>${esc(g.t)}</h3><div class="tblwrap">${g.h}</div></article>`).join('')}</div>`;
+   <div class="stack">${verbsCheat()}${GRAMMAR.map(g => `<article class="card gcard"><h3>${esc(g.t)}</h3><div class="tblwrap">${g.h}</div></article>`).join('')}</div>`;
   $$('[data-g]').forEach(b => b.onclick = () => { const k = b.dataset.g; const go = () => startPractice(null, grammarItems(k), GTITLE[k], go); go(); });
 }
 
@@ -2701,35 +2868,51 @@ function viewGames() {
   if (blitzT) { clearInterval(blitzT); blitzT = null; }
   $('#view').innerHTML = `<h2 class="view">Gry i zabawy</h2><p class="muted" style="margin-top:0">Na rozluźnienie po lekcjach. Za każdą grę dostajesz trochę XP.</p>
    <div class="gamegrid">
-    <button class="gamecard" data-game="songs"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18a3 3 0 1 1-2-2.8V5l12-2v12a3 3 0 1 1-2-2.8V6.4L9 7.8z"/></svg>'}</span><b>Jaka to piosenka?</b><span class="muted">Słynne bułgarskie piosenki i wiersze: zgadnij tytuł lub wykonawcę, poznaj tłumaczenie.</span><span class="qcount">Rekord: ${S.best.songs || 0}/8</span></button>
+    <button class="gamecard" data-game="songs"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18a3 3 0 1 1-2-2.8V5l12-2v12a3 3 0 1 1-2-2.8V6.4L9 7.8z"/></svg>'}</span><b>Piosenka z luką</b><span class="muted">Fragment bułgarskiej pieśni lub wiersza z jedną luką. Wybierz brakujące słowo: A, B, C czy D? ${LYRIC_ITEMS.length} zadań.</span><span class="qcount">Rekord: ${S.best.songs2 || 0}/10</span></button>
     <button class="gamecard" data-game="blitz"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>'}</span><b>Błyskawica 60 s</b><span class="muted">Ile słówek przetłumaczysz w minutę? Słówka z Twoich leveli.</span><span class="qcount">Rekord: ${S.best.blitz || 0}</span></button>
-    <button class="gamecard" data-game="ff"><span class="gicon"><span class="glyph" lang="bg">?!</span></span><b>Fałszywi przyjaciele</b><span class="muted">Prawda czy fałsz? Słowa, które brzmią po polsku, a znaczą coś zupełnie innego.</span><span class="qcount">Rekord: ${S.best.ff || 0}/10</span></button>
+    <button class="gamecard" data-game="memo"><span class="gicon"><span class="glyph" lang="bg">Аа ⇄ Pp</span></span><b>Memory: pary</b><span class="muted">Odkrywaj karty i łącz słówka w pary: polskie z bułgarskim. Im mniej ruchów, tym lepiej.</span><span class="qcount">Rekord: ${S.best.memo ? S.best.memo + ' pkt' : '–'}</span></button>
    </div><div id="gamebox" style="margin-top:18px"></div>`;
-  $$('[data-game]').forEach(b => b.onclick = () => { ({songs:startSongs, blitz:startBlitz, ff:startFF})[b.dataset.game](); setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
+  $$('[data-game]').forEach(b => b.onclick = () => { ({songs:startSongs, blitz:startBlitz, memo:startMemo})[b.dataset.game](); setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
+}
+/* --- Piosenka z luką --- */
+const LYRIC_ITEMS = LYRICS.flatMap((l, li) => l.gaps.map(([w, wrong], gi) => ({li, gi, w, wrong})));
+const isLetter = ch => !!ch && /[A-Za-zА-Яа-яЁёЀ-ӿ]/.test(ch);
+/* każde wystąpienie słowa (bez względu na wielkość liter) zamienia na lukę albo na wyróżnione słowo */
+function gapHTML(text, w, fill) {
+  const lo = text.toLowerCase(), lw = w.toLowerCase(); let out = '', from = 0, i, n = 0;
+  while ((i = lo.indexOf(lw, from)) >= 0) {
+    if (isLetter(text[i - 1]) || isLetter(text[i + w.length])) { out += esc(text.slice(from, i + 1)); from = i + 1; continue; }
+    out += esc(text.slice(from, i)) + (fill ? `<b class="gap filled">${esc(text.slice(i, i + w.length))}</b>` : '<span class="gap">?</span>'); from = i + w.length; n++;
+  }
+  return n ? out + esc(text.slice(from)) : null;
 }
 function startSongs() {
-  const qs = shuffle([...shuffle(SONGS).slice(0, 5).map(x => ({...x, kind:'song'})), ...shuffle(TRIVIA).slice(0, 3).map(x => ({...x, kind:'trivia'}))]);
+  const used = new Set(), qs = [];
+  for (const it of shuffle(LYRIC_ITEMS)) { if (used.has(it.li) && qs.length < LYRICS.length) continue; used.add(it.li); qs.push(it); if (qs.length >= 10) break; }
   G = {type:'songs', qs, i:0, score:0}; drawSong();
 }
 function drawSong() {
   const box = $('#gamebox'); if (!box) return;
   if (G.i >= G.qs.length) {
-    const rec = finishBest('songs', G.score); addXP(G.score); save(); renderHud();
-    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:22px">${G.score} / ${G.qs.length}${rec ? ' · nowy rekord!' : ''}</b><span class="muted">+${G.score} XP</span><button class="btn" id="gAgain">Zagraj jeszcze raz</button></div>`;
+    const rec = finishBest('songs2', G.score); addXP(G.score); save(); renderHud();
+    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:24px">${G.score} / ${G.qs.length}${rec ? ' · nowy rekord!' : ''}</b><span class="muted">+${G.score} XP · w grze jest ${LYRIC_ITEMS.length} luk z ${LYRICS.length} fragmentów</span><button class="btn" id="gAgain">Następne 10</button></div>`;
     $('#gAgain').onclick = startSongs; return;
   }
-  const q = G.qs[G.i], correct = q.o[0], opts = shuffle(q.o);
-  box.innerHTML = `<div class="card stack lyric"><div class="row" style="justify-content:space-between"><span class="eyebrow">${q.kind === 'song' ? 'Cytat' : 'Pytanie'} ${G.i + 1}/${G.qs.length}</span><span class="qcount">Wynik: ${G.score}</span></div>
-    ${q.kind === 'song' ? `<div class="row" style="gap:12px">${spkBtn(q.line)}<div style="flex:1;min-width:0"><div class="lline" lang="bg">„${esc(q.line)}”</div><div class="tr-line" style="text-align:left">${esc(translit(q.line))}</div></div></div><b>${esc(q.q || 'Z jakiego utworu pochodzi ten tekst?')}</b>` : `<b style="font-size:18px">${esc(q.q)}</b>`}
-    ${optsHTML(opts, /[а-я]/i.test(correct))}<div id="sfb"></div></div>`;
+  const q = G.qs[G.i], L0 = LYRICS[q.li], opts = shuffle([q.w, ...q.wrong]);
+  box.innerHTML = `<div class="card stack lyric"><div class="row" style="justify-content:space-between"><span class="eyebrow">Luka ${G.i + 1}/${G.qs.length}</span><span class="qcount">Wynik: ${G.score}</span></div>
+    <div><div class="song-title"><span class="eyebrow">Utwór</span> <b lang="bg">„${esc(L0.song)}”</b></div><div class="muted" style="font-size:14px">${esc(L0.who)}</div></div>
+    <div class="lline" lang="bg" id="lyr">„${gapHTML(L0.text, q.w, false)}”</div>
+    <b>Jakie słowo pasuje w lukę?</b>
+    ${optsHTML(opts, true, true)}<div id="sfb"></div></div>`;
   let answered = false;
   $$('#gamebox .opt').forEach(b => b.onclick = () => {
     if (answered) return; answered = true;
-    const ok = b.dataset.v === correct; if (ok) G.score++;
-    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === correct) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
-    $('#sfb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Brawo!' : `To: ${esc(correct)}`}</b>${q.kind === 'song' ? `<div>Tłumaczenie: <i>${esc(q.tr)}</i></div><div class="muted">${esc(q.who)}</div>` : ''}<div>${esc(q.fact)}</div></div><button class="btn block" id="sNext" style="margin-top:10px">Dalej</button>`;
+    const ok = b.dataset.v === q.w; if (ok) G.score++;
+    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === q.w) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    $('#lyr').innerHTML = `„${gapHTML(L0.text, q.w, true)}”`;
+    $('#sfb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Brawo!' : `Brakowało słowa: ${esc(q.w)}`}</b><div class="row" style="gap:10px;flex-wrap:nowrap">${spkBtn(L0.text)}<div><div lang="bg">${esc(L0.text)}</div><div class="tr-line" style="text-align:left">${esc(translit(L0.text))}</div></div></div><div>Tłumaczenie: <i>${esc(L0.tr)}</i></div></div><button class="btn block" id="sNext" style="margin-top:10px">Dalej</button>`;
     $('#sNext').onclick = () => { G.i++; drawSong(); };
-    if (q.kind === 'song' && audioOK() && S.autoVoice) speak(q.line);
+    if (audioOK() && S.autoVoice) speak(L0.text);
   });
 }
 function startBlitz() {
@@ -2765,32 +2948,35 @@ function endBlitz() {
   box.innerHTML = `<div class="card stack" style="text-align:center"><span class="eyebrow">Koniec czasu</span><b style="font-family:var(--f-display);font-size:28px">${G.score} słówek${rec ? ' · rekord!' : ''}</b><span class="muted">Najlepszy wynik: ${S.best.blitz || 0}</span><button class="btn" id="gAgain">Jeszcze raz</button></div>`;
   $('#gAgain').onclick = startBlitz;
 }
-function startFF() {
-  const qs = shuffle(FRIENDS).slice(0, 10).map(([bg, look, real]) => {
-    const isFalse = look !== real, claimLook = isFalse && Math.random() < 0.6;
-    return {bg, real, claim: claimLook ? look : real, truth: !claimLook, isFalse};
-  });
-  G = {type:'ff', qs, i:0, score:0}; drawFF();
+/* --- Memory: pary polskie ↔ bułgarskie --- */
+function startMemo() {
+  const pool = shuffle(reachedLevels().flatMap(l => l.w.map((_, i) => W(l, i)))), pick6 = [], seenPl = new Set(), seenBg = new Set();
+  for (const it of pool) { const pl = it.w[0], bg = first(it.w[1]); if (seenPl.has(pl) || seenBg.has(bg) || bg.length > 18 || pl.length > 22) continue; seenPl.add(pl); seenBg.add(bg); pick6.push({pl, bg}); if (pick6.length >= 6) break; }
+  const cards = shuffle(pick6.flatMap((p, k) => [{k, txt:p.pl, bg:false}, {k, txt:p.bg, bg:true}]));
+  G = {type:'memo', cards, open:[], done:new Set(), moves:0, lock:false}; drawMemo();
 }
-function drawFF() {
+function drawMemo() {
   const box = $('#gamebox'); if (!box) return;
-  if (G.i >= G.qs.length) {
-    const rec = finishBest('ff', G.score); addXP(G.score); save(); renderHud();
-    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:22px">${G.score} / 10${rec ? ' · rekord!' : ''}</b><span class="muted">Pełna lista pułapek jest w zakładce Gramatyka → Fałszywi przyjaciele.</span><button class="btn" id="gAgain">Jeszcze raz</button></div>`;
-    $('#gAgain').onclick = startFF; return;
-  }
-  const q = G.qs[G.i];
-  box.innerHTML = `<div class="card stack" style="text-align:center"><div class="row" style="justify-content:space-between"><span class="eyebrow">${G.i + 1}/10</span><span class="qcount">Wynik: ${G.score}</span></div>
-    <div class="prompt">Bułgarskie <span lang="bg">${esc(q.bg)}</span> znaczy „${esc(q.claim)}”.</div>
-    <div class="foot-btns"><button class="btn ok" data-a="1">Prawda</button><button class="btn bad" data-a="0">Fałsz</button></div><div id="ffb"></div></div>`;
-  let done = false;
-  $$('#gamebox [data-a]').forEach(b => b.onclick = () => {
-    if (done) return; done = true;
-    const ok = (b.dataset.a === '1') === q.truth; if (ok) G.score++;
-    $('#ffb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Dobrze!' : 'Pudło!'}</b> <span lang="bg">${esc(q.bg)}</span> = ${esc(q.real)}.${q.isFalse ? ' Uważaj na to słowo!' : ' Tu polski i bułgarski są zgodne.'}</div>${spkBtn(q.bg)}<button class="btn block" id="fNext" style="margin-top:10px">Dalej</button>`;
-    $('#fNext').onclick = () => { G.i++; drawFF(); };
-    if (audioOK() && S.autoVoice) speak(q.bg);
+  box.innerHTML = `<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">Memory · znajdź 6 par</span><span class="qcount">Ruchy: ${G.moves}</span></div>
+    <div class="memo">${G.cards.map((c, i) => { const up = G.open.includes(i) || G.done.has(c.k); return `<button class="mc ${up ? 'up' : ''} ${G.done.has(c.k) ? 'got' : ''} ${c.bg ? 'isbg' : ''}" data-i="${i}" ${G.done.has(c.k) ? 'disabled' : ''}>${up ? `<span ${c.bg ? 'lang="bg"' : ''}>${esc(c.txt)}</span>` : '<span class="mc-back" aria-hidden="true"></span>'}</button>`; }).join('')}</div>
+    <p class="muted" style="margin:0;font-size:14px">Bułgarskie słowa mają terakotowe obramowanie. Odkryj dwie karty – jeśli to para, zostają odkryte.</p></div>`;
+  $$('#gamebox .mc').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, c = G.cards[i];
+    if (G.lock || G.open.includes(i) || G.done.has(c.k)) return;
+    G.open.push(i); if (c.bg && audioOK() && S.autoVoice) speak(c.txt);
+    if (G.open.length === 2) {
+      G.moves++; const [a, b2] = G.open.map(x => G.cards[x]);
+      if (a.k === b2.k) { G.done.add(a.k); G.open = []; buzz && buzz(30); drawMemo(); if (G.done.size === 6) endMemo(); return; }
+      G.lock = true; drawMemo(); setTimeout(() => { G.open = []; G.lock = false; if (G.type === 'memo') drawMemo(); }, 1000); return;
+    }
+    drawMemo();
   });
+}
+function endMemo() {
+  const pts = Math.max(10, 100 - Math.max(0, G.moves - 6) * 8), rec = finishBest('memo', pts);
+  addXP(Math.round(pts / 10)); save(); renderHud();
+  $('#gamebox').insertAdjacentHTML('beforeend', `<div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:24px">Wszystkie pary! ${pts} pkt${rec ? ' · rekord!' : ''}</b><span class="muted">${G.moves} ruchów (idealnie: 6) · +${Math.round(pts / 10)} XP</span><button class="btn" id="gAgain">Nowa plansza</button></div>`);
+  $('#gAgain').onclick = startMemo;
 }
 
 /* ===== START ===== */

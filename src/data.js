@@ -988,29 +988,82 @@ const NOUNS = [
  ['кула','wieża','f','кулата','a2-2'],['разрешение','zezwolenie','n','разрешението','a2-2']
 ];
 
-/* ---------------- GRY: PIOSENKI I WIERSZE ----------------
-   Cytaty tylko z utworów sprzed 1929 r. (domena publiczna). Współczesne hity – pytania o tytuł i wykonawcę, bez tekstów. */
-const SONGS = [
- {line:'Горда Стара планина, до ней Дунава синей', tr:'Dumna Stara Płanina, a obok niej błękitnieje Dunaj', o:['Мила Родино','Шуми Марица','Тих бял Дунав'], who:'Cwetan Radosławow, 1885', fact:'Od 1964 r. hymn Bułgarii. Napisał go student, który tęsknił za domem.'},
- {line:'Мила Родино, ти си земен рай', tr:'Miła Ojczyzno, jesteś rajem na ziemi', o:['Мила Родино','Хубава си, моя горо','Шуми Марица'], who:'refren hymnu Bułgarii', fact:'„Родина” to ojczyzna; forma „Родино” to wołacz – zwracamy się do niej.'},
- {line:'Шуми Марица окървавена', tr:'Szumi Marica, zakrwawiona', o:['Шуми Марица','Мила Родино','Тих бял Дунав'], who:'dawny hymn Bułgarii', fact:'Marica to rzeka płynąca przez Płowdiw. Pieśń była hymnem przed „Мила Родино”.'},
- {line:'Тих бял Дунав се вълнува', tr:'Cichy biały Dunaj faluje', o:['Радецки','Мила Родино','Излел е Дельо хайдутин'], who:'wiersz Iwana Wazowa, 1876', fact:'Pieśń o statku Radetzky, którym powstańcy Christo Botewa przepłynęli Dunaj.'},
- {line:'Хубава си, моя горо', tr:'Piękny jesteś, mój lesie', o:['Хубава си, моя горо','Шуми Марица','Радецки'], who:'wiersz Lubena Karawełowa', fact:'Pułapka: „гора” to LAS, nie góra. „горо” to wołacz od „гора”.'},
- {line:'Жив е той, жив е!', tr:'Żyje on, żyje!', o:['Хаджи Димитър','Радецки','Мила Родино'], who:'wiersz Christo Botewa, 1873', fact:'Najsłynniejszy bułgarski wiersz o powstańcu, który nie umiera w pamięci ludzi.'},
- {line:'Излел е Дельо хайдутин', tr:'Wyruszył Delo, hajduk', o:['Валя Балканска','Лили Иванова','Емил Димитров'], q:'Kto zaśpiewał tę pieśń ludową z Rodopów?', who:'pieśń ludowa, śpiew: Wala Bałkanska', fact:'Nagranie poleciało w kosmos na Złotej Płycie sond Voyager (1977).'}
+/* ---------------- ODMIANA CZASOWNIKÓW ----------------
+   [polski, bułgarski (hasło), czas teraźniejszy: аз ти той ние вие те, czas przeszły (aoryst): to samo, uwaga?, dokonany?, zwrotny (се)?]
+   Dla par niedokonany/dokonany teraźniejszy jest od niedokonanego, przeszły od dokonanego. pf:true = czasownik dokonany (teraźniejszy tylko po „да” / „ще”). */
+const VERBS = [
+ ['być','съм','съм си е сме сте са','бях беше беше бяхме бяхте бяха','W przeszłości zwykle mówi się „беше” (on/ty był).'],
+ ['mieć','имам','имам имаш има имаме имате имат','имах имаше имаше имахме имахте имаха'],
+ ['chcieć','искам','искам искаш иска искаме искате искат','исках иска иска искахме искахте искаха'],
+ ['mówić','говоря','говоря говориш говори говорим говорите говорят','говорих говори говори говорихме говорихте говориха'],
+ ['latać / lecieć','летя','летя летиш лети летим летите летят','летях летя летя летяхме летяхте летяха'],
+ ['czytać','чета','чета четеш чете четем четете четат','четох чете чете четохме четохте четоха'],
+ ['pisać','пиша','пиша пишеш пише пишем пишете пишат','писах писа писа писахме писахте писаха'],
+ ['mieszkać / żyć','живея','живея живееш живее живеем живеете живеят','живях живя живя живяхме живяхте живяха'],
+ ['pić','пия','пия пиеш пие пием пиете пият','пих пи пи пихме пихте пиха'],
+ ['jeść','ям','ям ядеш яде ядем ядете ядат','ядох яде яде ядохме ядохте ядоха'],
+ ['móc','мога','мога можеш може можем можете могат','можах можа можа можахме можахте можаха'],
+ ['robić','правя','правя правиш прави правим правите правят','правих прави прави правихме правихте правиха'],
+ ['pracować','работя','работя работиш работи работим работите работят','работих работи работи работихме работихте работиха'],
+ ['uczyć się','уча','уча учиш учи учим учите учат','учих учи учи учихме учихте учиха'],
+ ['chodzić','ходя','ходя ходиш ходи ходим ходите ходят','ходих ходи ходи ходихме ходихте ходиха'],
+ ['spać','спя','спя спиш спи спим спите спят','спах спа спа спахме спахте спаха'],
+ ['stać','стоя','стоя стоиш стои стоим стоите стоят','стоях стоя стоя стояхме стояхте стояха'],
+ ['śpiewać','пея','пея пееш пее пеем пеете пеят','пях пя пя пяхме пяхте пяха'],
+ ['kochać / lubić','обичам','обичам обичаш обича обичаме обичате обичат','обичах обича обича обичахме обичахте обичаха'],
+ ['czekać','чакам','чакам чакаш чака чакаме чакате чакат','чаках чака чака чакахме чакахте чакаха'],
+ ['widzieć','виждам / видя','виждам виждаш вижда виждаме виждате виждат','видях видя видя видяхме видяхте видяха'],
+ ['dawać / dać','давам / дам','давам даваш дава даваме давате дават','дадох даде даде дадохме дадохте дадоха'],
+ ['mówić / powiedzieć','казвам / кажа','казвам казваш казва казваме казвате казват','казах каза каза казахме казахте казаха'],
+ ['kupować / kupić','купувам / купя','купувам купуваш купува купуваме купувате купуват','купих купи купи купихме купихте купиха'],
+ ['brać / wziąć','вземам / взема','вземам вземаш взема вземаме вземате вземат','взех взе взе взехме взехте взеха'],
+ ['rozumieć / zrozumieć','разбирам / разбера','разбирам разбираш разбира разбираме разбирате разбират','разбрах разбра разбра разбрахме разбрахте разбраха'],
+ ['lądować / wylądować','кацам / кацна','кацам кацаш каца кацаме кацате кацат','кацнах кацна кацна кацнахме кацнахте кацнаха'],
+ ['startować / wystartować','излитам / излетя','излитам излиташ излита излитаме излитате излитат','излетях излетя излетя излетяхме излетяхте излетяха'],
+ ['płacić / zapłacić','плащам / платя','плащам плащаш плаща плащаме плащате плащат','платих плати плати платихме платихте платиха'],
+ ['pomagać / pomóc','помагам / помогна','помагам помагаш помага помагаме помагате помагат','помогнах помогна помогна помогнахме помогнахте помогнаха'],
+ ['pójść','отида','отида отидеш отиде отидем отидете отидат','отидох отиде отиде отидохме отидохте отидоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
+ ['przyjść','дойда','дойда дойдеш дойде дойдем дойдете дойдат','дойдох дойде дойде дойдохме дойдохте дойдоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
+ ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
 ];
-const TRIVIA = [
- {q:'Kto śpiewa „Моя страна, моя България”?', o:['Емил Димитров','Лили Иванова','Щурците'], fact:'Emil Dimitrow nagrał ją w 1970 r.; tytuł znaczy „Mój kraj, moja Bułgaria”.'},
- {q:'Kto skomponował „Арлекино”, z którym Ałła Pugaczowa wygrała Złotego Orfeusza w 1975 r.?', o:['Емил Димитров','Васил Найденов','Валя Балканска'], fact:'Złoty Orfeusz to festiwal piosenki nad Morzem Czarnym, w Słonecznym Brzegu.'},
- {q:'Jak nazywa się legendarny bułgarski zespół rockowy, założony w 1967 r.?', o:['Щурците','ФСБ','Сигнал'], fact:'„Щурците” znaczy „Świerszcze”. Jeden z ich hitów to „Клетва” – „Przysięga”.'},
- {q:'Która piosenka jest jednym z wielkich przebojów Lili Iwanowej?', o:['Камино','Клетва','Вода'], fact:'Lili Iwanowa śpiewa od lat 60. i jest nazywana primadonną bułgarskiej estrady.'},
- {q:'Który utwór dał Bułgarii najlepszy wynik na Eurowizji – 2. miejsce w 2017 r.?', o:['Beautiful Mess','If Love Was a Crime','Вода'], fact:'Zaśpiewał go Kristian Kostow, miał wtedy 17 lat.'},
- {q:'Jak nazywał się bułgarski utwór z Eurowizji 2007 (5. miejsce) z bębnami i śpiewem ludowym?', o:['Вода','Камино','Арлекино'], fact:'„Вода” znaczy „woda”. Wykonali go Elica Todorowa i Stojan Jankułow.'}
-];
-/* fałszywi i prawdziwi przyjaciele: [bg, polski „podobny”, prawdziwe znaczenie] */
-const FRIENDS = [
- ['маса','masa','stół'],['стол','stół','krzesło'],['направо','w prawo','prosto'],['час','czas','godzina'],['рано','rano','wcześnie'],['закуска','zakąska','śniadanie'],
- ['гора','góra','las'],['булка','bułka','panna młoda'],['ягода','jagoda','truskawka'],['дума','duma','słowo'],['кола','koło','samochód'],['сирене','syrena','biały ser'],
- ['лук','łuk','cebula'],['живот','brzuch','życie'],
- ['мляко','mleko','mleko'],['вода','woda','woda'],['хляб','chleb','chleb'],['майка','matka','matka'],['брат','brat','brat'],['питам','pytam','pytam'],['пилот','pilot','pilot'],['сестра','siostra','siostra']
+
+/* ---------------- GRY: PIOSENKI Z LUKĄ ----------------
+   Tylko utwory sprzed 1929 r. (pieśni ludowe, hymny i wiersze śpiewane jako pieśni – domena publiczna).
+   Współczesnych tekstów nie cytujemy (prawa autorskie). gaps: [słowo z tekstu, 3 błędne odpowiedzi] */
+const LYRICS = [
+ {song:'Мила Родино', who:'hymn Bułgarii, sł. Cwetan Radosławow (1885)', text:'Горда Стара планина, до ней Дунава синей', tr:'Dumna Stara Płanina, obok niej błękitnieje Dunaj', gaps:[['Горда',['Мила','Бяла','Тиха']],['планина',['река','гора','страна']],['Дунава',['Марица','Искъра','Янтра']],['синей',['шуми','тече','пее']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii', text:'слънце Тракия огрява, над Пирина пламеней', tr:'słońce oświetla Trację, nad Pirinem płonie zorza', gaps:[['слънце',['луна','звезда','вятър']],['Тракия',['Добруджа','Родопа','Варна']],['Пирина',['Балкана','Дунава','Витоша']]]},
+ {song:'Мила Родино', who:'refren hymnu Bułgarii', text:'Мила Родино, ти си земен рай', tr:'Miła Ojczyzno, jesteś rajem na ziemi', gaps:[['Родино',['Марийо','горо','майко']],['земен',['морски','горски','вечен']],['рай',['край','дом','град']]]},
+ {song:'Мила Родино', who:'refren hymnu Bułgarii', text:'твойта хубост, твойта прелест, ах, те нямат край', tr:'twoje piękno, twój urok – ach, nie mają końca', gaps:[['хубост',['младост','радост','сила']],['прелест',['песен','слава','мъка']],['край',['рай','брой','ден']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii, 2. zwrotka', text:'Паднаха борци безчет за народа наш любим', tr:'Polegli niezliczeni bojownicy za nasz ukochany naród', gaps:[['борци',['деца','птици','майки']],['народа',['града','царя','морето']],['любим',['далечен','малък','стар']]]},
+ {song:'Мила Родино', who:'hymn Bułgarii, 2. zwrotka', text:'майко, дай ни мъжка сила пътя им да продължим', tr:'matko, daj nam męską siłę, byśmy kontynuowali ich drogę', gaps:[['сила',['вяра','радост','песен']],['пътя',['песента','войната','града']],['продължим',['забравим','изгубим','спрем']]]},
+ {song:'Шуми Марица', who:'dawny hymn Bułgarii, sł. Nikoła Żiwkow (1876)', text:'Шуми Марица окървавена, плаче вдовица люто ранена', tr:'Szumi Marica zakrwawiona, płacze wdowa ciężko zraniona', gaps:[['Шуми',['Пее','Спи','Мълчи']],['Марица',['Янтра','Искър','Тунджа']],['плаче',['пее','шета','спи']],['вдовица',['девица','майка','сестра']]]},
+ {song:'Шуми Марица', who:'refren dawnego hymnu', text:'Марш, марш, с генерала наш! Раз, два, три, марш, войници!', tr:'Marsz, marsz z naszym generałem! Raz, dwa, trzy – marsz, żołnierze!', gaps:[['генерала',['войника','капитана','народа']],['войници',['деца','юнаци','моми']]]},
+ {song:'Тих бял Дунав (Радецки)', who:'sł. Iwan Wazow (1876)', text:'Тих бял Дунав се вълнува, весело шуми', tr:'Cichy biały Dunaj faluje, wesoło szumi', gaps:[['бял',['син','стар','мил']],['вълнува',['усмихва','събужда','връща']],['весело',['тъжно','тихо','силно']],['шуми',['пее','плаче','спи']]]},
+ {song:'Тих бял Дунав (Радецки)', who:'sł. Iwan Wazow (1876)', text:'и Радецки гордо плува над златни вълни', tr:'a Radetzky dumnie płynie po złotych falach', gaps:[['гордо',['тихо','бавно','тъжно']],['плува',['лети','тича','спи']],['златни',['сини','бели','сребърни']],['вълни',['поля','гори','планини']]]},
+ {song:'Аз съм българче', who:'wiersz Iwana Wazowa – śpiewany przez dzieci', text:'Аз съм българче и обичам наште планини зелени', tr:'Jestem małym Bułgarem i kocham nasze zielone góry', gaps:[['българче',['полякиня','пилот','юначе']],['обичам',['виждам','помня','питам']],['планини',['градове','реки','поля']],['зелени',['високи','сини','бели']]]},
+ {song:'Аз съм българче', who:'wiersz Iwana Wazowa', text:'българин да се наричам – първа радост е за мене', tr:'nazywać się Bułgarem – to dla mnie pierwsza radość', gaps:[['наричам',['срещам','обаждам','връщам']],['първа',['втора','последна','голяма']],['радост',['мъка','обич','слава']]]},
+ {song:'Върви, народе възродени', who:'hymn Cyryla i Metodego, sł. Stojan Michajłowski (1892)', text:'Върви, народе възродени, към светла бъднина върви', tr:'Idź, narodzie odrodzony, ku jasnej przyszłości idź', gaps:[['народе',['юнако','майко','горо']],['възродени',['свободни','велики','любими']],['светла',['тъмна','стара','далечна']],['бъднина',['планина','родина','вечност']]]},
+ {song:'Върви, народе възродени', who:'śpiewany 24 maja', text:'с книжовността, таз сила нова, съдбините си ти поднови', tr:'piśmiennictwem, tą nową siłą, odnów swój los', gaps:[['сила',['песен','вяра','дума']],['нова',['стара','тиха','вечна']],['поднови',['забрави','изгуби','продаде']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873) – śpiewany jako pieśń', text:'Жив е той, жив е! Там на Балкана', tr:'On żyje, żyje! Tam, na Bałkanie', gaps:[['Жив',['Млад','Тих','Сам']],['Балкана',['Дунава','полето','морето']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'потънал в кърви, лежи и пъшка юнак със дълбока на гърди рана', tr:'zalany krwią, leży i jęczy junak z głęboką raną na piersi', gaps:[['кърви',['сълзи','рози','мъгли']],['лежи',['пее','стои','тича']],['юнак',['старец','овчар','момък']],['рана',['песен','кърпа','звезда']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'юнак във младост и в сила мъжка', tr:'junak w młodości i w męskiej sile', gaps:[['младост',['старост','радост','слава']],['сила',['мъка','песен','вяра']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'Тоз, който падне в бой за свобода, той не умира', tr:'Ten, kto padnie w boju o wolność, nie umiera', gaps:[['падне',['пее','стои','бяга']],['свобода',['пари','слава','любов']],['умира',['забравя','плаче','спи']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'него жалеят земя и небо, звяр и природа', tr:'opłakują go ziemia i niebo, zwierz i przyroda', gaps:[['земя',['море','гора','град']],['небо',['слънце','река','поле']],['звяр',['човек','цар','кон']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'и певци песни за него пеят', tr:'a śpiewacy pieśni o nim śpiewają', gaps:[['певци',['деца','майки','войници']],['песни',['приказки','молитви','думи']]]},
+ {song:'Хаджи Димитър', who:'Christo Botew (1873)', text:'Настане вечер – месец изгрее, звезди обсипят сводът небесен', tr:'Zapada wieczór – wschodzi księżyc, gwiazdy obsypują niebieskie sklepienie', gaps:[['вечер',['утро','лято','зима']],['месец',['слънце','вятър','облак']],['звезди',['птици','листа','капки']],['небесен',['морски','горски','земен']]]},
+ {song:'Обесването на Васил Левски', who:'Christo Botew (1876)', text:'О, майко моя, родино мила, защо тъй жално, тъй милно плачеш?', tr:'O, matko moja, ojczyzno miła, czemu tak żałośnie, tak rzewnie płaczesz?', gaps:[['майко',['горо','сестро','Марийо']],['родино',['планино','свобода','Тодоро']],['мила',['стара','бяла','тиха']],['плачеш',['пееш','шумиш','спиш']]]},
+ {song:'На прощаване', who:'Christo Botew (1868)', text:'Не плачи, майко, не тъжи, че станах ази хайдутин', tr:'Nie płacz, matko, nie smuć się, że zostałem hajdukiem', gaps:[['плачи',['пей','спи','питай']],['тъжи',['бързай','мълчи','чакай']],['хайдутин',['учител','овчар','войник']]]},
+ {song:'Моята молитва', who:'Christo Botew (1873)', text:'О, мой боже, правий боже! Не ти, що си в небесата', tr:'O, mój Boże, sprawiedliwy Boże! Nie ty, który jesteś w niebiosach', gaps:[['правий',['мили','стари','далечни']],['небесата',['горите','водите','градовете']]]},
+ {song:'Българският език', who:'Iwan Wazow (1883)', text:'Език свещен на моите деди', tr:'Święty języku moich przodków', gaps:[['свещен',['забравен','чужд','нов']],['деди',['деца','приятели','съседи']]]},
+ {song:'Българският език', who:'Iwan Wazow (1883)', text:'език на мъки, стонове вековни', tr:'języku mąk, wiekowych jęków', gaps:[['мъки',['песни','радост','приказки']],['вековни',['весели','нови','тихи']]]},
+ {song:'Отечество любезно', who:'Iwan Wazow – wiersz śpiewany w szkołach', text:'Отечество любезно, как хубаво си ти!', tr:'Ojczyzno umiłowana, jakaż jesteś piękna!', gaps:[['любезно',['далечно','малко','студено']],['хубаво',['тъжно','тихо','старо']]]},
+ {song:'Отечество любезно', who:'Iwan Wazow', text:'Как чудно се синее небето ти безкрай!', tr:'Jak cudnie błękitnieje twoje niebo bez końca!', gaps:[['синее',['смее','пее','мръщи']],['небето',['морето','полето','реката']]]},
+ {song:'Стани, стани, юнак балкански', who:'Dobri Czintułow (ok. 1860)', text:'Стани, стани, юнак балкански, от сън дълбок се събуди', tr:'Wstań, wstań, bałkański junaku, z głębokiego snu się zbudź', gaps:[['Стани',['Седни','Легни','Мълчи']],['балкански',['морски','горски','дунавски']],['сън',['мрак','път','град']],['събуди',['скрий','спри','върни']]]},
+ {song:'Излел е Дельо хайдутин', who:'pieśń ludowa z Rodopów – nagranie poleciało w kosmos na sondzie Voyager', text:'Излел е Дельо хайдутин', tr:'Wyszedł Delo, hajduk', gaps:[['Дельо',['Стоян','Марко','Иван']],['хайдутин',['овчар','свирач','търговец']]]},
+ {song:'Полегнала е Тодора', who:'pieśń ludowa', text:'Полегнала е Тодора', tr:'Położyła się (do snu) Todora', gaps:[['Тодора',['Марийка','Радка','Яна']],['Полегнала',['Заплакала','Запяла','Тръгнала']]]},
+ {song:'Хубава си, моя горо', who:'sł. Luben Karawełow – pieśń znana z Bałkanów', text:'Хубава си, моя горо', tr:'Piękny jesteś, mój lesie', gaps:[['горо',['майко','Родино','моме']],['Хубава',['Тъжна','Стара','Тиха']]]},
+ {song:'Две хубави очи', who:'Pejo Jaworow (1907) – wiersz śpiewany jako romans', text:'Две хубави очи. Душата на дете в две хубави очи', tr:'Dwoje pięknych oczu. Dusza dziecka w dwojgu pięknych oczach', gaps:[['хубави',['тъжни','сини','стари']],['Душата',['Сърцето','Песента','Мечтата']],['дете',['майка','птица','мома']]]},
+ {song:'Да се завърнеш…', who:'Dimczo Debelanow (1915)', text:'Да се завърнеш в бащината къща', tr:'Wrócić do ojcowskiego domu', gaps:[['завърнеш',['изгубиш','скриеш','разплачеш']],['бащината',['майчината','старата','новата']],['къща',['градина','църква','нива']]]},
+ {song:'Помниш ли, помниш ли…', who:'Dimczo Debelanow', text:'Помниш ли, помниш ли тихия двор', tr:'Pamiętasz, pamiętasz to ciche podwórze', gaps:[['тихия',['шумния','стария','малкия']],['двор',['град','път','мост']]]}
 ];
