@@ -172,8 +172,12 @@ function viewBoard() {
   let segs = '';
   for (let k = 0; k < 7; k++) {
     const [x1, y1] = P[k], [x2, y2] = P[k + 1], done = k < target;
-    segs += `<path d="M${x1} ${y1} C${x1} ${y1 - 46} ${x2} ${y2 + 46} ${x2} ${y2}" fill="none" stroke="${done ? 'var(--sky)' : 'var(--line)'}" stroke-width="${done ? 6 : 4}" stroke-linecap="round" ${done ? '' : 'stroke-dasharray="2 11"'}/>`;
+    segs += `<path d="M${x1} ${y1} C${x1} ${y1 - 46} ${x2} ${y2 + 46} ${x2} ${y2}" fill="none" stroke="${done ? 'var(--earth)' : 'var(--ink)'}" stroke-width="${done ? 4 : 2}" stroke-linecap="round" ${done ? '' : 'stroke-dasharray="1 9" opacity=".55"'}/>`;
   }
+  let grid = '';
+  for (let x = 60; x < 360; x += 60) grid += `<path d="M${x} 0V640"/>`;
+  for (let y = 80; y < 640; y += 80) grid += `<path d="M0 ${y}H360"/>`;
+  const contours = (cx, cy, rot, rings) => rings.map(([rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${cx} ${cy})"/>`).join('');
   let html = '';
   if (!S.placement && !Object.keys(S.lv).length) {
     html += `<section class="card welcome stack" style="margin-bottom:18px">
@@ -186,13 +190,19 @@ function viewBoard() {
     <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
    <div class="board" id="board">
     <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">
-      <defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-soft)"/><stop offset="1" style="stop-color:var(--surface)"/></linearGradient></defs>
-      <rect width="360" height="640" fill="url(#skyg)"/>
-      <path d="M0 120 L40 92 L70 110 L110 70 L150 104 L190 80 L230 112 L270 86 L320 116 L360 96 L360 140 L0 140z" fill="var(--surface2)"/>
-      <path d="M0 560 C60 530 120 556 180 540 C240 524 300 548 360 530 L360 640 L0 640z" fill="var(--earth-soft)"/>
-      <g class="cloud c1" fill="var(--surface)"><circle cx="300" cy="400" r="16"/><circle cx="318" cy="394" r="20"/><circle cx="338" cy="402" r="14"/><rect x="290" y="400" width="56" height="14" rx="7"/></g>
-      <g class="cloud c2" fill="var(--surface)"><circle cx="40" cy="300" r="13"/><circle cx="58" cy="292" r="17"/><circle cx="76" cy="300" r="12"/><rect x="30" y="298" width="56" height="12" rx="6"/></g>
-      <g class="cloud c1" fill="var(--surface)"><circle cx="60" cy="168" r="12"/><circle cx="76" cy="160" r="15"/><circle cx="92" cy="168" r="11"/></g>
+      <rect width="360" height="640" fill="var(--map)"/>
+      <g stroke="var(--map-line)" stroke-width="1">${grid}</g>
+      <path d="M360 330C338 350 344 380 326 400C310 420 322 450 304 474C290 494 300 520 286 545C276 566 290 600 280 640H360Z" fill="var(--water)" opacity=".6"/>
+      <g fill="none" stroke="var(--water)" stroke-width="1.3"><path d="M318 440q6-4 12 0t12 0"/><path d="M306 520q6-4 12 0t12 0"/><path d="M318 600q6-4 12 0t12 0"/></g>
+      <path d="M0 205C40 200 60 230 90 262S150 290 180 300S220 350 240 380S290 400 318 418" fill="none" stroke="var(--water)" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="196" cy="236" rx="16" ry="8" transform="rotate(-15 196 236)" fill="var(--water)"/>
+      <g fill="none" stroke="var(--relief)" stroke-width="1.3">${contours(42, 118, -20, [[52,32],[38,23],[25,15],[12,7]])}${contours(328, 250, 25, [[44,28],[30,19],[17,10]])}${contours(58, 476, 10, [[38,22],[24,14],[12,7]])}</g>
+      <path d="M38 121l4-8 4 8z" fill="var(--ink)"/><text x="49" y="121" font-size="9" fill="var(--muted)" style="font-family:var(--f-mono)">2925</text>
+      <path d="M324 253l4-8 4 8z" fill="var(--ink)"/><text x="296" y="270" font-size="9" fill="var(--muted)" style="font-family:var(--f-mono)">2191</text>
+      <g transform="translate(314 64)"><circle r="20" fill="none" stroke="var(--ink)" stroke-width="1" opacity=".45"/><path d="M0-25L4 0H-4z" fill="var(--earth)"/><path d="M0 25L4 0H-4z" fill="var(--ink)" opacity=".7"/><path d="M-25 0L0 3V-3zM25 0L0 3V-3z" fill="var(--ink)" opacity=".4"/><text y="-29" text-anchor="middle" font-size="10" font-weight="600" fill="var(--ink)" style="font-family:var(--f-mono)">N</text></g>
+      <g transform="translate(24 618)"><path d="M0 0H60M0-4V4M30-3V3M60-4V4" stroke="var(--ink)" stroke-width="1.2"/><rect y="-2" width="30" height="4" fill="var(--ink)"/><text x="66" y="3.5" font-size="9" fill="var(--ink)" style="font-family:var(--f-mono)">10 NM</text></g>
+      <g class="cloud c1" fill="var(--surface)" opacity=".75"><circle cx="300" cy="372" r="12"/><circle cx="314" cy="366" r="15"/><circle cx="330" cy="373" r="10"/><rect x="290" y="372" width="48" height="10" rx="5"/></g>
+      <g class="cloud c2" fill="var(--surface)" opacity=".75"><circle cx="40" cy="306" r="10"/><circle cx="54" cy="300" r="13"/><circle cx="68" cy="306" r="9"/><rect x="31" y="305" width="45" height="9" rx="4.5"/></g>
       ${segs}
     </svg>
     <div class="cityp start" style="${pct(P[0])}"><b lang="bg">${esc(from.bg)}</b><span>${esc(from.pl)}${from.icao ? ` · <i class="mono">${from.icao}</i>` : ''}</span></div>
@@ -200,8 +210,10 @@ function viewBoard() {
     ${d.tiles.map((t, i) => {
       const st = t.done ? 'done' : i === cur ? 'cur' : 'locked';
       const T = TILE[t.k];
+      const lvl = isLevelTile(t) ? resolveLevel(t) : null;
+      const ico = lvl ? illus(lvl.unit) : T.icon;
       return `<button class="tnode ${st}" style="${pct(P[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
-        <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : T.icon}</span>
+        <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
         <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
     }).join('')}
     <div class="hero" id="hero" style="${pct(P[startIdx])}">${HERO}</div>

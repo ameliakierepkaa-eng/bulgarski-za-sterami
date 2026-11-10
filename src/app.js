@@ -16,6 +16,32 @@ const ICON = {
   x:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   plane:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0v5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z"/></svg>'
 };
+/* Ilustracje działów (64×64): kontur tuszem + przesunięta plama koloru (a1 terakota, a2 złoto, a3 zieleń, a4 granat). */
+const ILLUS = {
+  d0:'<path class="a1" d="M14 16h40v24H32l-10 9v-9h-8z"/><path d="M10 12h40v26H28l-10 9v-9h-8z"/><text x="30" y="31" font-size="17" text-anchor="middle" lang="bg">Аа</text>',
+  d1:'<circle class="a2" cx="34" cy="34" r="20"/><circle cx="32" cy="32" r="20"/><path d="M32 19v13l9 6M32 12v3M32 49v3M12 32h3M49 32h3"/>',
+  d2:'<path class="a1" d="M14 31h42l-6 22H20z"/><path d="M10 28h44l-6 22H16z"/><path d="M20 28c0-10 6-16 12-16s12 6 12 16M23 34v10M32 34v10M41 34v10"/>',
+  d3:'<path class="a1" d="M33 16h20l5 5-5 5H33z"/><path class="a3" d="M33 30H15l-5 5 5 5h18z"/><path d="M30 8v50M22 58h16M30 14h20l5 5-5 5H30zM30 28H12l-5 5 5 5h18z"/>',
+  d4:'<path class="a4" d="M12 20c8-3 15-3 22 2 7-5 14-5 22-2v32c-8-3-15-3-22 2-7-5-14-5-22-2z"/><path d="M10 18c8-3 15-3 22 2 7-5 14-5 22-2v32c-8-3-15-3-22 2-7-5-14-5-22-2zM32 20v32M16 28h10M16 34h10M16 40h7"/><text x="43" y="38" font-size="12" text-anchor="middle" lang="bg">-ът</text>',
+  d5:'<circle class="a1" cx="22" cy="21" r="7"/><circle class="a3" cx="45" cy="21" r="7"/><circle class="a2" cx="34" cy="40" r="5"/><circle cx="20" cy="19" r="7"/><circle cx="43" cy="19" r="7"/><path d="M7 52c0-10 5-16 13-16 4 0 7 1 9 4M57 52c0-10-5-16-14-16-4 0-7 1-9 4"/><circle cx="32" cy="38" r="5"/><path d="M23 58c0-7 4-11 9-11s9 4 9 11"/>',
+  d6:'<path class="a1" d="M12 30 34 12l22 18z"/><circle class="a2" cx="53" cy="12" r="5"/><path d="M10 28 32 10l22 18M15 25v28h34V25M27 53V40h10v13"/><rect x="38" y="31" width="7" height="7"/>',
+  d7:'<path class="a1" d="M34 52S12 40 12 25a10 10 0 0 1 22-4 10 10 0 0 1 22 4c0 15-22 27-22 27z"/><path d="M32 50S10 38 10 23a10 10 0 0 1 22-4 10 10 0 0 1 22 4c0 15-22 27-22 27z"/><path d="M12 31h10l4-7 5 14 4-9h17"/>',
+  d8:'<rect class="a2" x="12" y="23" width="44" height="30" rx="4"/><rect x="10" y="20" width="44" height="30" rx="4"/><path d="M24 20v-6h16v6M20 20v30M44 20v30M17 50v4M47 50v4"/>',
+  d9:'<path class="a4" d="M8 10h28v18H20l-7 6v-6H8z"/><path class="a1" d="M30 32h28v18h-5v6l-7-6H30z"/><path d="M6 8h28v18H18l-7 6v-6H6zM28 30h28v18h-5v6l-7-6H28z"/><text x="20" y="22" font-size="12" text-anchor="middle" lang="bg">ме</text><text x="42" y="44" font-size="12" text-anchor="middle" lang="bg">ми</text>',
+  d10:'<path class="a2" d="M24 50l10-9 10 9v6H24zM28 18h12l-6 6z"/><path d="M18 8h28M18 56h28M22 8c0 12 9 16 9 24s-9 12-9 24M42 8c0 12-9 16-9 24s9 12 9 24"/>',
+  d11:'<rect class="a3" x="12" y="17" width="44" height="40" rx="3"/><rect x="10" y="14" width="44" height="40" rx="3"/><path d="M10 24h44M20 9v9M44 9v9M22 39l6 6 12-12"/>',
+  d12:'<rect class="a4" x="10" y="27" width="40" height="28" rx="3"/><path class="a1" d="M42 6h18v12h-8l-5 5v-5h-5z"/><rect x="8" y="24" width="40" height="28" rx="3"/><path d="M20 24v-5h16v5M8 36h40M40 4h18v12h-8l-5 5v-5h-5z"/>',
+  d13:'<circle class="a1" cx="21" cy="27" r="5"/><path class="a1" d="M15 35h12l4 18H11z"/><path d="M6 12c8 6 17-6 26 0s17-6 26 0M20 12v9M44 12v9"/><circle cx="20" cy="26" r="5"/><path d="M14 34h12l4 18H10zM14 52v6M20 52v6M26 52v6"/><circle cx="44" cy="26" r="5"/><path d="M38 34h12l4 18H34zM38 52v6M44 52v6M50 52v6"/>',
+  a0:'<path class="a4" d="M18 17h32l-4 12H22z"/><path d="M16 14h32l-4 12H20zM24 26l-3 30h22l-3-30M12 56h40M32 14V6M27 6h10M26 14l-1 12M32 14v12M38 14l1 12"/>',
+  a1:'<path class="a1" d="M13 37c0-7 6-11 16-11h10c6 0 10 4 10 9 0 4-3 7-9 7H19c-4 0-6-2-6-5z"/><path d="M10 34c0-7 6-11 16-11h10c6 0 10 4 10 9 0 4-3 7-9 7H16c-4 0-6-2-6-5zM4 12h52M30 12v11M46 31h10M56 23v14M15 30c1-4 5-6 10-6v7H15M18 39l-3 7M38 39l3 7"/><circle cx="15" cy="49" r="3"/><circle cx="42" cy="49" r="3"/>',
+  a2:'<path class="a4" d="M16 40a8 8 0 0 1 2-16 11 11 0 0 1 21-3 9 9 0 0 1 9 19z"/><path d="M14 38a8 8 0 0 1 2-16 11 11 0 0 1 21-3 9 9 0 0 1 9 19zM48 47a8 8 0 0 1 8 8M48 41a14 14 0 0 1 14 14"/><circle class="k" cx="48" cy="55" r="2.5"/>',
+  a3:'<path class="a1" d="M14 13l40 5v10l-40 5z"/><path d="M12 8v50M6 58h12M12 10l40 5v10l-40 5zM24 11.5v17M36 13v14M28 56h28"/>',
+  a4:'<circle class="a4" cx="34" cy="37" r="20"/><path class="a1" d="M32 13l5 22h-10z"/><circle cx="32" cy="35" r="20"/><path d="M32 13l5 22-5 22-5-22zM10 35l22-5 22 5-22 5z"/><text x="32" y="9" font-size="10" text-anchor="middle">N</text>',
+  a5:'<path class="a4" d="M16 38a8 8 0 0 1 2-16 11 11 0 0 1 21-3 9 9 0 0 1 9 19z"/><path class="a2" d="M33 36l-6 12h7l-4 12 12-16h-7l4-8z"/><path d="M14 36a8 8 0 0 1 2-16 11 11 0 0 1 21-3 9 9 0 0 1 9 19zM31 34l-6 12h7l-4 12 12-16h-7l4-8zM17 44l-3 6M22 46l-3 6M49 44l-3 6"/>',
+  a6:'<rect class="a1" x="12" y="37" width="10" height="16" rx="3"/><rect class="a1" x="46" y="37" width="10" height="16" rx="3"/><path d="M14 35v-5a18 18 0 0 1 36 0v5M15 50c0 6 6 9 14 9"/><rect x="10" y="34" width="10" height="16" rx="3"/><rect x="44" y="34" width="10" height="16" rx="3"/><circle class="k" cx="31" cy="59" r="2.5"/>',
+  a7:'<path class="a2" d="M34 11l24 42H10z"/><path d="M32 8l24 42H8zM32 22v14M4 58h56"/><circle class="k" cx="32" cy="43" r="2.2"/>'
+};
+const illus = (u, cls = '') => u && ILLUS[u.id] ? `<svg class="ill ${cls}" viewBox="0 0 64 64" aria-hidden="true">${ILLUS[u.id]}</svg>` : '';
 const stars = (n, cls = 'stars') => `<span class="${cls}" aria-label="${n} z 3 gwiazdek">${[1,2,3].map(i => `<span class="${i <= n ? 'on' : ''}">${ICON.star}</span>`).join('')}</span>`;
 
 /* transkrypcja na polskie litery */
@@ -167,9 +193,9 @@ function renderHud() {
   const earthTop = 6 + 34 * p;  /* sztuczny horyzont: im bliżej celu, tym więcej nieba */
   $('#gauge').innerHTML = `<defs><clipPath id="gc"><circle cx="23" cy="23" r="20"/></clipPath></defs>
     <g clip-path="url(#gc)"><rect x="0" y="0" width="46" height="46" fill="var(--sky)"/><rect x="0" y="${earthTop}" width="46" height="46" fill="var(--earth)"/>
-    <line x1="0" x2="46" y1="${earthTop}" y2="${earthTop}" stroke="#fff" stroke-width="1.5"/></g>
-    <circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="2"/>
-    <text x="23" y="27" text-anchor="middle" font-size="11" fill="#fff">${dd}/6</text>`;
+    <line x1="0" x2="46" y1="${earthTop}" y2="${earthTop}" stroke="var(--on-sky)" stroke-width="1.5"/></g>
+    <circle cx="23" cy="23" r="20" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+    <text x="23" y="27" text-anchor="middle" font-size="11" fill="var(--on-sky)">${dd}/6</text>`;
   $('#gauge').setAttribute('aria-label', `Dzisiejsza plansza: ${dd} z 6 lekcji`);
   $('#gauge').innerHTML += `<title>Dzisiejsza plansza: ${dd} / 6</title>`;
 }
@@ -282,7 +308,7 @@ function viewMap() {
   else if (tr === 'air' && !isOpen(TRACK.air[0])) html += `<div class="card muted">Trasa lotnicza otworzy się po pierwszym levelu na trasie „Na co dzień” albo po teście wstępnym.</div>`;
   else html += `<div class="card"><b>Trasa ukończona!</b> <span class="muted">Zdobywaj 3 gwiazdki i ćwicz w Powtórkach.</span></div>`;
   UNITS.filter(u => u.track === tr).forEach((u, ui) => {
-    html += `<section class="unit"><div class="unit-head"><span class="eyebrow">Etap ${ui + 1} · ${u.cefr}</span><h3 lang="bg">${esc(u.bt)}</h3><span class="pl">${esc(u.t)}</span></div><ol class="route">`;
+    html += `<section class="unit"><div class="unit-head">${illus(u)}<div><span class="eyebrow">Etap ${ui + 1} · ${u.cefr}</span><h3 lang="bg">${esc(u.bt)}</h3><span class="pl">${esc(u.t)}</span></div></div><ol class="route">`;
     u.levels.forEach(l => {
       const st = lvState(l.id), open = isOpen(l), done = isDone(l.id);
       const cls = !open ? 'locked' : (st && st.stars > 0) ? 'done' : (st && st.test) ? 'test' : 'open';
@@ -465,7 +491,7 @@ function openBriefing(id, tile = null) {
   el.hidden = false; document.body.style.overflow = 'hidden';
   el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Odprawa · ${esc(l.unit.t)}</span></div>
    <div class="lesson-body"><div class="wrap brief stack">
-    <div><div class="prompt-kind">Level ${l.unit.id.toUpperCase()}.${l.n} ·${l.unit.cefr}</div><h2 class="view">${esc(l.t)}</h2><div class="muted" lang="bg">${esc(l.bt)}</div></div>
+    <div class="brief-head"><div><div class="prompt-kind">Level ${l.unit.id.toUpperCase()}.${l.n} · ${l.unit.cefr} · ${esc(l.unit.t)}</div><h2 class="view">${esc(l.t)}</h2><div class="muted" lang="bg">${esc(l.bt)}</div></div>${illus(l.unit, 'big')}</div>
     <div class="tipbox tblwrap">${l.tip}</div>
     <div><div class="eyebrow">Słówka w tym levelu</div><div class="words">${l.w.map(w => `<div class="wcell">${spkBtn(first(w[1]))}<div><b lang="bg">${esc(first(w[1]))}</b><small>${esc(w[0])} · <span class="mono">${esc(translit(first(w[1])))}</span></small></div></div>`).join('')}</div></div>
    </div></div>

@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs><clipPath id="r"><rect width="512" height="512" rx="112"/></clipPath></defs>
   <g clip-path="url(#r)">
-    <rect width="512" height="512" fill="#2A64BE"/>
-    <rect y="318" width="512" height="194" fill="#A9622A"/>
-    <rect y="312" width="512" height="12" fill="#fff"/>
-    <rect x="136" y="104" width="240" height="18" rx="9" fill="#fff"/>
-    <rect x="247" y="118" width="18" height="40" fill="#fff"/>
-    <text x="256" y="292" text-anchor="middle" font-family="Arial Black,Segoe UI,Arial,sans-serif" font-weight="900" font-size="150" fill="#fff">БГ</text>
-    <circle cx="256" cy="412" r="14" fill="#F3E3D3" opacity=".9"/>
-    <rect x="160" y="405" width="70" height="14" rx="7" fill="#F3E3D3" opacity=".6"/>
-    <rect x="282" y="405" width="70" height="14" rx="7" fill="#F3E3D3" opacity=".6"/>
+    <rect width="512" height="512" fill="#24466E"/>
+    <rect y="318" width="512" height="194" fill="#C2502D"/>
+    <rect y="312" width="512" height="12" fill="#FFFBF3"/>
+    <rect x="136" y="104" width="240" height="18" rx="9" fill="#FFFBF3"/>
+    <rect x="247" y="118" width="18" height="40" fill="#FFFBF3"/>
+    <text x="256" y="292" text-anchor="middle" font-family="Arial Black,Segoe UI,Arial,sans-serif" font-weight="900" font-size="150" fill="#FFFBF3">БГ</text>
+    <circle cx="256" cy="412" r="14" fill="#F5E0D2" opacity=".9"/>
+    <rect x="160" y="405" width="70" height="14" rx="7" fill="#F5E0D2" opacity=".6"/>
+    <rect x="282" y="405" width="70" height="14" rx="7" fill="#F5E0D2" opacity=".6"/>
   </g>
 </svg>
