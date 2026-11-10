@@ -313,6 +313,24 @@ h2.view{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.003em}
 .ill.big{width:96px;height:96px}
 .ill.tiny{width:30px;height:30px;stroke-width:2.6}
 .result .ill.big{display:block;margin:4px auto 6px}
+/* pomoc: lektor, mikrofon, instalacja */
+.helpcard{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;border:2px solid var(--ink)}
+.helpcard b{font-family:var(--f-display);font-size:20px;font-weight:800}
+.helpgo{font-size:24px;color:var(--earth);flex:none}
+.schip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;border:1.5px solid}
+.schip .icon{width:14px;height:14px}
+.schip.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.schip.no{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+.backlink{display:inline-block;margin-bottom:6px;text-decoration:none;font-weight:600}
+.hsteps{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.hstep{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.hstep p{margin:6px 0 0}
+.hstep b{font-weight:700}
+.hstep>div>b:first-child{font-family:var(--f-display);font-size:18px;font-weight:800}
+.hnum{flex:none;width:30px;height:30px;border-radius:50%;background:var(--earth);color:var(--on-earth);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600}
+.hintbar{display:none;gap:10px;align-items:center;text-decoration:none;color:var(--ink);background:var(--earth-soft);border:1.5px solid var(--earth);border-radius:var(--r);padding:10px 14px;margin:0 0 12px;font-size:15px}
+.hintbar span:nth-child(2){flex:1}
+body.noaudio .hintbar{display:flex}
 /* piosenka z luką */
 .song-title b{font-family:var(--f-display);font-size:20px;font-weight:800}
 .gap{display:inline-block;min-width:64px;border-bottom:3px solid var(--earth);text-align:center;color:var(--earth);margin:0 2px}
@@ -1776,7 +1794,7 @@ function initSpeech() {
   claude.use('tts').then(t => { if (t) { tts = t; audioMode = 'claude'; } applyAudioClass(); }).catch(() => applyAudioClass());
   claude.use('dictation').then(d => { dict = d; }).catch(() => {});
 }
-if ('speechSynthesis' in window) { try { speechSynthesis.onvoiceschanged = applyAudioClass; } catch (e) {} }
+if ('speechSynthesis' in window) { try { speechSynthesis.onvoiceschanged = () => { applyAudioClass(); if (location.hash === '#pomoc') viewHelp(); }; } catch (e) {} }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-say]'); if (!b) return;
   e.preventDefault(); speak(b.dataset.say, b.dataset.slow === '1');
@@ -1788,12 +1806,12 @@ let toastT = null;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3600); }
 
 /* ===== ROUTING ===== */
-const VIEWS = ['plansza','kurs','zwroty','gramatyka','slowka','gry','powtorki','profil','test'];
+const VIEWS = ['plansza','kurs','zwroty','gramatyka','slowka','gry','powtorki','profil','test','pomoc'];
 function route() {
   let v = (location.hash || '').slice(1); if (v === 'trasa') v = 'kurs'; if (!VIEWS.includes(v)) v = 'plansza';
-  const navV = v === 'test' ? 'plansza' : v === 'powtorki' ? 'profil' : v;
+  const navV = v === 'test' ? 'plansza' : (v === 'powtorki' || v === 'pomoc') ? 'profil' : v;
   $$('nav.tabs a').forEach(a => a.setAttribute('aria-current', a.getAttribute('href') === '#' + navV ? 'page' : 'false'));
-  ({plansza:viewBoard, kurs:viewMap, gry:viewGames, zwroty:viewPhrases, gramatyka:viewGrammar, slowka:viewDict, powtorki:viewReview, profil:viewProfile, test:viewTest})[v]();
+  ({plansza:viewBoard, kurs:viewMap, gry:viewGames, zwroty:viewPhrases, gramatyka:viewGrammar, slowka:viewDict, powtorki:viewReview, profil:viewProfile, test:viewTest, pomoc:viewHelp})[v]();
   if (v !== lastView) { const el = $('#view'); el.classList.remove('fade'); void el.offsetWidth; el.classList.add('fade'); lastView = v; }
   renderHud();
 }
@@ -1862,6 +1880,9 @@ function viewProfile() {
    <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
    ${hangarHTML()}
    ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
+   <a class="card helpcard" href="#pomoc"><div><div class="eyebrow">Ustawienia telefonu</div><b>Lektor, mikrofon i instalacja</b>
+     <div class="muted" style="font-size:14px;margin-top:2px">Co zrobić na Androidzie, a co na iPhonie, żeby aplikacja mówiła i rozpoznawała wymowę.</div>
+     <div class="chips" style="margin-top:8px">${statusChips()}</div></div><span class="helpgo" aria-hidden="true">→</span></a>
    <div class="card">
     <div class="setrow"><div><b>Lektor po odpowiedzi</b><div class="muted" style="font-size:14px">Odczytuje poprawną odpowiedź po bułgarsku.</div></div>
       <div class="seg" id="voiceSeg"><button data-v="1" aria-pressed="${S.autoVoice}">Włączony</button><button data-v="0" aria-pressed="${!S.autoVoice}">Wyłączony</button></div></div>
@@ -1873,7 +1894,7 @@ function viewProfile() {
       <div class="seg" id="themeSeg">${[['auto','Auto'],['light','Jasny'],['dark','Ciemny']].map(([v, n]) => `<button data-t="${v}" aria-pressed="${S.theme === v}">${n}</button>`).join('')}</div></div>
     ${'vibrate' in navigator ? `<div class="setrow"><div><b>Wibracje</b><div class="muted" style="font-size:14px">Krótka wibracja przy dobrej i złej odpowiedzi.</div></div>
       <div class="seg" id="hapSeg"><button data-h="1" aria-pressed="${S.haptics}">Tak</button><button data-h="0" aria-pressed="${!S.haptics}">Nie</button></div></div>` : ''}
-    <div class="setrow"><div><b>Status</b><div class="muted" style="font-size:14px" id="syncline">${syncText()}</div><div class="muted" style="font-size:14px">${audioOK() ? 'Lektor dostępny.' : 'Lektor niedostępny w tej przeglądarce – ćwiczenia ze słuchu pokażą tekst.'}</div><div class="muted" style="font-size:14px">${dict ? 'Rozpoznawanie mowy dostępne.' : 'Rozpoznawanie mowy niedostępne – w ćwiczeniach mówienia ocenisz się sama.'}</div></div></div>
+    <div class="setrow"><div><b>Status</b><div class="muted" style="font-size:14px" id="syncline">${syncText()}</div><div class="muted" style="font-size:14px">${audioOK() ? 'Lektor dostępny.' : 'Lektor niedostępny – <a href="#pomoc">zobacz, jak go włączyć</a>.'}</div><div class="muted" style="font-size:14px">${dict ? 'Rozpoznawanie mowy dostępne.' : 'Rozpoznawanie mowy niedostępne – <a href="#pomoc">zobacz instrukcję</a>.'}</div></div></div>
    </div>
    ${installCard()}
    <div class="card stack"><div><div class="eyebrow">Kopia zapasowa</div><b>Przenieś postęp na inne urządzenie</b>
@@ -1896,6 +1917,66 @@ function viewProfile() {
   $('#resetYes').onclick = () => { const keep = {goal:S.goal, rate:S.rate, autoVoice:S.autoVoice, translit:S.translit}; S = Object.assign(defaults(), keep); save(); location.hash = '#plansza'; route(); toast('Postęp wyzerowany.'); };
 }
 
+/* ===== WIDOK: POMOC – lektor, mikrofon, instalacja ===== */
+const isInstalled = () => !!(window.PWA && window.PWA.standalone());
+const isIOS = () => window.PWA ? window.PWA.ios() : /iphone|ipad|ipod/i.test(navigator.userAgent);
+function statusChips() {
+  const chip = (ok, txt) => `<span class="schip ${ok ? 'ok' : 'no'}">${ok ? ICON.check : '!'} ${txt}</span>`;
+  return [window.claude ? '' : chip(isInstalled(), isInstalled() ? 'Aplikacja zainstalowana' : 'Otwarte w przeglądarce'),
+    chip(audioOK(), audioOK() ? 'Lektor działa' : 'Brak głosu bułgarskiego'),
+    chip(!!dict, dict ? 'Mikrofon: obsługiwany' : 'Rozpoznawanie mowy niedostępne'),
+    chip(navigator.onLine, navigator.onLine ? 'Internet: jest' : 'Brak internetu')].join('');
+}
+let helpOS = null;
+function viewHelp() {
+  const os = helpOS || (isIOS() ? 'ios' : 'android');
+  const v = bgVoice();
+  const step = (n, t, body) => `<li class="hstep"><span class="hnum">${n}</span><div><b>${t}</b>${body}</div></li>`;
+  const android = `<ol class="hsteps">
+    ${step(1, 'Zainstaluj aplikację i otwieraj ją z ikony', `<p>Otwórz link w <b>Chrome</b> → menu <b>⋮</b> → <b>Zainstaluj aplikację</b> (albo <b>Dodaj do ekranu głównego</b>). Potem zawsze otwieraj grę z ikony – działa jak zwykła aplikacja, na pełnym ekranie.</p>`)}
+    ${step(2, 'Lektor: pobierz głos bułgarski (raz, ok. 1 minuta)', `<p><b>Ustawienia</b> telefonu → wpisz w wyszukiwarkę <b>„Zamiana tekstu na mowę”</b> (albo: Ułatwienia dostępu → Zamiana tekstu na mowę).</p>
+      <p>Jako mechanizm wybierz <b>Usługi mowy Google</b> → ikona ⚙ → <b>Zainstaluj dane głosowe</b> → <b>Български (България)</b> → pobierz.</p>
+      <p class="muted">Potem zamknij aplikację całkiem i otwórz ponownie. Głos działa także bez internetu.</p>`)}
+    ${step(3, 'Mikrofon: pozwól aplikacji słuchać', `<p>Przy pierwszym ćwiczeniu mówienia wybierz <b>Zezwól</b>. Jeśli przez pomyłkę odmówiłaś: <b>Chrome → ⋮ → Ustawienia → Ustawienia witryn → Mikrofon</b> i zezwól dla <i>${esc(location.host || 'tej strony')}</i>.</p>
+      <p class="muted">Rozpoznawanie mowy w Androidzie działa przez Google, więc <b>potrzebny jest internet</b>. Musi też być włączona aplikacja <b>Google</b> (Ustawienia → Aplikacje → Google → Włącz).</p>`)}
+    ${step(4, 'Bez internetu', '<p>Lekcje, plansza, gry i lektor działają. Ćwiczenia mówienia zamieniają się w samoocenę – posłuchaj, powiedz na głos i oceń się sama.</p>')}
+  </ol>`;
+  const ios = `<ol class="hsteps">
+    ${step(1, 'Zainstaluj aplikację i otwieraj ją z ikony', `<p>Otwórz link w <b>Safari</b> → przycisk <b>Udostępnij</b> (kwadrat ze strzałką) → <b>Do ekranu początkowego</b> → <b>Dodaj</b>. Potem zawsze otwieraj grę z ikony.</p>`)}
+    ${step(2, 'Lektor: pobierz głos bułgarski (raz)', `<p><b>Ustawienia → Dostępność → Treść mówiona</b> (w niektórych wersjach: Zawartość mówiona) <b>→ Głosy → Bułgarski</b> → wybierz głos (np. <b>Daria</b>) i dotknij, żeby go pobrać.</p>
+      <p class="muted">Potem zamknij aplikację (przesuń ją w górę na liście aplikacji) i otwórz ponownie. Głos działa też bez internetu.</p>`)}
+    ${step(3, 'Mikrofon i rozpoznawanie mowy', `<p>Włącz dyktowanie: <b>Ustawienia → Ogólne → Klawiatura → Włącz dyktowanie</b>. Przy pierwszym ćwiczeniu mówienia pozwól na <b>mikrofon</b> i <b>rozpoznawanie mowy</b>.</p>
+      <p class="muted"><b>Uczciwie:</b> Apple ogranicza rozpoznawanie mowy w aplikacjach dodanych do ekranu początkowego, a bułgarski nie zawsze jest obsługiwany. Jeśli test mikrofonu na górze tej strony nie zadziała, ćwiczenia mówienia będą w trybie samooceny – reszta aplikacji działa normalnie.</p>`)}
+    ${step(4, 'Bez internetu', '<p>Lekcje, plansza, gry i lektor (jeśli głos jest pobrany) działają. Rozpoznawanie mowy potrzebuje internetu.</p>')}
+  </ol>`;
+  $('#view').innerHTML = `<a href="#profil" class="muted backlink">← Profil</a>
+   <h2 class="view">Lektor, mikrofon i instalacja</h2>
+   <p class="muted" style="margin-top:0">Aplikacja korzysta z głosu i mikrofonu Twojego telefonu. Wystarczy raz ustawić kilka rzeczy – instrukcja poniżej.</p>
+   <section class="card stack"><div class="eyebrow">Ten telefon teraz</div><div class="chips">${statusChips()}</div>
+    ${v ? `<div class="muted" style="font-size:14px">Głos lektora: <b>${esc(v.name)}</b></div>` : ''}
+    <div class="row"><button class="btn soft" id="tSpk" ${audioOK() ? '' : 'disabled'}>${ICON.spk} Test lektora</button><button class="btn soft" id="tMic" ${dict ? '' : 'disabled'}>${ICON.mic} Test mikrofonu</button></div>
+    <div id="tOut" class="muted" style="min-height:24px" aria-live="polite"></div></section>
+   <div class="trackswitch" role="group" aria-label="Telefon" style="margin:18px 0 6px"><button data-os="android" aria-pressed="${os === 'android'}">Android</button><button data-os="ios" aria-pressed="${os === 'ios'}">iPhone</button></div>
+   ${os === 'ios' ? ios : android}
+   <p class="muted" style="font-size:14px">Po każdej zmianie w ustawieniach telefonu zamknij aplikację całkiem i otwórz ją ponownie, a potem wróć tutaj i zrób test.</p>`;
+  $$('[data-os]').forEach(b => b.onclick = () => { helpOS = b.dataset.os; viewHelp(); });
+  $('#tSpk').onclick = () => { speak('Здравей! Аз съм твоят лектор.'); $('#tOut').innerHTML = 'Powinnaś usłyszeć: <b lang="bg">Здравей! Аз съм твоят лектор.</b> Jeśli nic nie słychać, sprawdź głośność.'; };
+  $('#tMic').onclick = () => testMic($('#tOut'));
+}
+async function testMic(out) {
+  if (!dict) return;
+  let got = '', offs = [];
+  const done = msg => { offs.forEach(f => { try { f(); } catch (e) {} }); offs = []; out.innerHTML = msg; };
+  out.innerHTML = 'Słucham… powiedz wyraźnie: <b lang="bg">Здравей</b>';
+  offs.push(dict.onFinal(e => { got += e.text; }));
+  offs.push(dict.onPartial(e => { if (e.text) out.innerHTML = `Słyszę: <span lang="bg">${esc(e.text)}</span>`; }));
+  offs.push(dict.onState(s => { if (s.state !== 'idle') return;
+    done(got.trim() ? `Rozpoznano: <b lang="bg">${esc(got.trim())}</b> – mikrofon działa ✓`
+      : s.reason === 'not_granted' ? 'Brak dostępu do mikrofonu. Zezwól na mikrofon (krok 3 poniżej) i spróbuj ponownie.'
+      : 'Nic nie rozpoznano. Sprawdź internet i spróbuj jeszcze raz.'); }));
+  try { await dict.start(); setTimeout(() => { try { dict.stop(); } catch (e) {} }, 6000); }
+  catch (e) { done(e && e.code === 'not_granted' ? 'Brak dostępu do mikrofonu. Zezwól na mikrofon (krok 3 poniżej) i spróbuj ponownie.' : 'Rozpoznawanie mowy nie ruszyło – sprawdź internet albo instrukcję poniżej.'); }
+}
 function installCard() {
   const head = t => `<div><div class="eyebrow">Na telefonie</div><b>${t}</b></div>`;
   if (window.claude) return `<div class="card stack">${head('Aplikacja na ekranie głównym')}
@@ -2554,6 +2635,7 @@ function viewBoard() {
   html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · dziś</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
     <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+   ${window.claude ? '' : '<a class="hintbar" href="#pomoc"><span>🔇</span><span>Lektor nie mówi po bułgarsku? <b>Zobacz, jak włączyć głos</b></span><span aria-hidden="true">→</span></a>'}
    ${gyroCard()}
    <div class="board" id="board">
     <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">

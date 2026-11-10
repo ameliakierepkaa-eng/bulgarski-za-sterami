@@ -295,6 +295,24 @@ h2.view{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.003em}
 .ill.big{width:96px;height:96px}
 .ill.tiny{width:30px;height:30px;stroke-width:2.6}
 .result .ill.big{display:block;margin:4px auto 6px}
+/* pomoc: lektor, mikrofon, instalacja */
+.helpcard{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;border:2px solid var(--ink)}
+.helpcard b{font-family:var(--f-display);font-size:20px;font-weight:800}
+.helpgo{font-size:24px;color:var(--earth);flex:none}
+.schip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;border:1.5px solid}
+.schip .icon{width:14px;height:14px}
+.schip.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.schip.no{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+.backlink{display:inline-block;margin-bottom:6px;text-decoration:none;font-weight:600}
+.hsteps{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.hstep{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.hstep p{margin:6px 0 0}
+.hstep b{font-weight:700}
+.hstep>div>b:first-child{font-family:var(--f-display);font-size:18px;font-weight:800}
+.hnum{flex:none;width:30px;height:30px;border-radius:50%;background:var(--earth);color:var(--on-earth);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600}
+.hintbar{display:none;gap:10px;align-items:center;text-decoration:none;color:var(--ink);background:var(--earth-soft);border:1.5px solid var(--earth);border-radius:var(--r);padding:10px 14px;margin:0 0 12px;font-size:15px}
+.hintbar span:nth-child(2){flex:1}
+body.noaudio .hintbar{display:flex}
 /* piosenka z luką */
 .song-title b{font-family:var(--f-display);font-size:20px;font-weight:800}
 .gap{display:inline-block;min-width:64px;border-bottom:3px solid var(--earth);text-align:center;color:var(--earth);margin:0 2px}
