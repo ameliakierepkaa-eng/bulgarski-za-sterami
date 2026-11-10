@@ -1696,6 +1696,7 @@ function renderHud() {
   $('#rankline').innerHTML = `<span lang="bg">${r[1]}</span> · ${r[2]}`;
   const dd = (S.game.day && S.game.day.date === today()) ? S.game.day.tiles.filter(t => t.done).length : 0;
   const p = Math.min(1, dd / 6);
+  if (window.PWA && window.PWA.saveState) window.PWA.saveState({date:today(), done:dd, finished:!!(S.game.day && S.game.day.date === today() && S.game.day.finished), streak:streakNow()});
   const earthTop = 6 + 34 * p;  /* sztuczny horyzont: im bliżej celu, tym więcej nieba */
   $('#gauge').innerHTML = `<defs><clipPath id="gc"><circle cx="23" cy="23" r="20"/></clipPath></defs>
     <g clip-path="url(#gc)"><rect x="0" y="0" width="46" height="46" fill="var(--sky)"/><rect x="0" y="${earthTop}" width="46" height="46" fill="var(--earth)"/>
@@ -1865,6 +1866,7 @@ function viewProfile() {
    <a class="card helpcard" href="#pomoc"><div><div class="eyebrow">Ustawienia telefonu</div><b>Lektor, mikrofon i instalacja</b>
      <div class="muted" style="font-size:14px;margin-top:2px">Co zrobić na Androidzie, a co na iPhonie, żeby aplikacja mówiła i rozpoznawała wymowę.</div>
      <div class="chips" style="margin-top:8px">${statusChips()}</div></div><span class="helpgo" aria-hidden="true">→</span></a>
+   <div id="pushCard"></div>
    <div class="card">
     <div class="setrow"><div><b>Lektor po odpowiedzi</b><div class="muted" style="font-size:14px">Odczytuje poprawną odpowiedź po bułgarsku.</div></div>
       <div class="seg" id="voiceSeg"><button data-v="1" aria-pressed="${S.autoVoice}">Włączony</button><button data-v="0" aria-pressed="${!S.autoVoice}">Wyłączony</button></div></div>
@@ -1896,7 +1898,42 @@ function viewProfile() {
   $('#bkLoad').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) importProgress(f); e.target.value = ''; };
   $('#resetBtn').onclick = () => { $('#resetConfirm').hidden = false; };
   $('#resetNo').onclick = () => { $('#resetConfirm').hidden = true; };
+  renderPushCard();
   $('#resetYes').onclick = () => { const keep = {goal:S.goal, rate:S.rate, autoVoice:S.autoVoice, translit:S.translit}; S = Object.assign(defaults(), keep); save(); location.hash = '#plansza'; route(); toast('Postęp wyzerowany.'); };
+}
+
+/* ===== POWIADOMIENIA O LEKCJI (push, 2× dziennie) ===== */
+const SECRETS_URL = 'https://github.com/ameliakierepkaa-eng/bulgarski-za-sterami/settings/secrets/actions';
+async function renderPushCard() {
+  const box = $('#pushCard'); if (!box || window.claude) return;
+  const P = window.PWA, head = `<div><div class="eyebrow">Powiadomienia</div><b style="font-family:var(--f-display);font-size:20px">Przypomnienie o lekcji 2× dziennie</b>
+    <div class="muted" style="font-size:14px;margin-top:2px">Ok. 8:00 i 19:00 (latem 9:00 i 20:00). Gdy plansza jest już zrobiona, powiadomienie Cię tylko pochwali.</div></div>`;
+  const card = inner => { box.innerHTML = `<section class="card stack">${head}${inner}</section>`; };
+  if (!P || !P.push || !P.push.supported()) {
+    card(P && P.ios() && !P.standalone() ? '<p class="muted" style="margin:0">Na iPhonie powiadomienia działają tylko w aplikacji dodanej do ekranu początkowego (iOS 16.4 lub nowszy). Dodaj ją (Profil → Lektor, mikrofon i instalacja) i otwórz z ikony.</p>'
+      : '<p class="muted" style="margin:0">Ta przeglądarka nie obsługuje powiadomień. Otwórz aplikację zainstalowaną z Chrome (Android) albo z ekranu początkowego (iPhone).</p>');
+    return;
+  }
+  if (P.push.permission() === 'denied') { card('<p class="muted" style="margin:0">Powiadomienia są zablokowane. Włącz je w ustawieniach telefonu: <b>Ustawienia → Aplikacje → Bułgarski → Powiadomienia</b> (Android) albo <b>Ustawienia → Powiadomienia → Bułgarski</b> (iPhone), a potem wróć tutaj.</p>'); return; }
+  let sub = null; try { sub = await P.push.current(); } catch (e) {}
+  if (!sub) {
+    card('<button class="btn" id="pushOn">Włącz powiadomienia</button>');
+    $('#pushOn').onclick = async () => { try { await P.push.enable(); toast('Powiadomienia włączone na tym telefonie.'); } catch (e) { toast(String(e.message) === 'denied' ? 'Nie zezwolono na powiadomienia.' : 'Nie udało się włączyć powiadomień.'); } renderPushCard(); };
+    return;
+  }
+  const code = JSON.stringify(sub);
+  card(`<div class="schip ok" style="align-self:flex-start">${ICON.check} Powiadomienia włączone na tym telefonie</div>
+    <div class="row"><button class="btn soft" id="pushTest">Pokaż próbne</button><button class="btn ghost" id="pushOff">Wyłącz</button></div>
+    <details class="vb"><summary><b>Jednorazowo: połącz telefon z harmonogramem</b></summary>
+      <ol class="muted" style="padding-left:20px;margin:8px 0">
+        <li>Dotknij <b>Skopiuj kod telefonu</b>.</li>
+        <li>Otwórz <a href="${SECRETS_URL}" target="_blank" rel="noopener">ustawienia sekretów na GitHubie</a> (zaloguj się) → sekret <b>PUSH_SUBSCRIPTIONS</b> → <b>Update</b> (albo <b>New repository secret</b> o tej nazwie).</li>
+        <li>Wklej kod i zapisz. Kilka telefonów? Wklej każdy kod w osobnej linii.</li></ol>
+      <button class="btn" id="pushCopy">Skopiuj kod telefonu</button>
+      <textarea class="answer" id="pushCode" rows="3" readonly style="font-size:12px;margin-top:8px">${esc(code)}</textarea></details>`);
+  $('#pushTest').onclick = () => P.push.test().catch(() => toast('Nie udało się pokazać powiadomienia.'));
+  $('#pushOff').onclick = async () => { await P.push.disable().catch(() => {}); toast('Powiadomienia wyłączone.'); renderPushCard(); };
+  $('#pushCopy').onclick = async () => { try { await navigator.clipboard.writeText(code); toast('Kod skopiowany. Wklej go w GitHubie.'); } catch (e) { const t = $('#pushCode'); t.focus(); t.select(); toast('Zaznaczyłam kod – skopiuj go ręcznie.'); } };
 }
 
 /* ===== WIDOK: POMOC – lektor, mikrofon, instalacja ===== */

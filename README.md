@@ -13,6 +13,16 @@ Aplikację instaluje się prosto ze strony, bez sklepu Play ani App Store:
 
 Po instalacji gra ma własną ikonę, otwiera się na pełnym ekranie i działa bez internetu. Postęp zapisuje się na urządzeniu. Żeby przenieść go na inne urządzenie, użyj **Profil → Kopia zapasowa**.
 
+## Powiadomienia o lekcji (2× dziennie)
+
+Harmonogram `.github/workflows/push.yml` (GitHub Actions) uruchamia `push/send.mjs` o 7:00 i 18:00 UTC (8:00 i 19:00 czasu polskiego zimą, 9:00 i 20:00 latem) i wysyła powiadomienie push na zapisane telefony.
+
+1. **Settings → Secrets and variables → Actions:** sekret `VAPID_PRIVATE_KEY` – klucz prywatny (para do klucza publicznego w `web/pwa.js` i w workflow).
+2. Na telefonie: **Profil → Powiadomienia → Włącz powiadomienia → Skopiuj kod telefonu** i wklej go jako sekret `PUSH_SUBSCRIPTIONS` (kilka telefonów – każdy kod w osobnej linii).
+3. Test: **Actions → Przypomnienia o lekcji → Run workflow**.
+
+Na iPhonie powiadomienia działają tylko w aplikacji dodanej do ekranu początkowego (iOS 16.4+). GitHub może opóźnić uruchomienie o kilkanaście–kilkadziesiąt minut.
+
 ## Budowanie
 
 Czysty HTML + CSS + JavaScript, bez frameworków i bez zależności. Kod źródłowy jest w `src/` i `web/`, gotowa strona w `docs/`.
