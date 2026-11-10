@@ -286,7 +286,7 @@ function viewMap() {
     u.levels.forEach(l => {
       const st = lvState(l.id), open = isOpen(l), done = isDone(l.id);
       const cls = !open ? 'locked' : (st && st.stars > 0) ? 'done' : (st && st.test) ? 'test' : 'open';
-      const node = !open ? ICON.lock : (st && st.stars > 0) ? ICON.check : (st && st.test) ? ICON.check : `${u.id.toUpperCase()}${l.n}`;
+      const node = !open ? ICON.lock : (st && st.stars > 0) ? ICON.check : (st && st.test) ? ICON.check : `${l.n}`;
       const right = !open ? '' : (st && st.stars > 0) ? stars(st.stars) : (st && st.test) ? '<span class="eyebrow">zaliczone testem</span>' : '<span class="eyebrow" style="color:var(--sky)">gotowe</span>';
       html += `<li class="wp ${cls}"><span class="node" aria-hidden="true">${node}</span>
         <button class="wpbtn" ${open ? `data-start="${l.id}"` : 'disabled'} aria-label="${esc(l.t)}${open ? '' : ' – zablokowane'}">
@@ -447,7 +447,7 @@ function finishTest() {
     <div><b>Lotnictwo:</b> ${passedAir.length ? 'znasz podstawy, więc ' : ''}zaczynasz od „${esc(nextAir ? nextAir.t : '—')}”.</div>
     <div><b>Do poprawy:</b> ${skName[weakest].toLowerCase()}. ${weakTip}</div>
     <div><b>Codzienna plansza:</b>
-     <ol style="margin:6px 0 0;padding-left:20px"><li>Nowy level „Na co dzień”.</li><li>Nowy level lotniczy.</li><li>Zwroty dnia.</li><li>Utrwalanie słówek.</li><li>Mówienie i gramatyka.</li><li>Powtórka błędów – i lądowanie w kolejnym mieście.</li></ol></div>
+     <ol style="margin:6px 0 0;padding-left:20px"><li>Nowy level (po kolei, ok. 2 „Na co dzień” na 1 lotniczy).</li><li>Utrwalenie ostatnich lekcji.</li><li>Zwroty dnia.</li><li>Utrwalanie słówek.</li><li>Mówienie i gramatyka.</li><li>Powtórka błędów – i lądowanie w kolejnym mieście.</li></ol></div>
     <div class="muted" style="font-size:14px">Każdego dnia plansza ułoży te lekcje sama. Cała trasa dnia to ok. 25 minut.</div>
    </div>
    <div class="row"><button class="btn" id="applyPlan">Zastosuj plan i lecimy</button><button class="btn ghost" id="redoTest">Powtórz test</button></div></div>`;
@@ -465,7 +465,7 @@ function openBriefing(id, tile = null) {
   el.hidden = false; document.body.style.overflow = 'hidden';
   el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Odprawa · ${esc(l.unit.t)}</span></div>
    <div class="lesson-body"><div class="wrap brief stack">
-    <div><div class="prompt-kind">Level ${l.unit.id.toUpperCase()}${l.n} · ${l.unit.cefr}</div><h2 class="view">${esc(l.t)}</h2><div class="muted" lang="bg">${esc(l.bt)}</div></div>
+    <div><div class="prompt-kind">Level ${l.unit.id.toUpperCase()}.${l.n} ·${l.unit.cefr}</div><h2 class="view">${esc(l.t)}</h2><div class="muted" lang="bg">${esc(l.bt)}</div></div>
     <div class="tipbox tblwrap">${l.tip}</div>
     <div><div class="eyebrow">Słówka w tym levelu</div><div class="words">${l.w.map(w => `<div class="wcell">${spkBtn(first(w[1]))}<div><b lang="bg">${esc(first(w[1]))}</b><small>${esc(w[0])} · <span class="mono">${esc(translit(first(w[1])))}</span></small></div></div>`).join('')}</div></div>
    </div></div>

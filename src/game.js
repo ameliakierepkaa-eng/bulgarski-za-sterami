@@ -8,6 +8,8 @@ function seedRng(str) {
 function sshuffle(a, r) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const city = s => CITIES[((s % CITIES.length) + CITIES.length) % CITIES.length];
 const TILE = {
+  new:{cap:'Nowy level', sub:'lekcja dnia', icon:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.6 6.1 6.6.6-5 4.4 1.5 6.5L12 16.7l-5.7 3.4 1.5-6.5-5-4.4 6.6-.6z"/></svg>'},
+  recap:{cap:'Utrwalenie', sub:'ostatnie lekcje', icon:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>'},
   day:{cap:'Nowy level', sub:'Na co dzień', icon:'<span class="glyph" lang="bg">Аа</span>'},
   air:{cap:'Nowy level', sub:'Lotnictwo', icon:ICON.plane},
   phr:{cap:'Zwroty', sub:'dnia', icon:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>'},
@@ -24,16 +26,32 @@ function makeDay() {
   const ci = cats.length ? cats[Math.floor(r() * cats.length)] : 0, ph = LV['ph' + ci];
   const idx = sshuffle(ph.s.map((_, i) => i), r).slice(0, 5);
   return {date:today(), stage:st, finished:false,
-    tiles:[{k:'day'}, {k:'air'}, {k:'phr', ph:ph.id, idx}, {k:'words'}, {k:'mix'}, {k:'review'}].map(t => ({...t, done:false, stars:0}))};
+    tiles:[{k:'new'}, {k:'recap'}, {k:'phr', ph:ph.id, idx}, {k:'words'}, {k:'mix'}, {k:'review'}].map(t => ({...t, done:false, stars:0}))};
 }
 function ensureDay() { const g = S.game; if (!g.day || g.day.date !== today()) { g.day = makeDay(); save(); } }
+/* Jeden nowy level dziennie: zawsze pierwszy nieukończony, ok. 2 „Na co dzień” na 1 lotniczy.
+   Nieukończony level wraca na planszę następnego dnia – nic się nie przeskakuje. */
+function nextDaily() {
+  const d = nextLevel('day'), a = nextLevel('air');
+  if (!d || !a) return d || a;
+  const nd = TRACK.day.filter(l => isDone(l.id)).length, na = TRACK.air.filter(l => isDone(l.id)).length;
+  return na * 2 < nd ? a : d;
+}
 function resolveLevel(t) {
   if (t.id && LV[t.id]) return LV[t.id];
+  if (t.k === 'new') return nextDaily();
   if (t.k === 'day') return nextLevel('day');
   return nextLevel('air') || nextLevel('day');
 }
+const isLevelTile = t => t.k === 'new' || t.k === 'day' || t.k === 'air';
+function recentLevels() {
+  const last = (tr, n) => TRACK[tr].filter(l => isDone(l.id)).slice(-n);
+  const ls = [...last('day', 2), ...last('air', 1)];
+  return ls.length ? ls : poolLevels();
+}
 function tileTitle(t) {
-  if (t.k === 'day' || t.k === 'air') { const l = resolveLevel(t); return l ? l.t : 'Trening utrwalający'; }
+  if (isLevelTile(t)) { const l = resolveLevel(t); return l ? l.t : 'Trening utrwalający'; }
+  if (t.k === 'recap') return 'Utrwalenie ostatnich lekcji';
   if (t.k === 'phr') return `Zwroty: ${LV[t.ph].t}`;
   if (t.k === 'words') return 'Słówka – utrwalanie';
   if (t.k === 'mix') return 'Mówienie i gramatyka';
@@ -61,6 +79,16 @@ function buildMix(levels) {
   return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
     {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
 }
+function buildRecap(levels) {
+  const Wd = shuffle(levels.flatMap(l => l.w.map((_, i) => W(l, i))));
+  const Sx = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i))));
+  const G = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
+  const w = k => Wd[k % Wd.length], s = k => Sx[k % Sx.length], g = k => G[k % G.length];
+  const out = [{t:'mc', dir:'pl2bg', it:w(0)}, {t:'listen', it:w(1)}, {t:'order', it:s(0)}, {t:'write', it:w(2)}, {t:'speak', it:s(1)},
+    {t:'mc', dir:'bg2pl', it:w(3)}, {t:'dict', it:s(2)}, {t:'write', it:s(3)}];
+  if (G.length) out.splice(3, 0, {t:'gram', it:g(0)}), out.splice(7, 0, {t:'gram', it:g(1)});
+  return out;
+}
 function buildPhr(t) {
   const lv = LV[t.ph], i = t.idx;
   return [{t:'mc', dir:'pl2bg', it:W(lv, i[0])}, {t:'order', it:SN(lv, i[1])}, {t:'listen', it:W(lv, i[2])}, {t:'speak', it:SN(lv, i[0])},
@@ -75,11 +103,12 @@ function startPractice(tile, items, title, againFn) {
 function startTile(i) {
   ensureDay();
   const t = S.game.day.tiles[i];
-  if (t.k === 'day' || t.k === 'air') {
+  if (isLevelTile(t)) {
     const l = resolveLevel(t);
     if (l) { t.id = l.id; save(); openBriefing(l.id, i); }
-    else startPractice(i, buildWords(LEVELS.filter(x => x.unit.track === t.k)), 'Trening utrwalający');
-  } else if (t.k === 'phr') openPhraseBrief(i);
+    else startPractice(i, buildWords(t.k === 'new' ? LEVELS : LEVELS.filter(x => x.unit.track === t.k)), 'Trening utrwalający');
+  } else if (t.k === 'recap') startPractice(i, buildRecap(recentLevels()), 'Utrwalenie ostatnich lekcji');
+  else if (t.k === 'phr') openPhraseBrief(i);
   else if (t.k === 'words') startPractice(i, buildWords(poolLevels()), 'Słówka – utrwalanie');
   else if (t.k === 'mix') startPractice(i, buildMix(poolLevels()), 'Mówienie i gramatyka');
   else startReview();
