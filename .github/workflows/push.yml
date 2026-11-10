@@ -1,0 +1,38 @@
+name: Przypomnienia o lekcji
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 8:00 czasu polskiego zimą, 9:00 latem
+    - cron: '0 18 * * *'  # 19:00 zimą, 20:00 latem
+  workflow_dispatch:       # ręczny test: Actions → Przypomnienia o lekcji → Run workflow
+
+permissions:
+  contents: write
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalacja biblioteki web-push
+        run: npm install --no-save --no-audit --no-fund web-push@3.6.7
+      - name: Wysłanie powiadomienia
+        run: node push/send.mjs
+        env:
+          VAPID_PUBLIC_KEY: BJynTcCWbt1wgE2RkhO2kMyqLrJvTlAI-zcXe_mMeSHJ7EC0Am_yyefVtw6iwwrhBb7I_SF7HSv2CqZ1jj-54Yo
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          PUSH_SUBSCRIPTIONS: ${{ secrets.PUSH_SUBSCRIPTIONS }}
+      # GitHub wyłącza harmonogram po 60 dniach bez zmian w repozytorium – raz w miesiącu robimy drobny zapis.
+      - name: Podtrzymanie harmonogramu
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" -ge 12 ]; then
+            date -u > push/ostatnie-uruchomienie.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add push/ostatnie-uruchomienie.txt
+            git commit -m "Przypomnienia: comiesięczne podtrzymanie harmonogramu" && git push
+          fi
