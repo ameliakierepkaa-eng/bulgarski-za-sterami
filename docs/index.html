@@ -1,0 +1,2132 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Gra do nauki bułgarskiego z polskiego: codzienna plansza, kurs, zwroty, gramatyka, słówka i gry. Działa też bez internetu.">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#172234" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bułgarski">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta property="og:title" content="Bułgarski za sterami">
+<meta property="og:description" content="Nauka bułgarskiego z polskiego – codziennie 25 minut lotu nad Bułgarią.">
+<meta property="og:image" content="icons/icon-512.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Bułgarski za sterami</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: kokpit – pasek przyrządów (HUD) u góry, trasa lotu z punktami nawigacyjnymi poniżej */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --surface2:#E8ECF2; --ink:#14202F; --muted:#5A6779; --line:#D5DCE6;
+  --sky:#2A64BE; --sky-soft:#DCE7F7; --earth:#A9622A; --earth-soft:#F3E3D3;
+  --ok:#24814F; --ok-soft:#DDF1E5; --bad:#C23B2B; --bad-soft:#F8E0DC; --gold:#C98F0A;
+  --f-display:'Unbounded','Onest',system-ui,sans-serif;
+  --f-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1724; --surface:#172234; --surface2:#1E2B40; --ink:#E6ECF5; --muted:#93A2B7; --line:#2A3950;
+  --sky:#6AA2F0; --sky-soft:#1D3456; --earth:#D9904F; --earth-soft:#3A2818;
+  --ok:#4CC488; --ok-soft:#173A2A; --bad:#F2705F; --bad-soft:#40201C; --gold:#F0BE4A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1724; --surface:#172234; --surface2:#1E2B40; --ink:#E6ECF5; --muted:#93A2B7; --line:#2A3950;
+  --sky:#6AA2F0; --sky-soft:#1D3456; --earth:#D9904F; --earth-soft:#3A2818;
+  --ok:#4CC488; --ok-soft:#173A2A; --bad:#F2705F; --bad-soft:#40201C; --gold:#F0BE4A; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[lang="bg"]{font-feature-settings:"locl"}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.icon{width:1.1em;height:1.1em;vertical-align:-.18em;flex:none}
+
+/* HUD */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.hud-in{display:flex;align-items:center;gap:14px;padding-block:10px}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1}
+.brand b{font-family:var(--f-display);font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat{display:flex;align-items:center;gap:5px;font-family:var(--f-mono);font-weight:700;font-size:14px}
+.stat.streak{color:var(--earth)} .stat.xp{color:var(--sky)}
+.gauge{width:46px;height:46px;flex:none}
+.gauge text{font-family:var(--f-mono);font-weight:700}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{flex:none;text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;padding:6px 12px;border-radius:999px}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--surface)}
+main{padding-block:20px 60px}
+
+/* generic */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:var(--sky);color:#fff;min-height:46px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.soft{background:var(--sky-soft);color:var(--sky)}
+.btn.ok{background:var(--ok)} .btn.bad{background:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:flex;flex-direction:column;gap:14px}
+.spk{border:0;background:var(--sky-soft);color:var(--sky);width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;flex:none}
+.spk.big{width:64px;height:64px}
+.spk.big .icon{width:28px;height:28px}
+.noaudio .spk{display:none}
+table.mini{border-collapse:collapse;margin:8px 0;font-size:14px}
+table.mini td{padding:4px 12px 4px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.mini td[lang="bg"]{font-weight:600}
+.tblwrap{overflow-x:auto}
+h2.view{font-family:var(--f-display);font-size:22px;font-weight:700;margin-bottom:4px}
+
+/* map */
+.trackswitch{display:inline-flex;background:var(--surface2);border-radius:12px;padding:4px;gap:4px;max-width:100%}
+.trackswitch button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:600;color:var(--muted);font-size:14px}
+.trackswitch button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.next{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--ink);color:var(--surface);border-radius:var(--r);padding:16px 18px}
+.next .eyebrow{color:inherit;opacity:.7}
+.next b{font-family:var(--f-display);font-size:17px;display:block;margin-top:2px}
+.next .btn{background:var(--surface);color:var(--ink)}
+.unit{margin-top:28px}
+.unit-head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+.unit-head h3{font-family:var(--f-display);font-size:20px;font-weight:700}
+.unit-head .pl{color:var(--muted);font-weight:500}
+.route{list-style:none;margin:0;padding:0;position:relative}
+.route::before{content:"";position:absolute;left:21px;top:22px;bottom:22px;border-left:2px dashed var(--line)}
+.wp{position:relative;display:flex;gap:14px;align-items:center;padding:6px 0}
+.node{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;font-family:var(--f-mono);font-weight:700;font-size:13px;background:var(--surface);border:2px solid var(--line);color:var(--muted);z-index:1}
+.wp.open .node{border-color:var(--sky);color:var(--sky);box-shadow:0 0 0 5px var(--sky-soft)}
+.wp.done .node{background:var(--sky);border-color:var(--sky);color:#fff}
+.wp.test .node{background:var(--sky-soft);border-color:var(--sky);color:var(--sky)}
+.wpbtn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.wp.locked .wpbtn{background:transparent;cursor:not-allowed}
+.wp.locked .wpbtn .t{color:var(--muted)}
+.wpbtn .t{font-weight:700;display:block}
+.wpbtn .b{font-size:13px;color:var(--muted)}
+.stars{display:flex;gap:2px;color:var(--line);flex:none}
+.stars .on{color:var(--gold)}
+.welcome{border:1.5px solid var(--sky);background:var(--sky-soft)}
+
+/* phrase / dict lists */
+.search{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit}
+.plist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.prow{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow .txt{flex:1;min-width:0}
+.prow .bg{font-weight:700;font-size:17px}
+.prow .tr{font-family:var(--f-mono);font-size:12px;color:var(--earth)}
+.prow .pl{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+.gcard h3{font-family:var(--f-display);font-size:16px;margin-bottom:6px}
+.gcard p{margin:6px 0}
+
+/* lesson overlay */
+.lesson{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.lesson-top{display:flex;align-items:center;gap:12px;padding-block:12px}
+.xbtn{border:0;background:transparent;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+.pbar{flex:1;height:12px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--sky);border-radius:99px;transition:width .35s ease}
+.lesson-body{flex:1;overflow-y:auto}
+.lesson-body .wrap{padding-block:12px 24px}
+.prompt-kind{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--earth);margin-bottom:6px}
+.prompt{font-family:var(--f-display);font-size:clamp(20px,5vw,26px);font-weight:500;line-height:1.3;margin-bottom:6px}
+.prompt [lang="bg"]{font-weight:700}
+.sub{color:var(--muted);margin-bottom:18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;font-size:17px;font-weight:600;min-height:56px}
+.opt .k{font-family:var(--f-mono);font-size:12px;color:var(--muted);border:1.5px solid var(--line);border-radius:6px;padding:1px 6px;flex:none}
+.opt[aria-pressed="true"]{border-color:var(--sky);background:var(--sky-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;min-height:58px;padding:10px 0;border-bottom:2px solid var(--line);margin-bottom:16px}
+.tiles.bank{border:0}
+.tile{border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);border-radius:12px;padding:8px 13px;font-size:17px;font-weight:600}
+.tile.used{visibility:hidden}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.matchgrid .col{display:grid;gap:10px;align-content:start;min-width:0}
+.mt{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;font-weight:600;min-height:52px;text-align:center;overflow-wrap:anywhere}
+.mt[aria-pressed="true"]{border-color:var(--sky);background:var(--sky-soft)}
+.mt.gone{opacity:.25;pointer-events:none}
+.mt.err{border-color:var(--bad);background:var(--bad-soft)}
+.answer{width:100%;font:inherit;font-size:19px;padding:14px;border:2px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);resize:none}
+.kb{display:grid;gap:6px;margin-top:12px}
+.kb .krow{display:flex;gap:4px;justify-content:center}
+.kb button{flex:1;max-width:44px;min-width:0;height:42px;border:1px solid var(--line);border-bottom-width:3px;background:var(--surface);border-radius:8px;font-size:17px;padding:0}
+.kb button.wide{max-width:90px;flex:2;font-size:13px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin-top:10px}
+.mic{width:96px;height:96px;border-radius:50%;border:0;background:var(--earth);color:#fff;display:grid;place-items:center;margin:8px auto}
+.mic .icon{width:40px;height:40px}
+.mic.live{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--earth-soft)}50%{box-shadow:0 0 0 16px var(--earth-soft)}}
+.heard{min-height:28px;text-align:center;font-size:18px;font-weight:600}
+.heard i{color:var(--muted);font-weight:400}
+.target{font-size:22px;font-weight:700;text-align:center}
+.tr-line{font-family:var(--f-mono);font-size:13px;color:var(--earth);text-align:center}
+.lesson-foot{border-top:1px solid var(--line);background:var(--surface);padding-bottom:env(safe-area-inset-bottom,0px)}
+.lesson-foot.ok{background:var(--ok-soft);border-color:var(--ok)}
+.lesson-foot.bad{background:var(--bad-soft);border-color:var(--bad)}
+.foot-in{display:flex;flex-direction:column;gap:10px;padding-block:14px}
+.fb{display:none}
+.lesson-foot.ok .fb,.lesson-foot.bad .fb{display:flex;gap:12px;align-items:flex-start}
+.fb .msg{flex:1;min-width:0}
+.fb h4{margin:0;font-size:18px}
+.lesson-foot.ok h4{color:var(--ok)} .lesson-foot.bad h4{color:var(--bad)}
+.fb .ans{font-weight:700;font-size:17px}
+.fb .note{font-size:14px;color:var(--muted)}
+.foot-btns{display:flex;gap:10px}
+.foot-btns .btn{flex:1}
+.brief .words{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.wcell{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:0}
+.wcell div{min-width:0}
+.wcell b{display:block}
+.wcell small{color:var(--muted)}
+.tipbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.tipbox p{margin:6px 0}
+.result{text-align:center}
+.bigstars{display:flex;justify-content:center;gap:10px;margin:14px 0}
+.bigstars .icon{width:52px;height:52px;color:var(--line)}
+.bigstars .on .icon{color:var(--gold);filter:drop-shadow(0 2px 6px color-mix(in srgb,var(--gold) 45%,transparent))}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.kpi b{display:block;font-family:var(--f-mono);font-size:22px}
+.kpi span{font-size:12px;color:var(--muted)}
+.bar{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sky)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;z-index:80;font-size:14px;max-width:calc(100% - 32px)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600}
+.seg button[aria-pressed="true"]{border-color:var(--sky);color:var(--sky);background:var(--sky-soft)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
+.setrow:first-of-type{border-top:0}
+.qcount{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* plansza gry */
+.stagehead{margin-bottom:14px}
+.stagehead h2{margin:4px 0}
+.board{position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:360/640;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:var(--sky-soft)}
+.board-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tnode{position:absolute;transform:translate(-50%,-50%);border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;width:92px}
+.disc{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:3px solid var(--line);color:var(--muted);box-shadow:0 3px 0 var(--line)}
+.disc .icon{width:24px;height:24px}
+.glyph{font-family:var(--f-display);font-weight:700;font-size:18px}
+.tnode.cur .disc{border-color:var(--earth);color:var(--earth);box-shadow:0 3px 0 var(--earth),0 0 0 6px var(--earth-soft);animation:bump 1.6s ease-in-out infinite}
+.tnode.done .disc{background:var(--sky);border-color:var(--sky);color:#fff;box-shadow:0 3px 0 var(--ink)}
+.tnode.locked{cursor:not-allowed}
+.tnode.locked .disc{background:var(--surface2)}
+.tcap{display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:2px 8px;line-height:1.2;max-width:100%}
+.tcap b{font-size:12px;white-space:nowrap}
+.tcap small{font-size:11px;color:var(--muted);white-space:nowrap}
+.ministars{color:var(--gold);letter-spacing:1px}
+@keyframes bump{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.cityp{position:absolute;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;background:var(--ink);color:var(--surface);border-radius:14px;padding:6px 14px;box-shadow:0 4px 0 rgba(0,0,0,.18);max-width:70%;text-align:center}
+.cityp b{font-family:var(--f-display);font-size:15px;line-height:1.2}
+.cityp span{font-size:11px;opacity:.8}
+.cityp i{font-style:normal}
+.cityp.dest{background:var(--surface);color:var(--ink);border:2px dashed var(--earth)}
+.cityp.dest.reached{background:var(--earth);color:#fff;border-style:solid}
+.hero{position:absolute;width:74px;transform:translate(-50%,-96%);z-index:3;transition:left 1.3s cubic-bezier(.5,0,.3,1),top 1.3s cubic-bezier(.5,0,.3,1);pointer-events:none;filter:drop-shadow(0 4px 2px rgba(0,0,0,.18))}
+.hero svg{display:block;width:100%;height:auto;animation:bob 2.4s ease-in-out infinite}
+.hero .rotor{transform-box:fill-box;transform-origin:center;animation:spin .28s linear infinite}
+.hero .prop{transform-box:fill-box;transform-origin:center;animation:spinv .18s linear infinite}
+@keyframes spin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.12)}}
+@keyframes spinv{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.15)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.cloud{animation:drift 14s ease-in-out infinite alternate;opacity:.9}
+.cloud.c2{animation-duration:18s}
+@keyframes drift{from{transform:translateX(-8px)}to{transform:translateX(10px)}}
+.postcard{margin-top:16px;border:2px solid var(--earth);background:var(--earth-soft)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pc b{font-family:var(--f-display);font-size:15px}
+.pc small{color:var(--muted);font-size:12px}
+.pc p{margin:2px 0;font-size:13px}
+.pc.locked{background:transparent;border-style:dashed;align-items:center;justify-content:center;min-height:90px;color:var(--muted)}
+.pnum{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;border:2px solid var(--line);font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--muted)}
+.pnum.on{background:var(--sky);border-color:var(--sky);color:#fff}
+@media (max-width:380px){.disc{width:50px;height:50px}.tnode{width:84px}.hero{width:62px}}
+
+/* fiszki, gry */
+.modes{margin-top:6px}
+.gamegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.gamecard{display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-bottom-width:4px;border-radius:16px;padding:16px;min-width:0}
+.gamecard:hover{border-color:var(--sky)}
+.gamecard b{font-family:var(--f-display);font-size:16px}
+.gamecard .muted{font-size:14px;flex:1}
+.gamecard .btn{min-height:38px;padding:6px 16px;margin-top:4px}
+.gicon{width:52px;height:52px;border-radius:14px;background:var(--earth-soft);color:var(--earth);display:grid;place-items:center}
+.gicon .icon{width:26px;height:26px}
+.gicon .glyph{font-size:12px;text-align:center;line-height:1.1}
+.flash{position:relative;min-height:240px;perspective:1000px;cursor:pointer}
+.flash .face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:22px;border-radius:20px;border:1px solid var(--line);border-bottom-width:5px;background:var(--surface);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .45s ease}
+.flash .back{transform:rotateY(180deg);background:var(--sky-soft);border-color:var(--sky)}
+.flash.flipped .front{transform:rotateY(-180deg)}
+.flash.flipped .back{transform:rotateY(0)}
+.fpl{font-family:var(--f-display);font-size:clamp(20px,5vw,26px);font-weight:500}
+.fbg{font-size:clamp(22px,6vw,30px);font-weight:700}
+.phm .mt{font-size:15px;text-align:left}
+.lline{font-size:21px;font-weight:700;line-height:1.35}
+.okbox,.badbox{border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
+.okbox{background:var(--ok-soft);border:1px solid var(--ok)} .okbox b{color:var(--ok)}
+.badbox{background:var(--bad-soft);border:1px solid var(--bad)} .badbox b{color:var(--bad)}
+@media (max-width:480px){.stat.streak span.lbl,.stat.xp span.lbl{display:none}.kpis{grid-template-columns:repeat(3,1fr)}.next{grid-template-columns:1fr}}
+
+/* ===== dopracowanie wyglądu ===== */
+:root{--shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.05);--nav-h:0px}
+.card,.plist,.kpi,.gamecard,.wpbtn,.pc:not(.locked),.tipbox{box-shadow:var(--shadow)}
+@media (min-width:701px){.hud{backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);background:color-mix(in srgb,var(--surface) 88%,transparent)}}
+.brand b{background:linear-gradient(90deg,var(--sky),var(--earth));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav.tabs a{display:inline-flex;align-items:center;gap:6px;transition:background .2s,color .2s}
+nav.tabs .icon{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:18px;height:18px}
+.btn{transition:transform .08s ease,filter .15s,box-shadow .15s;box-shadow:0 3px 0 color-mix(in srgb,var(--sky) 65%,#000)}
+.btn.ok{box-shadow:0 3px 0 color-mix(in srgb,var(--ok) 65%,#000)} .btn.bad{box-shadow:0 3px 0 color-mix(in srgb,var(--bad) 65%,#000)}
+.btn.ghost,.btn.soft,.next .btn{box-shadow:none}
+a.btn{text-decoration:none}
+.btn:not(:disabled):active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in srgb,var(--sky) 65%,#000)}
+.btn:not(:disabled):hover{filter:brightness(1.06)}
+.opt,.tile,.mt,.wpbtn,.gamecard,.chip,.seg button{transition:transform .08s ease,border-color .15s,background .15s}
+.opt:not(.right):not(.wrong):active,.tile:active,.mt:active,.gamecard:active,.wpbtn:active{transform:scale(.98)}
+.opt.wrong,.mt.err{animation:shake .35s ease}
+.opt.right{animation:pop .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+.lesson-foot.ok .fb,.lesson-foot.bad .fb{animation:slideup .25s ease}
+@keyframes slideup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#view.fade{animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pbar i{background:linear-gradient(90deg,var(--sky),color-mix(in srgb,var(--sky) 70%,#fff))}
+.bar i{background:linear-gradient(90deg,var(--sky),color-mix(in srgb,var(--sky) 70%,#fff))}
+.bigstars .on{animation:starin .5s cubic-bezier(.3,1.6,.5,1) both}
+.bigstars span.on:nth-child(2){animation-delay:.15s}
+.bigstars span.on:nth-child(3){animation-delay:.3s}
+@keyframes starin{from{transform:scale(0) rotate(-40deg);opacity:0}to{transform:none;opacity:1}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--rot))}}
+.toast.update{display:flex;align-items:center;gap:12px;bottom:calc(20px + var(--nav-h) + env(safe-area-inset-bottom,0px))}
+.toast.update .btn{min-height:36px;padding:6px 14px}
+.toast{bottom:calc(20px + var(--nav-h) + env(safe-area-inset-bottom,0px));box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* telefon: zakładki jako dolny pasek z ikonami */
+@media (max-width:700px){
+  :root{--nav-h:62px}
+  .dk{display:none}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;gap:0;padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+    background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);
+    border-top:1px solid var(--line);overflow:visible;justify-content:space-around}
+  nav.tabs a{flex:1;min-width:0;flex-direction:column;gap:2px;padding:8px 0 7px;border-radius:0;font-size:10px;letter-spacing:-.04em;font-weight:600;height:var(--nav-h);justify-content:center}
+  nav.tabs a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  nav.tabs .icon{width:22px;height:22px}
+  nav.tabs a[aria-current="page"]{background:transparent;color:var(--sky)}
+  nav.tabs a[aria-current="page"] .icon{background:var(--sky-soft);border-radius:999px;padding:3px 14px;width:52px;height:28px;box-sizing:border-box}
+  .hud-in{padding-block:10px}
+  main{padding-bottom:calc(var(--nav-h) + 40px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+<header class="hud">
+  <div class="wrap">
+    <div class="hud-in">
+      <div class="brand"><b>Bułgarski za sterami</b><span id="rankline">Курсант · Kursant</span></div>
+      <div class="stat streak" title="Seria dni nauki"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 2.8 2 3.2C11 8.5 11.5 5 12 2z"/></svg><span id="streak">0</span><span class="lbl">dni</span></div>
+      <div class="stat xp" title="Punkty doświadczenia"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><span id="xp">0</span><span class="lbl">XP</span></div>
+      <svg class="gauge" id="gauge" viewBox="0 0 46 46" role="img" aria-label="Cel dnia"></svg>
+    </div>
+    <nav class="tabs" aria-label="Sekcje">
+      <a href="#plansza"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg><span>Plansza</span></a>
+      <a href="#kurs"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V4h12l-2.5 4L17 12H5"/></svg><span>Kurs</span></a>
+      <a href="#zwroty"><svg class="icon" viewBox="0 0 24 24"><path d="M4 5h16v11H10l-6 4z"/></svg><span>Zwroty</span></a>
+      <a href="#gramatyka"><svg class="icon" viewBox="0 0 24 24"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3zM21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg><span>Gramatyka</span></a>
+      <a href="#slowka"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v12"/></svg><span>Słówka</span></a>
+      <a href="#gry"><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4M15.5 11.5h.01M18 13.5h.01"/></svg><span>Gry<span class="dk"> i zabawy</span></span></a>
+      <a href="#profil"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profil</span></a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="view"></main>
+</div>
+<div class="lesson" id="lesson" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===== TREŚCI KURSU =====
+   w: [polski, bułgarski (warianty po |), notatka]
+   s: [polski, bułgarski (warianty po |)]
+   g: {s: zdanie z ___ | q: pytanie, o: [poprawna, ...błędne], pl: tłumaczenie, why: wyjaśnienie}
+*/
+const UNITS = [
+/* ---------------- TRASA: NA CO DZIEŃ ---------------- */
+{ id:'d0', track:'day', cefr:'A0', bt:'Първи стъпки', t:'Pierwsze kroki', levels:[
+ { id:'d0-1', t:'Cyrylica w praktyce', bt:'Кирилица',
+   tip:`<p>Bułgarska cyrylica ma 30 liter. Większość czyta się prawie jak po polsku. Uważaj na te:</p>
+   <table class="mini"><tr><td lang="bg">ж</td><td>ż</td><td lang="bg">ч</td><td>cz</td><td lang="bg">ш</td><td>sz</td></tr>
+   <tr><td lang="bg">щ</td><td>szt</td><td lang="bg">ц</td><td>c</td><td lang="bg">х</td><td>ch</td></tr>
+   <tr><td lang="bg">я</td><td>ja</td><td lang="bg">ю</td><td>ju</td><td lang="bg">й</td><td>j</td></tr>
+   <tr><td lang="bg">ъ</td><td>ă</td><td lang="bg">в</td><td>w</td><td lang="bg">и</td><td>i</td></tr></table>
+   <p><b lang="bg">ъ</b> to krótka, „nijaka” samogłoska, jak <i>a</i> w angielskim <i>about</i>. W transkrypcji zapisujemy ją jako <b>ă</b>.</p>`,
+   w:[['kawa','кафе'],['taksówka','такси'],['hotel','хотел'],['bank','банка'],['pilot','пилот'],['radio','радио'],['telefon','телефон'],['apteka','аптека'],['restauracja','ресторант'],['paszport','паспорт']],
+   s:[['To jest hotel.','Това е хотел.'],['To jest kawa.','Това е кафе.'],['Gdzie jest bank?','Къде е банката?'],['Gdzie jest apteka?','Къде е аптеката?'],['To jest mój paszport.','Това е моят паспорт.|Това е паспортът ми.']],
+   g:[{s:'Това ___ хотел.',o:['е','са','съм'],pl:'To jest hotel.',why:'„е” = jest (on, ona, ono, to).'},
+      {q:'Jak czyta się literę „щ”?',o:['szt','sz','cz'],why:'щ = szt, np. <span lang="bg">още</span> (oszte) – jeszcze.'},
+      {q:'Jak czyta się literę „ж”?',o:['ż','z','dż'],why:'ж = ż, np. <span lang="bg">жена</span> – kobieta.'},
+      {q:'Litera „ъ” to…',o:['krótka samogłoska jak „a” w ang. about','znak niemy','dźwięk „u”'],why:'W bułgarskim ъ jest pełnoprawną samogłoską: <span lang="bg">България</span> (Bălgarija).'}]},
+ { id:'d0-2', t:'Powitania', bt:'Поздрави',
+   tip:`<p>Formy czasownika <b lang="bg">съм</b> (być) przydadzą się w każdym zdaniu:</p>
+   <table class="mini"><tr><td lang="bg">аз съм</td><td>jestem</td><td lang="bg">ние сме</td><td>jesteśmy</td></tr>
+   <tr><td lang="bg">ти си</td><td>jesteś</td><td lang="bg">вие сте</td><td>jesteście / Pan(i) jest</td></tr>
+   <tr><td lang="bg">той/тя/то е</td><td>jest</td><td lang="bg">те са</td><td>są</td></tr></table>
+   <p><b>Uwaga kulturowa:</b> Bułgarzy często kiwają głową na boki na „tak”, a w górę i w dół na „nie”. Słuchaj słów, nie gestów.</p>`,
+   w:[['cześć','здравей'],['dzień dobry','добър ден|здравейте'],['dzień dobry (rano)','добро утро'],['dobry wieczór','добър вечер'],['dobranoc','лека нощ'],['do widzenia','довиждане'],['dziękuję','благодаря|мерси'],['proszę','моля'],['przepraszam','извинете|извинявай'],['tak','да'],['nie','не']],
+   s:[['Jak się masz?','Как си?'],['Dobrze, dziękuję.','Добре съм, благодаря.'],['Nazywam się Anna.','Казвам се Анна.'],['Jak się nazywasz?','Как се казваш?'],['Miło mi.','Приятно ми е.'],['Jestem z Polski.','Аз съм от Полша.|От Полша съм.']],
+   g:[{s:'Аз ___ от Полша.',o:['съм','е','са'],pl:'Jestem z Polski.'},
+      {s:'Ние ___ пилоти.',o:['сме','сте','са'],pl:'Jesteśmy pilotami.'},
+      {s:'Как ___ казваш?',o:['се','си','ли'],pl:'Jak się nazywasz?',why:'<span lang="bg">казвам се</span> = nazywam się; „се” = się.'},
+      {s:'Те ___ от Варна.',o:['са','сме','е'],pl:'Oni są z Warny.'}]}
+]},
+{ id:'d1', track:'day', cefr:'A1', bt:'Време и числа', t:'Czas i liczby', levels:[
+ { id:'d1-1', t:'Liczby', bt:'Числа',
+   tip:`<p>„Jeden” i „dwa” zmieniają się z rodzajem: <b lang="bg">един самолет</b>, <b lang="bg">една кола</b>, <b lang="bg">едно кафе</b>; <b lang="bg">два самолета</b>, ale <b lang="bg">две кафета</b>.</p>
+   <p>Po liczebniku rzeczownik męski dostaje końcówkę <b>-а</b>: <span lang="bg">два билета, три часа</span>.</p>
+   <p>Liczby 11–19 i dziesiątki mają formy długie i krótkie: <span lang="bg">единадесет = единайсет</span>, <span lang="bg">двадесет = двайсет</span>. W mowie częściej słyszysz krótkie.</p>`,
+   w:[['jeden','едно|един|една'],['dwa','две|два'],['trzy','три'],['cztery','четири'],['pięć','пет'],['sześć','шест'],['siedem','седем'],['osiem','осем'],['dziewięć','девет'],['dziesięć','десет'],['dwadzieścia','двайсет|двадесет'],['sto','сто']],
+   s:[['Mam dwa bilety.','Имам два билета.'],['Dwie kawy, proszę.','Две кафета, моля.'],['To kosztuje pięć euro.','Това струва пет евро.'],['Mam trzydzieści lat.','На трийсет години съм.|На тридесет години съм.'],['Potrzebuję trzech biletów.','Трябват ми три билета.']],
+   g:[{s:'Имам ___ билета.',o:['два','две','една'],pl:'Mam dwa bilety.',why:'Rodzaj męski: два; żeński i nijaki: две.'},
+      {s:'___ кафета, моля.',o:['Две','Два','Едно'],pl:'Dwie kawy, proszę.',why:'<span lang="bg">кафе</span> jest rodzaju nijakiego → две.'},
+      {s:'Един самолет, два ___.',o:['самолета','самолети','самолетът'],pl:'Jeden samolot, dwa samoloty.',why:'Po liczebniku: forma na -а.'},
+      {q:'„двайсет” to…',o:['20','12','200'],why:'<span lang="bg">двайсет</span> (= двадесет) to 20.'}]},
+ { id:'d1-2', t:'Która godzina?', bt:'Колко е часът?',
+   tip:`<p><b>Pułapka:</b> <b lang="bg">час</b> to „godzina”, a <b lang="bg">време</b> to „czas” (i „pogoda”).</p>
+   <p>Godziny: <span lang="bg">Часът е осем.</span> – Jest ósma. <span lang="bg">Осем и петнайсет.</span> – 8:15. <span lang="bg">Осем и половина.</span> – 8:30. <span lang="bg">Девет без четвърт.</span> – 8:45.</p>
+   <p><b lang="bg">рано</b> znaczy „wcześnie”, a „rano” to <b lang="bg">сутрин</b>.</p>`,
+   w:[['godzina (zegarowa)','час','Pułapka: час ≠ czas'],['minuta','минута'],['połowa / wpół','половина'],['kwadrans','четвърт'],['rano','сутрин'],['wieczorem','вечер'],['teraz','сега'],['wcześnie','рано','Pułapka: рано = wcześnie'],['późno','късно'],['czas','време','време = czas i pogoda']],
+   s:[['Która godzina?','Колко е часът?'],['Jest ósma.','Часът е осем.|Осем е.'],['Jest wpół do dziewiątej.','Осем и половина е.|Часът е осем и половина.'],['O której jest lot?','В колко часа е полетът?'],['O dziesiątej.','В десет часа.|В десет.'],['Spóźniam się.','Закъснявам.'],['Nie mam czasu.','Нямам време.']],
+   g:[{s:'Колко е ___?',o:['часът','часа','време'],pl:'Która godzina?'},
+      {s:'___ колко часа е полетът?',o:['В','На','С'],pl:'O której jest lot?'},
+      {q:'„Единайсет без четвърт” to…',o:['10:45','11:15','11:45'],why:'Без четвърт = za kwadrans.'},
+      {q:'Bułgarskie „рано” znaczy…',o:['wcześnie','rano','późno'],why:'„rano” po bułgarsku to <span lang="bg">сутрин</span>.'}]},
+ { id:'d1-3', t:'Dni tygodnia', bt:'Дни от седмицата',
+   tip:`<p>Dni tygodnia są podobne do polskich: <span lang="bg">понеделник, вторник, сряда, четвъртък, петък, събота, неделя</span>.</p>
+   <p>„W poniedziałek” = <b lang="bg">в понеделник</b>. Przyimek <b lang="bg">в</b> zmienia się w <b lang="bg">във</b> przed słowem zaczynającym się na в lub ф: <span lang="bg">във вторник</span>.</p>`,
+   w:[['poniedziałek','понеделник'],['wtorek','вторник'],['środa','сряда'],['czwartek','четвъртък'],['piątek','петък'],['sobota','събота'],['niedziela','неделя'],['tydzień','седмица'],['dzisiaj','днес'],['jutro','утре'],['wczoraj','вчера']],
+   s:[['Dzisiaj jest piątek.','Днес е петък.'],['Jutro jest sobota.','Утре е събота.'],['W poniedziałek pracuję.','В понеделник работя.|Работя в понеделник.'],['Do zobaczenia jutro!','До утре!|Ще се видим утре!'],['W tym tygodniu latam.','Тази седмица летя.|Летя тази седмица.']],
+   g:[{s:'___ понеделник работя.',o:['В','На','До'],pl:'W poniedziałek pracuję.'},
+      {s:'Вчера ___ неделя.',o:['беше','е','бях'],pl:'Wczoraj była niedziela.',why:'Czas przeszły od „е” to „беше”.'},
+      {s:'___ вторник летя.',o:['Във','В','На'],pl:'We wtorek latam.',why:'Przed в/ф mówimy <span lang="bg">във</span>.'},
+      {q:'„сряда” to…',o:['środa','sobota','czwartek'],why:'<span lang="bg">сряда</span> = środa.'}]}
+]},
+{ id:'d2', track:'day', cefr:'A1', bt:'Пазаруване и храна', t:'Zakupy i jedzenie', levels:[
+ { id:'d2-1', t:'Produkty', bt:'Продукти',
+   tip:`<p>Pytanie tworzysz słówkiem <b lang="bg">ли</b>, które stawiasz po wyrazie, o który pytasz: <span lang="bg">Имате ли хляб?</span> – Macie chleb?</p>
+   <p><b>Pułapki:</b> <span lang="bg">сирене</span> to biały ser (jak feta), a żółty ser to <span lang="bg">кашкавал</span>. <span lang="bg">масло</span> to masło i… olej.</p>`,
+   w:[['mleko','мляко'],['chleb','хляб'],['woda','вода'],['ser biały','сирене','Pułapka: to nie „syrena”'],['ser żółty','кашкавал'],['jajka','яйца'],['masło / olej','масло','масло = masło i olej'],['mięso','месо'],['owoce','плодове'],['warzywa','зеленчуци'],['jogurt','кисело мляко'],['herbata','чай'],['piwo','бира'],['wino','вино']],
+   s:[['Gdzie znajdę mleko?','Къде мога да намеря мляко?|Къде да намеря мляко?|Къде има мляко?'],['Macie chleb?','Имате ли хляб?'],['Wodę, proszę.','Вода, моля.|Една вода, моля.'],['Nie jem mięsa.','Не ям месо.'],['Lubię biały ser.','Обичам сирене.|Харесвам сирене.'],['Gdzie jest jogurt?','Къде е киселото мляко?']],
+   g:[{s:'Имате ___ хляб?',o:['ли','се','да'],pl:'Macie chleb?',why:'„ли” tworzy pytanie.'},
+      {s:'Къде мога ___ намеря мляко?',o:['да','за','ли'],pl:'Gdzie mogę znaleźć mleko?',why:'Bułgarski nie ma bezokolicznika: мога да намеря = mogę znaleźć.'},
+      {s:'Не ___ месо.',o:['ям','яде','яж'],pl:'Nie jem mięsa.'},
+      {q:'Liczba mnoga od „яйце” to…',o:['яйца','яйцета','яйци'],why:'Rzeczowniki nijakie na -е/-о mają zwykle -а/-я.'}]},
+ { id:'d2-2', t:'W sklepie', bt:'В магазина',
+   tip:`<p>Od 2026 roku Bułgaria płaci w <b lang="bg">евро</b> (wcześniej <span lang="bg">лев</span>; to słowo wciąż usłyszysz w rozmowach).</p>
+   <p>Rodzajnik określony dokleja się na końcu: <span lang="bg">магазин → магазинът</span> (ten sklep), <span lang="bg">каса → касата</span> (ta kasa).</p>`,
+   w:[['sklep','магазин'],['kasa','каса'],['cena','цена'],['pieniądze','пари'],['karta','карта'],['reklamówka','торбичка'],['tanio','евтино'],['drogo','скъпо'],['paragon','касова бележка'],['reszta (pieniędzy)','ресто'],['otwarte','отворено'],['zamknięte','затворено']],
+   s:[['Ile to kosztuje?','Колко струва това?'],['Czy mogę zapłacić kartą?','Може ли да платя с карта?|Мога ли да платя с карта?'],['To jest bardzo drogie.','Това е много скъпо.'],['Gdzie jest kasa?','Къде е касата?'],['Potrzebuję reklamówki.','Трябва ми торбичка.'],['Sklep jest zamknięty.','Магазинът е затворен.']],
+   g:[{s:'Колко ___ това?',o:['струва','струват','струвам'],pl:'Ile to kosztuje?'},
+      {s:'Може ли да платя ___ карта?',o:['с','в','на'],pl:'Czy mogę zapłacić kartą?'},
+      {q:'„ten sklep” (podmiot): магазин → …',o:['магазинът','магазинта','магазинто'],why:'Rodzaj męski: -ът.'},
+      {q:'„ta kasa”: каса → …',o:['касата','касът','касато'],why:'Rodzaj żeński: -та.'}]},
+ { id:'d2-3', t:'Restauracja', bt:'В ресторанта',
+   tip:`<p><b>Pułapki:</b> <span lang="bg">маса</span> = stół, <span lang="bg">стол</span> = krzesło, <span lang="bg">закуска</span> = śniadanie.</p>
+   <p>„Chciałabym” to <b lang="bg">бих искала</b> (mężczyzna: <span lang="bg">бих искал</span>). Prościej: <span lang="bg">Искам едно кафе, моля.</span></p>`,
+   w:[['restauracja','ресторант'],['menu','меню'],['rachunek','сметка'],['kelner','сервитьор'],['stół','маса','Pułapka: маса = stół'],['krzesło','стол','Pułapka: стол = krzesło'],['szklanka','чаша'],['śniadanie','закуска','Pułapka: закуска = śniadanie'],['obiad','обяд'],['kolacja','вечеря'],['smacznego','добър апетит'],['na zdrowie','наздраве']],
+   s:[['Rachunek, proszę.','Сметката, моля.'],['Stolik dla dwojga, proszę.','Маса за двама, моля.'],['Co pan poleca?','Какво препоръчвате?'],['Chciałabym kawę.','Бих искала кафе.|Искам кафе.|Искам едно кафе.'],['Smacznego!','Добър апетит!'],['Było bardzo smaczne.','Беше много вкусно.']],
+   g:[{s:'___ искала кафе.',o:['Бих','Би','Ще'],pl:'Chciałabym kawę.',why:'бих искала = chciałabym (mężczyzna: бих искал).'},
+      {s:'Маса ___ двама, моля.',o:['за','на','с'],pl:'Stolik dla dwojga, proszę.'},
+      {q:'Bułgarskie „маса” znaczy…',o:['stół','masa','miska']},
+      {q:'Bułgarskie „закуска” to…',o:['śniadanie','przekąska','deser']}]}
+]},
+{ id:'d3', track:'day', cefr:'A1', bt:'Град и посоки', t:'Miasto i kierunki', levels:[
+ { id:'d3-1', t:'Miejsca w mieście', bt:'Места в града',
+   tip:`<p>Stopniowanie jest łatwe: <b lang="bg">по-</b> = bardziej, <b lang="bg">най-</b> = najbardziej. <span lang="bg">близо → по-близо → най-близо</span>.</p>
+   <p>Przymiotnik też przyjmuje rodzajnik: <span lang="bg">най-близката аптека</span> – najbliższa apteka.</p>`,
+   w:[['ulica','улица'],['przystanek','спирка'],['dworzec kolejowy','гара'],['dworzec autobusowy','автогара'],['szpital','болница'],['toaleta','тоалетна'],['centrum','център'],['plac','площад'],['most','мост'],['poczta','поща'],['policja','полиция'],['lekarz','лекар']],
+   s:[['Gdzie jest toaleta?','Къде е тоалетната?'],['Gdzie jest najbliższa apteka?','Къде е най-близката аптека?'],['Szukam dworca.','Търся гарата.'],['Potrzebuję lekarza.','Трябва ми лекар.'],['Gdzie jest przystanek?','Къде е спирката?']],
+   g:[{q:'„ten dworzec”: гара → …',o:['гарата','гарът','гарато']},
+      {s:'Къде е най-___ аптека?',o:['близката','близкият','близкото'],pl:'Gdzie jest najbliższa apteka?',why:'<span lang="bg">аптека</span> jest rodzaju żeńskiego → близката.'},
+      {q:'Stopień najwyższy tworzymy przedrostkiem…',o:['най-','по-','пре-']},
+      {q:'Stopień wyższy (bliżej, szybciej) tworzymy przedrostkiem…',o:['по-','най-','за-']}]},
+ { id:'d3-2', t:'Gdzie mam iść?', bt:'Накъде?',
+   tip:`<p><b>Największa pułapka dla Polaka:</b> <b lang="bg">направо</b> znaczy <b>prosto</b>, a nie „na prawo”. W prawo to <b lang="bg">надясно</b>, w lewo – <b lang="bg">наляво</b>.</p>
+   <p>Prośby grzeczne kończą się na <b>-йте/-ете</b>: <span lang="bg">Завийте надясно.</span> – Proszę skręcić w prawo.</p>`,
+   w:[['w lewo','наляво'],['w prawo','надясно'],['prosto','направо','Pułapka: направо = prosto!'],['blisko','близо'],['daleko','далече|далеч'],['tutaj','тук'],['tam','там'],['naprzeciwko','срещу'],['za','зад'],['przed','пред'],['obok','до'],['skręcać','завивам']],
+   s:[['Gdzie mam iść?','Къде трябва да отида?|Накъде да вървя?'],['Jak dojść do dworca?','Как да стигна до гарата?'],['Proszę skręcić w prawo.','Завийте надясно.'],['Proszę iść prosto.','Вървете направо.'],['Czy to daleko?','Далече ли е?|Далеч ли е?'],['Nie, to blisko.','Не, близо е.'],['Zgubiłam się.','Изгубих се.']],
+   g:[{q:'Bułgarskie „направо” znaczy…',o:['prosto','w prawo','natychmiast']},
+      {s:'Далече ___ е?',o:['ли','се','да'],pl:'Czy to daleko?'},
+      {s:'Как да ___ до гарата?',o:['стигна','стигам','стигнах'],pl:'Jak dojść do dworca?'},
+      {s:'___ надясно.',o:['Завийте','Завиваме','Завих'],pl:'Proszę skręcić w prawo.',why:'Forma grzeczna rozkaźnika: -йте.'}]},
+ { id:'d3-3', t:'Transport', bt:'Транспорт',
+   tip:`<p>Jednosylabowe rzeczowniki męskie mają w liczbie mnogiej zwykle <b>-ове</b>: <span lang="bg">влак → влакове</span>, <span lang="bg">мост → мостове</span>.</p>
+   <p>„Do” w sensie kierunku: <b lang="bg">до</b>: <span lang="bg">билет до София</span>.</p>`,
+   w:[['autobus','автобус'],['pociąg','влак'],['samochód','кола'],['bilet','билет'],['peron','перон'],['odjazd','тръгване'],['przyjazd','пристигане'],['rozkład jazdy','разписание'],['lotnisko','летище'],['samochód na wynajem','кола под наем']],
+   s:[['Jeden bilet do Sofii, proszę.','Един билет до София, моля.'],['Kiedy odjeżdża pociąg?','Кога тръгва влакът?'],['Czy ten autobus jedzie do centrum?','Този автобус ходи ли до центъра?|Този автобус отива ли до центъра?'],['Na lotnisko, proszę.','До летището, моля.'],['Ile kosztuje bilet?','Колко струва билетът?']],
+   g:[{s:'Един билет ___ София.',o:['до','в','на'],pl:'Jeden bilet do Sofii.'},
+      {s:'Кога тръгва ___?',o:['влакът','влак','влаковете'],pl:'Kiedy odjeżdża pociąg?',why:'Podmiot męski: pełny rodzajnik -ът.'},
+      {q:'Liczba mnoga od „влак” to…',o:['влакове','влаки','влака']},
+      {q:'„кола” to…',o:['samochód','koło','kolej']}]}
+]},
+{ id:'d4', track:'day', cefr:'A2', bt:'Граматика в действие', t:'Gramatyka w akcji', levels:[
+ { id:'d4-1', t:'Czasowniki i „да”', bt:'Глаголи',
+   tip:`<p>Bułgarski <b>nie ma bezokolicznika</b>. Zamiast „chcę pić” mówisz <b lang="bg">искам да пия</b> – dosłownie „chcę, żebym pił”.</p>
+   <table class="mini"><tr><td></td><td lang="bg">говоря</td><td lang="bg">чета</td><td lang="bg">имам</td></tr>
+   <tr><td>ja</td><td lang="bg">говоря</td><td lang="bg">чета</td><td lang="bg">имам</td></tr>
+   <tr><td>ty</td><td lang="bg">говориш</td><td lang="bg">четеш</td><td lang="bg">имаш</td></tr>
+   <tr><td>on</td><td lang="bg">говори</td><td lang="bg">чете</td><td lang="bg">има</td></tr>
+   <tr><td>my</td><td lang="bg">говорим</td><td lang="bg">четем</td><td lang="bg">имаме</td></tr>
+   <tr><td>wy</td><td lang="bg">говорите</td><td lang="bg">четете</td><td lang="bg">имате</td></tr>
+   <tr><td>oni</td><td lang="bg">говорят</td><td lang="bg">четат</td><td lang="bg">имат</td></tr></table>`,
+   w:[['chcieć','искам'],['móc','мога'],['mówić','говоря'],['rozumieć','разбирам'],['mieszkać','живея'],['pracować','работя'],['jeść','ям'],['pić','пия'],['wiedzieć','знам'],['lubić','обичам|харесвам'],['trzeba / muszę','трябва']],
+   s:[['Chcę pić kawę.','Искам да пия кафе.'],['Mówię trochę po bułgarsku.','Говоря малко български.'],['Nie rozumiem.','Не разбирам.'],['Czy możesz mówić wolniej?','Можеш ли да говориш по-бавно?'],['Muszę iść.','Трябва да тръгвам.|Трябва да вървя.'],['Mieszkam w Polsce.','Живея в Полша.']],
+   g:[{s:'Искам ___ пия кафе.',o:['да','за','и'],pl:'Chcę pić kawę.',why:'Zamiast bezokolicznika: да + czasownik.'},
+      {s:'Ти ___ ли английски?',o:['говориш','говоря','говори'],pl:'Mówisz po angielsku?'},
+      {s:'Ние ___ в Полша.',o:['живеем','живея','живеят'],pl:'Mieszkamy w Polsce.'},
+      {s:'Те ___ в София.',o:['работят','работим','работи'],pl:'Oni pracują w Sofii.'},
+      {s:'Аз не ___.',o:['разбирам','разбира','разбираш'],pl:'Nie rozumiem.'}]},
+ { id:'d4-2', t:'Przyszłość z „ще”', bt:'Бъдеще време',
+   tip:`<p>Czas przyszły: <b lang="bg">ще</b> + czasownik w czasie teraźniejszym. <span lang="bg">Ще летя.</span> – Polecę / Będę latać.</p>
+   <p>Przeczenie: <b lang="bg">няма да</b> + czasownik. <span lang="bg">Няма да летя.</span> – Nie polecę.</p>`,
+   w:[['polecę','ще летя'],['nie polecę','няма да летя'],['później','по-късно|после'],['wkrótce','скоро'],['w przyszłym tygodniu','следващата седмица'],['plan','план'],['podróż','пътуване'],['spotkanie','среща'],['zadzwonię','ще се обадя'],['zobaczymy się','ще се видим']],
+   s:[['Jutro polecę.','Утре ще летя.|Ще летя утре.'],['Nie będę pracować w sobotę.','Няма да работя в събота.|В събота няма да работя.'],['Pójdę do sklepu.','Ще отида до магазина.|Ще отида в магазина.'],['Co będziesz robić jutro?','Какво ще правиш утре?'],['Zadzwonię później.','Ще се обадя по-късно.']],
+   g:[{s:'Утре ___ летя.',o:['ще','да','бях'],pl:'Jutro polecę.'},
+      {s:'___ да работя в събота.',o:['Няма','Не','Ще не'],pl:'Nie będę pracować w sobotę.',why:'Przeczenie przyszłości: няма да.'},
+      {s:'Какво ___ правиш утре?',o:['ще','ли','се'],pl:'Co będziesz robić jutro?'},
+      {s:'Ще се ___ по-късно.',o:['обадя','обадих','обаждах'],pl:'Zadzwonię później.'}]},
+ { id:'d4-3', t:'Przeszłość', bt:'Минало време',
+   tip:`<p>Najczęstszy czas przeszły (aoryst) opisuje zakończone zdarzenia:</p>
+   <table class="mini"><tr><td></td><td lang="bg">съм</td><td lang="bg">летя</td></tr>
+   <tr><td>ja</td><td lang="bg">бях</td><td lang="bg">летях</td></tr>
+   <tr><td>ty / on</td><td lang="bg">беше</td><td lang="bg">летя</td></tr>
+   <tr><td>my</td><td lang="bg">бяхме</td><td lang="bg">летяхме</td></tr>
+   <tr><td>wy</td><td lang="bg">бяхте</td><td lang="bg">летяхте</td></tr>
+   <tr><td>oni</td><td lang="bg">бяха</td><td lang="bg">летяха</td></tr></table>`,
+   w:[['byłam','бях'],['miałam','имах'],['poszłam','отидох'],['widziałam','видях'],['kupiłam','купих'],['jadłam','ядох'],['piłam','пих'],['leciałam','летях'],['już','вече'],['jeszcze nie','още не'],['rok temu','преди година']],
+   s:[['Wczoraj byłam na lotnisku.','Вчера бях на летището.|Бях на летището вчера.'],['Kupiłam mleko.','Купих мляко.'],['Widziałam samolot.','Видях самолет.|Видях самолета.'],['Już jadłam.','Вече ядох.'],['Gdzie byłaś?','Къде беше?'],['Leciałam do Warny.','Летях до Варна.']],
+   g:[{s:'Вчера ___ на летището.',o:['бях','съм','ще съм'],pl:'Wczoraj byłam na lotnisku.'},
+      {s:'Ти къде ___?',o:['беше','бях','бяха'],pl:'Gdzie byłaś?'},
+      {s:'Ние ___ до Варна.',o:['летяхме','летях','летим'],pl:'Lecieliśmy do Warny.'},
+      {s:'Вчера ___ мляко.',o:['купих','купувам','ще купя'],pl:'Wczoraj kupiłam mleko.'}]},
+ { id:'d4-4', t:'Rodzajnik określony', bt:'Членуване',
+   tip:`<p>Polski nie ma rodzajników, bułgarski ma – na końcu słowa:</p>
+   <table class="mini"><tr><td>męski (podmiot)</td><td lang="bg">самолетът</td><td>-ът / -ят</td></tr>
+   <tr><td>męski (dopełnienie)</td><td lang="bg">самолета</td><td>-а / -я</td></tr>
+   <tr><td>żeński</td><td lang="bg">пистата</td><td>-та</td></tr>
+   <tr><td>nijaki</td><td lang="bg">летището</td><td>-то</td></tr>
+   <tr><td>l. mnoga</td><td lang="bg">пилотите, крилата</td><td>-те / -та</td></tr></table>
+   <p>Rodzaj zwykle widać po końcówce: spółgłoska → męski, -а/-я → żeński, -о/-е → nijaki.</p>`,
+   w:[['ten samolot','самолетът'],['ten pas startowy','пистата'],['to mleko','млякото'],['to lotnisko','летището'],['te skrzydła','крилата'],['ci piloci','пилотите'],['ten wiatr','вятърът'],['ta noc','нощта'],['ten dzień','денят'],['ten silnik','двигателят']],
+   s:[['Samolot jest nowy.','Самолетът е нов.'],['Pas startowy jest wolny.','Пистата е свободна.'],['Widzę samolot.','Виждам самолета.'],['Pilot jest tutaj.','Пилотът е тук.'],['Lotnisko jest małe.','Летището е малко.']],
+   g:[{s:'___ е нов.',o:['Самолетът','Самолета','Самолетта'],pl:'Samolot jest nowy.',why:'Podmiot męski: pełny rodzajnik -ът.'},
+      {s:'Виждам ___.',o:['самолета','самолетът','самолетто'],pl:'Widzę samolot.',why:'Dopełnienie: krótki rodzajnik -а.'},
+      {q:'мляко + rodzajnik =',o:['млякото','млякота','млякът']},
+      {q:'нощ + rodzajnik =',o:['нощта','нощът','нощто'],why:'<span lang="bg">нощ</span> jest wyjątkowo rodzaju żeńskiego.'},
+      {q:'пилоти + rodzajnik =',o:['пилотите','пилотита','пилотето']}]}
+]},
+/* ---------------- TRASA: LOTNICTWO ---------------- */
+{ id:'a0', track:'air', cefr:'A1', bt:'Летище и самолет', t:'Lotnisko i samolot', levels:[
+ { id:'a0-1', t:'Na lotnisku', bt:'На летището',
+   tip:`<p>Dwa najważniejsze czasowniki pilota: <b lang="bg">излитам</b> – startuję i <b lang="bg">кацам</b> – ląduję. Rzeczowniki: <span lang="bg">излитане</span> (start), <span lang="bg">кацане</span> (lądowanie).</p>
+   <p>Uwaga: „pas startowy” to <b lang="bg">писта</b> – rodzaju żeńskiego, więc <span lang="bg">пистата</span>.</p>`,
+   w:[['lotnisko','летище'],['samolot','самолет'],['lot','полет'],['pilot / pilotka','пилот','Kobieta pilot to też пилот; пилотка to czapka!'],['pas startowy','писта'],['hangar','хангар'],['start','излитане'],['lądowanie','кацане'],['bagaż','багаж'],['wyjście (gate)','изход'],['opóźnienie','закъснение'],['odprawa','регистрация']],
+   s:[['Lot jest opóźniony.','Полетът закъснява.|Полетът има закъснение.'],['Gdzie jest hangar?','Къде е хангарът?'],['Samolot startuje.','Самолетът излита.'],['Samolot ląduje.','Самолетът каца.'],['Jestem pilotką.','Аз съм пилот.|Пилот съм.'],['Gdzie jest odprawa?','Къде е регистрацията?']],
+   g:[{s:'Самолетът ___.',o:['излита','излитам','излитат'],pl:'Samolot startuje.'},
+      {s:'Самолетите ___.',o:['кацат','каца','кацаме'],pl:'Samoloty lądują.'},
+      {q:'„кацане” znaczy…',o:['lądowanie','kołowanie','start']},
+      {s:'Къде е ___?',o:['хангарът','хангарта','хангарто'],pl:'Gdzie jest hangar?'}]},
+ { id:'a0-2', t:'Budowa samolotu', bt:'Части на самолета',
+   tip:`<p>Rozkaźnik do jednej osoby („ty”): <b lang="bg">провери!</b> – sprawdź! Grzecznie lub do wielu osób: <b lang="bg">проверете!</b></p>
+   <p><span lang="bg">витло</span> – śmigło; <span lang="bg">колесник</span> – podwozie; <span lang="bg">гориво</span> – paliwo.</p>`,
+   w:[['skrzydło','крило'],['ogon','опашка'],['silnik','двигател'],['śmigło','витло'],['podwozie','колесник'],['kabina','кабина'],['hamulec','спирачка'],['paliwo','гориво'],['zbiornik','резервоар'],['kadłub','фюзелаж|корпус'],['koło','колело'],['drzwi','врата']],
+   s:[['Silnik pracuje.','Двигателят работи.'],['Skrzydło jest uszkodzone.','Крилото е повредено.'],['Potrzebujemy paliwa.','Трябва ни гориво.|Имаме нужда от гориво.'],['Śmigło się kręci.','Витлото се върти.'],['Sprawdź hamulce.','Провери спирачките.']],
+   g:[{q:'Liczba mnoga od „крило”',o:['крила','крили','крилове']},
+      {s:'Витлото ___ върти.',o:['се','си','е'],pl:'Śmigło się kręci.'},
+      {s:'___ спирачките!',o:['Провери','Проверявам','Проверих'],pl:'Sprawdź hamulce!'},
+      {q:'„гориво” znaczy…',o:['paliwo','gorąco','olej']}]},
+ { id:'a0-3', t:'Przyrządy w kabinie', bt:'Уреди в кабината',
+   tip:`<p>Wysokość w lotnictwie podaje się w stopach: <span lang="bg">хиляда фута</span> – tysiąc stóp. „Więcej” = <b lang="bg">повече</b>.</p>
+   <p><span lang="bg">масло</span> w kabinie to <b>olej</b> silnikowy: <span lang="bg">налягане на маслото</span> – ciśnienie oleju.</p>`,
+   w:[['wysokościomierz','висотомер'],['prędkościomierz','скоростомер'],['kompas','компас'],['radiostacja','радиостанция|радио'],['słuchawki','слушалки'],['przepustnica (gaz)','газ|лост за газта'],['drążek sterowy','ръчка за управление|лост за управление'],['pedały','педали'],['przełącznik','превключвател'],['ciśnienie','налягане'],['temperatura','температура'],['obroty','обороти']],
+   s:[['Wysokość wynosi dwa tysiące stóp.','Височината е две хиляди фута.'],['Daj więcej gazu.','Дай повече газ.'],['Radio nie działa.','Радиото не работи.'],['Sprawdź ciśnienie oleju.','Провери налягането на маслото.'],['Obroty są w normie.','Оборотите са нормални.']],
+   g:[{s:'Радиото не ___.',o:['работи','работя','работят'],pl:'Radio nie działa.'},
+      {s:'Дай ___ газ.',o:['повече','най-много','по-'],pl:'Daj więcej gazu.'},
+      {q:'„масло” w kabinie to…',o:['olej','masło','smar'],why:'масло = masło i olej, także silnikowy.'},
+      {s:'Височината ___ две хиляди фута.',o:['е','са','съм'],pl:'Wysokość wynosi 2000 stóp.'}]}
+]},
+{ id:'a1', track:'air', cefr:'A2', bt:'Автожир', t:'Wiatrakowiec', levels:[
+ { id:'a1-1', t:'Budowa wiatrakowca', bt:'Части на автожира',
+   tip:`<p>Wiatrakowiec to po bułgarsku <b lang="bg">автожир</b> (rzadziej <span lang="bg">жирокоптер</span>). Wirnik nie jest napędzany w locie – kręci go opływające powietrze (<span lang="bg">авторотация</span>). Dlatego przed startem włączasz <span lang="bg">предварителното завъртане на ротора</span> – wstępne rozkręcenie wirnika.</p>`,
+   w:[['wiatrakowiec','автожир|жирокоптер'],['wirnik nośny','носещ ротор|ротор'],['łopata wirnika','лопата|лопатка'],['maszt','мачта'],['śmigło pchające','тласкащо витло'],['statecznik','стабилизатор'],['ster kierunku','кормило за направление'],['piasta','главина'],['wstępne rozkręcenie wirnika','предварително завъртане на ротора'],['hamulec wirnika','спирачка на ротора'],['z tyłu','отзад'],['z przodu','отпред']],
+   s:[['Wiatrakowiec ma wirnik i śmigło.','Автожирът има ротор и витло.'],['Wirnik obraca się swobodnie.','Роторът се върти свободно.'],['Śmigło jest z tyłu.','Витлото е отзад.'],['Sprawdź łopaty wirnika.','Провери лопатите на ротора.'],['Włącz wstępne rozkręcenie.','Включи предварителното завъртане.']],
+   g:[{s:'Автожирът ___ ротор и витло.',o:['има','имам','имат'],pl:'Wiatrakowiec ma wirnik i śmigło.'},
+      {s:'Роторът се ___ свободно.',o:['върти','въртя','въртят'],pl:'Wirnik obraca się swobodnie.'},
+      {q:'„отзад” znaczy…',o:['z tyłu','z przodu','z boku']},
+      {q:'„автожир” z rodzajnikiem (podmiot):',o:['автожирът','автожирта','автожирто']}]},
+ { id:'a1-2', t:'W powietrzu', bt:'Във въздуха',
+   tip:`<p>Ruch w pionie: <b lang="bg">набирам височина</b> – nabieram wysokości, <b lang="bg">снижавам се</b> – zniżam się.</p>
+   <p>Wiatr: <span lang="bg">срещу вятъра</span> – pod wiatr, <span lang="bg">страничен вятър</span> – wiatr boczny, <span lang="bg">порив</span> – poryw.</p>`,
+   w:[['autorotacja','авторотация'],['nabierać wysokości','набирам височина'],['zniżać się','снижавам се'],['zakręt','завой'],['wiatr','вятър'],['pod wiatr','срещу вятъра'],['wiatr boczny','страничен вятър'],['poryw','порив'],['turbulencja','турбуленция'],['prędkość','скорост'],['wysokość','височина'],['lecieć','летя']],
+   s:[['Nabieramy wysokości.','Набираме височина.'],['Zniżamy się do lądowania.','Снижаваме се за кацане.'],['Startujemy pod wiatr.','Излитаме срещу вятъра.'],['Jest silny wiatr boczny.','Има силен страничен вятър.'],['Skręcam w lewo.','Завивам наляво.'],['Prędkość jest za mała.','Скоростта е твърде малка.']],
+   g:[{s:'Ние ___ височина.',o:['набираме','набирам','набират'],pl:'Nabieramy wysokości.'},
+      {s:'Излитаме ___ вятъра.',o:['срещу','до','с'],pl:'Startujemy pod wiatr.'},
+      {s:'Скоростта е ___ малка.',o:['твърде','най','по'],pl:'Prędkość jest za mała.'},
+      {s:'___ наляво.',o:['Завивам','Завиваш','Завиват'],pl:'Skręcam w lewo.'}]},
+ { id:'a1-3', t:'Przed lotem i awarie', bt:'Преди полета',
+   tip:`<p><b lang="bg">си</b> to „sobie”: <span lang="bg">Сложи си каската.</span> – Załóż (sobie) kask.</p>
+   <p><span lang="bg">отказ на двигателя</span> to awaria silnika (dosłownie „odmowa silnika”). <span lang="bg">курсант</span> – uczeń-pilot.</p>`,
+   w:[['przegląd przedlotowy','предполетен оглед'],['lista kontrolna','контролен лист|чеклист'],['pas bezpieczeństwa','колан'],['kask','каска'],['olej','масло'],['awaria silnika','отказ на двигателя'],['lądowanie awaryjne','аварийно кацане|принудително кацане'],['lądowisko','площадка за кацане'],['pole','поле'],['instruktor','инструктор'],['uczeń-pilot','курсант'],['godzina lotu','летателен час']],
+   s:[['Zapnij pas.','Затегни колана.|Сложи си колана.'],['Załóż kask.','Сложи си каската.'],['Robimy przegląd przedlotowy.','Правим предполетен оглед.'],['Mamy awarię silnika.','Имаме отказ на двигателя.'],['Wylądujemy na tym polu.','Ще кацнем на това поле.'],['Instruktor sprawdza wiatrakowiec.','Инструкторът проверява автожира.']],
+   g:[{s:'Сложи ___ каската.',o:['си','се','ми'],pl:'Załóż kask.',why:'си = sobie.'},
+      {s:'Ще ___ на това поле.',o:['кацнем','кацнахме','кацахме'],pl:'Wylądujemy na tym polu.'},
+      {s:'Инструкторът проверява ___.',o:['автожира','автожирът','автожири'],pl:'Instruktor sprawdza wiatrakowiec.',why:'Dopełnienie: krótki rodzajnik -а.'},
+      {q:'„отказ на двигателя” to…',o:['awaria silnika','odmowa pilota','wyłączenie radia']}]}
+]},
+{ id:'a2', track:'air', cefr:'A2', bt:'Време и радио', t:'Pogoda i radio', levels:[
+ { id:'a2-1', t:'Pogoda', bt:'Времето',
+   tip:`<p><b lang="bg">времето</b> to i pogoda, i czas: <span lang="bg">Какво е времето?</span> – Jaka jest pogoda?</p>
+   <p>„Pada” to <b lang="bg">вали</b>. „Bo / ponieważ” – <b lang="bg">защото</b>.</p>`,
+   w:[['pogoda','времето'],['chmura','облак'],['pochmurno','облачно'],['słonecznie','слънчево'],['deszcz','дъжд'],['pada','вали'],['mgła','мъгла'],['widoczność','видимост'],['burza','буря|гръмотевична буря'],['zimno','студено'],['ciepło','топло'],['poryw wiatru','порив на вятъра']],
+   s:[['Jaka jest pogoda?','Какво е времето?|Как е времето?'],['Pada deszcz.','Вали дъжд.|Вали.'],['Jest mgła.','Има мъгла.'],['Widoczność jest słaba.','Видимостта е лоша.|Видимостта е слаба.'],['Jutro będzie słonecznie.','Утре ще е слънчево.|Утре ще бъде слънчево.'],['Nie lecimy, bo jest burza.','Не летим, защото има буря.']],
+   g:[{s:'Утре ___ е слънчево.',o:['ще','да','беше'],pl:'Jutro będzie słonecznie.'},
+      {s:'Не летим, ___ има буря.',o:['защото','но','ако'],pl:'Nie lecimy, bo jest burza.'},
+      {q:'„вали” znaczy…',o:['pada','wieje','grzmi']},
+      {q:'„времето” może znaczyć…',o:['pogodę i czas','tylko czas','tylko pogodę']}]},
+ { id:'a2-2', t:'Łączność radiowa', bt:'Радиовръзка',
+   tip:`<p>Kontrola ruchu w Bułgarii mówi głównie po angielsku, ale z instruktorem, na lądowisku i w aeroklubie przydaje się bułgarski.</p>
+   <p>Przymiotnik zgadza się z rodzajem: <span lang="bg">кацането е разрешено</span> (nijaki), <span lang="bg">пистата е свободна</span> (żeński).</p>`,
+   w:[['wieża kontroli','кула|контролна кула'],['zezwolenie','разрешение'],['potwierdzam','потвърждавам'],['zrozumiałem','разбрах'],['powtórz','повтори|повторете'],['gotowa / gotowy','готова|готов'],['podejście','подход'],['kołowanie','рулиране'],['czekać','чакам'],['częstotliwość','честота'],['znak wywoławczy','позивна'],['pozycja','позиция']],
+   s:[['Gotowa do startu.','Готова съм за излитане.|Готова за излитане.|Готов за излитане.|Готов съм за излитане.'],['Proszę powtórzyć.','Повторете, моля.'],['Zrozumiałem.','Разбрах.'],['Pas startowy jest wolny.','Пистата е свободна.'],['Lądowanie dozwolone.','Кацането е разрешено.'],['Proszę czekać.','Чакайте, моля.']],
+   g:[{s:'Готова съм ___ излитане.',o:['за','на','до'],pl:'Gotowa do startu.'},
+      {s:'___, моля.',o:['Повторете','Повтарям','Повторих'],pl:'Proszę powtórzyć.'},
+      {s:'Кацането е ___.',o:['разрешено','разрешена','разрешен'],pl:'Lądowanie dozwolone.',why:'<span lang="bg">кацане</span> jest nijakie → разрешено.'},
+      {s:'Пистата е ___.',o:['свободна','свободен','свободно'],pl:'Pas startowy jest wolny.'}]}
+]}
+];
+
+/* ---------------- ROZMÓWKI ---------------- */
+const PHRASES = [
+ {n:'Podstawy', items:[['Dzień dobry (formalnie).','Здравейте.'],['Jak się masz?','Как си?'],['Nie rozumiem.','Не разбирам.'],['Czy mówi pan po angielsku?','Говорите ли английски?'],['Czy może pan mówić wolniej?','Можете ли да говорите по-бавно?'],['Jak się mówi … po bułgarsku?','Как се казва … на български?'],['Co to znaczy?','Какво означава това?'],['Przepraszam.','Извинете.'],['Dziękuję bardzo.','Благодаря много.'],['Nie ma za co.','Няма защо.']]},
+ {n:'Gdzie mam iść?', items:[['Gdzie mam iść?','Къде трябва да отида?'],['Jak dojść do …?','Как да стигна до …?'],['Gdzie jest toaleta?','Къде е тоалетната?'],['Czy to daleko?','Далече ли е?'],['W lewo / w prawo / prosto','Наляво / надясно / направо'],['Czy może mi pan pokazać na mapie?','Можете ли да ми покажете на картата?'],['Zgubiłam się.','Изгубих се.'],['Gdzie jest przystanek?','Къде е спирката?']]},
+ {n:'Zakupy', items:[['Gdzie znajdę mleko?','Къде мога да намеря мляко?'],['Ile to kosztuje?','Колко струва това?'],['Czy mogę zapłacić kartą?','Може ли да платя с карта?'],['Macie …?','Имате ли …?'],['Tylko się rozglądam, dziękuję.','Само разглеждам, благодаря.'],['Poproszę to.','Дайте ми това, моля.'],['Potrzebuję reklamówki.','Трябва ми торбичка.']]},
+ {n:'Czas', items:[['Która godzina?','Колко е часът?'],['O której otwieracie?','В колко часа отваряте?'],['Do której jest otwarte?','До колко часа работите?'],['Kiedy?','Кога?'],['Dzisiaj / jutro / wczoraj','Днес / утре / вчера'],['Mam mało czasu.','Имам малко време.'],['Spóźnię się dziesięć minut.','Ще закъснея десет минути.']]},
+ {n:'Restauracja', items:[['Stolik dla dwojga, proszę.','Маса за двама, моля.'],['Menu, proszę.','Менюто, моля.'],['Co pan poleca?','Какво препоръчвате?'],['Bez mięsa, proszę.','Без месо, моля.'],['Rachunek, proszę.','Сметката, моля.'],['Smacznego!','Добър апетит!'],['Na zdrowie!','Наздраве!']]},
+ {n:'Nagłe sytuacje', items:[['Pomocy!','Помощ!'],['Potrzebuję lekarza.','Трябва ми лекар.'],['Proszę zadzwonić na 112.','Обадете се на 112.'],['Zgubiłam paszport.','Загубих си паспорта.'],['Gdzie jest policja?','Къде е полицията?'],['Boli mnie tutaj.','Боли ме тук.']]},
+ {n:'Rozmowa', items:[['Skąd jesteś?','Откъде си?'],['Jestem z Polski.','Аз съм от Полша.'],['Czym się zajmujesz?','С какво се занимаваш?'],['Jestem pilotką.','Аз съм пилот.'],['Uczę się bułgarskiego.','Уча български.'],['Miło mi.','Приятно ми е.']]},
+ {n:'Lotnisko i aeroklub', items:[['Gdzie jest hangar?','Къде е хангарът?'],['Ile mamy paliwa?','Колко гориво имаме?'],['Wiatr jest za silny.','Вятърът е твърде силен.'],['Kiedy polecimy?','Кога ще летим?'],['Czy mogę polecieć z instruktorem?','Може ли да летя с инструктор?'],['Ile kosztuje godzina lotu?','Колко струва един летателен час?'],['Gotowa do startu.','Готова съм за излитане.'],['Sprawdź wirnik przed lotem.','Провери ротора преди полета.']]}
+];
+
+/* ---------------- GRAMATYKA (ściąga) ---------------- */
+const GRAMMAR = [
+ {t:'Wymowa i alfabet', h:`<p>30 liter, czyta się tak, jak się pisze. Akcent jest ruchomy – osłuchuj się z lektorem.</p><table class="mini"><tr><td lang="bg">ж ч ш щ</td><td>ż cz sz szt</td></tr><tr><td lang="bg">я ю й</td><td>ja ju j</td></tr><tr><td lang="bg">ъ</td><td>ă (jak „a” w ang. about)</td></tr><tr><td lang="bg">ь</td><td>tylko przed о: <span lang="bg">ьо</span> = jo</td></tr><tr><td lang="bg">х, ц, в</td><td>ch, c, w</td></tr></table>`},
+ {t:'Być – съм', h:`<table class="mini"><tr><td>teraz</td><td lang="bg">съм, си, е, сме, сте, са</td></tr><tr><td>przeszłość</td><td lang="bg">бях, беше, беше, бяхме, бяхте, бяха</td></tr><tr><td>przyszłość</td><td lang="bg">ще съм / ще бъда</td></tr></table><p>Forma <span lang="bg">съм</span> nie może zaczynać zdania: <span lang="bg">Аз съм пилот</span> albo <span lang="bg">Пилот съм</span>.</p>`},
+ {t:'Rodzajnik określony', h:`<table class="mini"><tr><td>męski</td><td lang="bg">самолетът / самолета</td><td>-ът podmiot, -а dopełnienie</td></tr><tr><td>żeński</td><td lang="bg">пистата</td><td>-та</td></tr><tr><td>nijaki</td><td lang="bg">летището</td><td>-то</td></tr><tr><td>mnoga</td><td lang="bg">пилотите, крилата</td><td>-те, -та (po -а)</td></tr></table><p>Na <span lang="bg">-й</span>, <span lang="bg">-тел</span> i kilka innych: <span lang="bg">-ят / -я</span>: <span lang="bg">денят, двигателят</span>.</p>`},
+ {t:'Liczba mnoga', h:`<table class="mini"><tr><td>męski wielosylabowy</td><td lang="bg">самолет → самолети</td></tr><tr><td>męski jednosylabowy</td><td lang="bg">влак → влакове</td></tr><tr><td>żeński</td><td lang="bg">писта → писти</td></tr><tr><td>nijaki -о/-е</td><td lang="bg">крило → крила, летище → летища</td></tr><tr><td>nijaki obcy</td><td lang="bg">кафе → кафета, меню → менюта</td></tr></table><p>Po liczebniku męski ma formę <b>-а</b>: <span lang="bg">два самолета</span>.</p>`},
+ {t:'Czas teraźniejszy', h:`<p>Trzy wzory odmiany:</p><table class="mini"><tr><td></td><td lang="bg">чета</td><td lang="bg">говоря</td><td lang="bg">имам</td></tr><tr><td>ja</td><td lang="bg">чета</td><td lang="bg">говоря</td><td lang="bg">имам</td></tr><tr><td>ty</td><td lang="bg">четеш</td><td lang="bg">говориш</td><td lang="bg">имаш</td></tr><tr><td>on</td><td lang="bg">чете</td><td lang="bg">говори</td><td lang="bg">има</td></tr><tr><td>my</td><td lang="bg">четем</td><td lang="bg">говорим</td><td lang="bg">имаме</td></tr><tr><td>wy</td><td lang="bg">четете</td><td lang="bg">говорите</td><td lang="bg">имате</td></tr><tr><td>oni</td><td lang="bg">четат</td><td lang="bg">говорят</td><td lang="bg">имат</td></tr></table>`},
+ {t:'„да” zamiast bezokolicznika', h:`<p>Bułgarski nie ma bezokolicznika. Drugi czasownik odmieniasz i poprzedzasz <b lang="bg">да</b>:</p><p><span lang="bg">Искам да летя.</span> – Chcę latać. <span lang="bg">Искаш ли да летиш?</span> – Chcesz latać? <span lang="bg">Трябва да тръгвам.</span> – Muszę iść.</p>`},
+ {t:'Przyszłość: ще / няма да', h:`<p><b lang="bg">ще</b> + czas teraźniejszy: <span lang="bg">ще летя, ще летиш, ще лети…</span></p><p>Przeczenie: <b lang="bg">няма да</b>: <span lang="bg">Няма да летя днес.</span> – Nie polecę dzisiaj.</p>`},
+ {t:'Przeszłość (aoryst)', h:`<p>Zakończone czynności. Końcówki: <span lang="bg">-х, -, -, -хме, -хте, -ха</span>.</p><table class="mini"><tr><td lang="bg">летя</td><td lang="bg">летях, летя, летя, летяхме, летяхте, летяха</td></tr><tr><td lang="bg">купя</td><td lang="bg">купих, купи, купи, купихме, купихте, купиха</td></tr><tr><td lang="bg">отида</td><td lang="bg">отидох, отиде, отиде, отидохме, отидохте, отидоха</td></tr></table>`},
+ {t:'Pytania', h:`<p>Pytania tak/nie tworzy słówko <b lang="bg">ли</b> po wyrazie, o który pytasz: <span lang="bg">Говориш ли български?</span> <span lang="bg">Далече ли е?</span></p><table class="mini"><tr><td lang="bg">къде</td><td>gdzie</td><td lang="bg">кога</td><td>kiedy</td></tr><tr><td lang="bg">какво</td><td>co</td><td lang="bg">колко</td><td>ile</td></tr><tr><td lang="bg">как</td><td>jak</td><td lang="bg">защо</td><td>dlaczego</td></tr><tr><td lang="bg">кой</td><td>kto</td><td lang="bg">накъде</td><td>dokąd</td></tr></table>`},
+ {t:'Krótkie zaimki i szyk', h:`<p>Krótkie formy (<span lang="bg">ми, ти, му, ѝ, ни, ви, им</span> = mi, ci…; <span lang="bg">ме, те, го, я</span> = mnie, cię, go, ją; <span lang="bg">се, си</span>) <b>nie mogą stać na początku zdania</b>.</p><p><span lang="bg">Казвам се Анна.</span> ✓ &nbsp; <span lang="bg">Се казвам Анна.</span> ✗</p><p><span lang="bg">Харесва ми.</span> – Podoba mi się. <span lang="bg">Не го виждам.</span> – Nie widzę go.</p>`},
+ {t:'Fałszywi przyjaciele', h:`<table class="mini"><tr><td lang="bg">направо</td><td>prosto (nie „w prawo”)</td></tr><tr><td lang="bg">час</td><td>godzina</td></tr><tr><td lang="bg">рано</td><td>wcześnie</td></tr><tr><td lang="bg">маса</td><td>stół</td></tr><tr><td lang="bg">стол</td><td>krzesło</td></tr><tr><td lang="bg">закуска</td><td>śniadanie</td></tr><tr><td lang="bg">сирене</td><td>biały ser</td></tr><tr><td lang="bg">гора</td><td>las (góra to <span lang="bg">планина</span>)</td></tr><tr><td lang="bg">булка</td><td>panna młoda</td></tr><tr><td lang="bg">ягода</td><td>truskawka</td></tr><tr><td lang="bg">дума</td><td>słowo</td></tr><tr><td lang="bg">кола</td><td>samochód</td></tr></table>`}
+];
+
+/* ---------------- TEST WSTĘPNY ---------------- */
+const PLACEMENT = [
+ {tier:0, sk:'voc', q:'Jak jest „dziękuję”?', o:['благодаря','моля','извинете']},
+ {tier:0, sk:'read', q:'Przeczytaj i wybierz znaczenie: <b lang="bg">летище</b>', o:['lotnisko','lato','latarnia']},
+ {tier:0, sk:'gram', q:'<span lang="bg">Аз ___ от Полша.</span>', o:['съм','е','са']},
+ {tier:1, sk:'read', q:'„<span lang="bg">Колко е часът?</span>” znaczy…', o:['Która godzina?','Ile to kosztuje?','Kiedy jest lot?']},
+ {tier:1, sk:'read', q:'„<span lang="bg">Колко струва това?</span>” znaczy…', o:['Ile to kosztuje?','Co to jest?','Gdzie to jest?']},
+ {tier:1, sk:'voc', q:'<b lang="bg">сирене</b> to…', o:['biały ser','syrena','sernik']},
+ {tier:1, sk:'gram', q:'<span lang="bg">Имате ___ хляб?</span>', o:['ли','се','да']},
+ {tier:2, sk:'voc', q:'<b lang="bg">направо</b> znaczy…', o:['prosto','w prawo','w lewo']},
+ {tier:2, sk:'read', q:'„<span lang="bg">Как да стигна до гарата?</span>” znaczy…', o:['Jak dojść do dworca?','Gdzie jest garaż?','Kiedy odjeżdża pociąg?']},
+ {tier:2, sk:'voc', q:'„Zgubiłam się.” po bułgarsku to…', o:['Изгубих се.','Загубих паспорта.','Търся гарата.']},
+ {tier:3, sk:'gram', q:'<span lang="bg">Искам ___ пия кафе.</span>', o:['да','за','че']},
+ {tier:3, sk:'gram', q:'<span lang="bg">Утре ___ летя.</span>', o:['ще','бях','да']},
+ {tier:3, sk:'gram', q:'<span lang="bg">Вчера ___ на летището.</span>', o:['бях','съм','ще съм']},
+ {tier:3, sk:'gram', q:'Wybierz poprawne zdanie:', o:['Казвам се Петър.','Се казвам Петър.','Казвам Петър се.']},
+ {tier:3, sk:'gram', q:'„ten samolot” (podmiot) to…', o:['самолетът','самолетта','самолетто']},
+ {tier:4, sk:'air', q:'<b lang="bg">писта</b> to…', o:['pas startowy','hangar','wieża']},
+ {tier:4, sk:'air', q:'<b lang="bg">витло</b> to…', o:['śmigło','skrzydło','wirnik']},
+ {tier:4, sk:'air', q:'<b lang="bg">кацане</b> to…', o:['lądowanie','start','kołowanie']},
+ {tier:4, sk:'air', q:'<b lang="bg">видимост</b> to…', o:['widoczność','wysokość','prędkość']},
+ {tier:4, sk:'air', q:'<b lang="bg">срещу вятъра</b> to…', o:['pod wiatr','z wiatrem','bez wiatru']}
+];
+
+/* ---------------- MIASTA NA PLANSZY ---------------- */
+const CITIES = [
+ {bg:'София',pl:'Sofia',icao:'LBSF',f:'Мотото на София е „Расте, но не старее”.',fpl:'Motto Sofii brzmi: „Rośnie, ale się nie starzeje”.'},
+ {bg:'Пловдив',pl:'Płowdiw',icao:'LBPD',f:'Пловдив е един от най-старите градове в Европа.',fpl:'Płowdiw to jedno z najstarszych miast Europy.'},
+ {bg:'Казанлък',pl:'Kazanłyk',f:'Казанлък е в Розовата долина.',fpl:'Kazanłyk leży w Dolinie Róż.'},
+ {bg:'Стара Загора',pl:'Stara Zagora',f:'Стара Загора е градът на липите.',fpl:'Stara Zagora to miasto lip.'},
+ {bg:'Бургас',pl:'Burgas',icao:'LBBG',f:'Бургас е голям град на Черно море.',fpl:'Burgas to duże miasto nad Morzem Czarnym.'},
+ {bg:'Несебър',pl:'Nesebyr',f:'Старият Несебър е в списъка на ЮНЕСКО.',fpl:'Stary Nesebyr jest na liście UNESCO.'},
+ {bg:'Варна',pl:'Warna',icao:'LBWN',f:'Варна е морската столица на България.',fpl:'Warna to morska stolica Bułgarii.'},
+ {bg:'Шумен',pl:'Szumen',f:'Близо до Шумен е Мадарският конник.',fpl:'Niedaleko Szumena jest Jeździec z Madary.'},
+ {bg:'Русе',pl:'Ruse',f:'Русе е на Дунав и го наричат „Малката Виена”.',fpl:'Ruse leży nad Dunajem i nazywają je „Małym Wiedniem”.'},
+ {bg:'Велико Търново',pl:'Wielkie Tyrnowo',f:'Велико Търново е била столица на България.',fpl:'Wielkie Tyrnowo było kiedyś stolicą Bułgarii.'},
+ {bg:'Габрово',pl:'Gabrowo',f:'Габрово е столицата на хумора.',fpl:'Gabrowo to stolica humoru.'},
+ {bg:'Плевен',pl:'Plewen',f:'В Плевен има панорама на битката от 1877 година.',fpl:'W Plewenie jest panorama bitwy z 1877 roku.'},
+ {bg:'Видин',pl:'Widyń',f:'Във Видин е крепостта Баба Вида.',fpl:'W Widyniu stoi twierdza Baba Wida.'},
+ {bg:'Белоградчик',pl:'Biełogradczik',f:'Белоградчишките скали са чудо на природата.',fpl:'Skały Biełogradczika to cud natury.'},
+ {bg:'Рила',pl:'Riła',f:'Рилският манастир е най-големият в България.',fpl:'Monastyr Rylski jest największy w Bułgarii.'},
+ {bg:'Банско',pl:'Bansko',f:'Банско е в подножието на Пирин.',fpl:'Bansko leży u stóp Pirinu.'},
+ {bg:'Мелник',pl:'Mielnik',f:'Мелник е най-малкият град в България.',fpl:'Mielnik to najmniejsze miasto Bułgarii.'}
+];
+
+/* ---------------- ZWROTY: KIEDY SIĘ ODBLOKOWUJĄ ---------------- */
+const PH_UNLOCK = {'Podstawy':'d0-1','Rozmowa':'d0-2','Czas':'d1-2','Zakupy':'d2-1','Restauracja':'d2-3','Nagłe sytuacje':'d3-1','Gdzie mam iść?':'d3-2','Lotnisko i aeroklub':'a0-1'};
+
+/* ---------------- RZECZOWNIKI: rodzaj i forma z rodzajnikiem ----------------
+   [bg, pl, rodzaj m/f/n, forma określona (podmiot), level, uwaga] */
+const NOUNS = [
+ ['кафе','kawa','n','кафето','d0-1','Rodzaj nijaki, choć po polsku „kawa” jest żeńska.'],['такси','taksówka','n','таксито','d0-1','Słowa obce na -и/-у/-ю są nijakie.'],['хотел','hotel','m','хотелът','d0-1'],['банка','bank','f','банката','d0-1','Po polsku męski, po bułgarsku żeński.'],['пилот','pilot','m','пилотът','d0-1'],['радио','radio','n','радиото','d0-1'],['телефон','telefon','m','телефонът','d0-1'],['аптека','apteka','f','аптеката','d0-1'],['ресторант','restauracja','m','ресторантът','d0-1','Po polsku żeńska, po bułgarsku męski.'],['паспорт','paszport','m','паспортът','d0-1'],
+ ['час','godzina','m','часът','d1-2'],['минута','minuta','f','минутата','d1-2'],['време','czas / pogoda','n','времето','d1-2'],['седмица','tydzień','f','седмицата','d1-3'],['понеделник','poniedziałek','m','понеделникът','d1-3'],
+ ['мляко','mleko','n','млякото','d2-1'],['хляб','chleb','m','хлябът','d2-1'],['вода','woda','f','водата','d2-1'],['сирене','ser biały','n','сиренето','d2-1'],['масло','masło / olej','n','маслото','d2-1'],['чай','herbata','m','чаят','d2-1','Męski na -й: rodzajnik -ят.'],['бира','piwo','f','бирата','d2-1'],['вино','wino','n','виното','d2-1'],
+ ['магазин','sklep','m','магазинът','d2-2'],['каса','kasa','f','касата','d2-2'],['цена','cena','f','цената','d2-2'],['карта','karta','f','картата','d2-2'],
+ ['меню','menu','n','менюто','d2-3'],['сметка','rachunek','f','сметката','d2-3'],['маса','stół','f','масата','d2-3'],['стол','krzesło','m','столът','d2-3'],['чаша','szklanka','f','чашата','d2-3'],['обяд','obiad','m','обядът','d2-3'],
+ ['улица','ulica','f','улицата','d3-1'],['спирка','przystanek','f','спирката','d3-1'],['гара','dworzec','f','гарата','d3-1'],['център','centrum','m','центърът','d3-1'],['мост','most','m','мостът','d3-1'],['лекар','lekarz','m','лекарят','d3-1','Wyjątek: лекар → лекарят.'],
+ ['автобус','autobus','m','автобусът','d3-3'],['влак','pociąg','m','влакът','d3-3'],['кола','samochód','f','колата','d3-3'],['билет','bilet','m','билетът','d3-3'],['летище','lotnisko','n','летището','d3-3'],
+ ['самолет','samolot','m','самолетът','d4-4'],['писта','pas startowy','f','пистата','d4-4'],['крило','skrzydło','n','крилото','d4-4'],['нощ','noc','f','нощта','d4-4','Wyjątek: kończy się spółgłoską, a jest żeńska.'],['ден','dzień','m','денят','d4-4','Wyjątek: ден → денят.'],['двигател','silnik','m','двигателят','d4-4','Na -тел: rodzajnik -ят.'],['вятър','wiatr','m','вятърът','d4-4'],
+ ['полет','lot','m','полетът','a0-1'],['хангар','hangar','m','хангарът','a0-1'],['кацане','lądowanie','n','кацането','a0-1','Rzeczowniki odczasownikowe na -не są nijakie.'],['излитане','start','n','излитането','a0-1'],
+ ['опашка','ogon','f','опашката','a0-2'],['витло','śmigło','n','витлото','a0-2'],['кабина','kabina','f','кабината','a0-2'],['спирачка','hamulec','f','спирачката','a0-2'],['гориво','paliwo','n','горивото','a0-2'],['колело','koło','n','колелото','a0-2'],
+ ['компас','kompas','m','компасът','a0-3'],['налягане','ciśnienie','n','налягането','a0-3'],['температура','temperatura','f','температурата','a0-3'],
+ ['автожир','wiatrakowiec','m','автожирът','a1-1'],['ротор','wirnik','m','роторът','a1-1'],['мачта','maszt','f','мачтата','a1-1'],
+ ['завой','zakręt','m','завоят','a1-2','Męski na -й: -ят.'],['скорост','prędkość','f','скоростта','a1-2','Na -ост: żeńskie, rodzajnik -та.'],['височина','wysokość','f','височината','a1-2'],
+ ['колан','pas','m','коланът','a1-3'],['каска','kask','f','каската','a1-3'],['поле','pole','n','полето','a1-3'],
+ ['облак','chmura','m','облакът','a2-1','Po polsku żeńska, po bułgarsku męski.'],['дъжд','deszcz','m','дъждът','a2-1'],['мъгла','mgła','f','мъглата','a2-1'],['видимост','widoczność','f','видимостта','a2-1','Na -ост: żeńskie, rodzajnik -та.'],
+ ['кула','wieża','f','кулата','a2-2'],['разрешение','zezwolenie','n','разрешението','a2-2']
+];
+
+/* ---------------- GRY: PIOSENKI I WIERSZE ----------------
+   Cytaty tylko z utworów sprzed 1929 r. (domena publiczna). Współczesne hity – pytania o tytuł i wykonawcę, bez tekstów. */
+const SONGS = [
+ {line:'Горда Стара планина, до ней Дунава синей', tr:'Dumna Stara Płanina, a obok niej błękitnieje Dunaj', o:['Мила Родино','Шуми Марица','Тих бял Дунав'], who:'Cwetan Radosławow, 1885', fact:'Od 1964 r. hymn Bułgarii. Napisał go student, który tęsknił za domem.'},
+ {line:'Мила Родино, ти си земен рай', tr:'Miła Ojczyzno, jesteś rajem na ziemi', o:['Мила Родино','Хубава си, моя горо','Шуми Марица'], who:'refren hymnu Bułgarii', fact:'„Родина” to ojczyzna; forma „Родино” to wołacz – zwracamy się do niej.'},
+ {line:'Шуми Марица окървавена', tr:'Szumi Marica, zakrwawiona', o:['Шуми Марица','Мила Родино','Тих бял Дунав'], who:'dawny hymn Bułgarii', fact:'Marica to rzeka płynąca przez Płowdiw. Pieśń była hymnem przed „Мила Родино”.'},
+ {line:'Тих бял Дунав се вълнува', tr:'Cichy biały Dunaj faluje', o:['Радецки','Мила Родино','Излел е Дельо хайдутин'], who:'wiersz Iwana Wazowa, 1876', fact:'Pieśń o statku Radetzky, którym powstańcy Christo Botewa przepłynęli Dunaj.'},
+ {line:'Хубава си, моя горо', tr:'Piękny jesteś, mój lesie', o:['Хубава си, моя горо','Шуми Марица','Радецки'], who:'wiersz Lubena Karawełowa', fact:'Pułapka: „гора” to LAS, nie góra. „горо” to wołacz od „гора”.'},
+ {line:'Жив е той, жив е!', tr:'Żyje on, żyje!', o:['Хаджи Димитър','Радецки','Мила Родино'], who:'wiersz Christo Botewa, 1873', fact:'Najsłynniejszy bułgarski wiersz o powstańcu, który nie umiera w pamięci ludzi.'},
+ {line:'Излел е Дельо хайдутин', tr:'Wyruszył Delo, hajduk', o:['Валя Балканска','Лили Иванова','Емил Димитров'], q:'Kto zaśpiewał tę pieśń ludową z Rodopów?', who:'pieśń ludowa, śpiew: Wala Bałkanska', fact:'Nagranie poleciało w kosmos na Złotej Płycie sond Voyager (1977).'}
+];
+const TRIVIA = [
+ {q:'Kto śpiewa „Моя страна, моя България”?', o:['Емил Димитров','Лили Иванова','Щурците'], fact:'Emil Dimitrow nagrał ją w 1970 r.; tytuł znaczy „Mój kraj, moja Bułgaria”.'},
+ {q:'Kto skomponował „Арлекино”, z którym Ałła Pugaczowa wygrała Złotego Orfeusza w 1975 r.?', o:['Емил Димитров','Васил Найденов','Валя Балканска'], fact:'Złoty Orfeusz to festiwal piosenki nad Morzem Czarnym, w Słonecznym Brzegu.'},
+ {q:'Jak nazywa się legendarny bułgarski zespół rockowy, założony w 1967 r.?', o:['Щурците','ФСБ','Сигнал'], fact:'„Щурците” znaczy „Świerszcze”. Jeden z ich hitów to „Клетва” – „Przysięga”.'},
+ {q:'Która piosenka jest jednym z wielkich przebojów Lili Iwanowej?', o:['Камино','Клетва','Вода'], fact:'Lili Iwanowa śpiewa od lat 60. i jest nazywana primadonną bułgarskiej estrady.'},
+ {q:'Który utwór dał Bułgarii najlepszy wynik na Eurowizji – 2. miejsce w 2017 r.?', o:['Beautiful Mess','If Love Was a Crime','Вода'], fact:'Zaśpiewał go Kristian Kostow, miał wtedy 17 lat.'},
+ {q:'Jak nazywał się bułgarski utwór z Eurowizji 2007 (5. miejsce) z bębnami i śpiewem ludowym?', o:['Вода','Камино','Арлекино'], fact:'„Вода” znaczy „woda”. Wykonali go Elica Todorowa i Stojan Jankułow.'}
+];
+/* fałszywi i prawdziwi przyjaciele: [bg, polski „podobny”, prawdziwe znaczenie] */
+const FRIENDS = [
+ ['маса','masa','stół'],['стол','stół','krzesło'],['направо','w prawo','prosto'],['час','czas','godzina'],['рано','rano','wcześnie'],['закуска','zakąska','śniadanie'],
+ ['гора','góra','las'],['булка','bułka','panna młoda'],['ягода','jagoda','truskawka'],['дума','duma','słowo'],['кола','koło','samochód'],['сирене','syrena','biały ser'],
+ ['лук','łuk','cebula'],['живот','brzuch','życie'],
+ ['мляко','mleko','mleko'],['вода','woda','woda'],['хляб','chleb','chleb'],['майка','matka','matka'],['брат','brat','brat'],['питам','pytam','pytam'],['пилот','pilot','pilot'],['сестра','siostra','siostra']
+];
+
+/* ===== NARZĘDZIA ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const first = s => s.split('|')[0];
+const alts = s => s.split('|');
+const ICON = {
+  spk:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  slow:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 15c0-4 3.5-7 8-7s7 3 7 6h2a1 1 0 0 1 0 2H5a2 2 0 0 1-2-1zm4 3h2v2H7zm8 0h2v2h-2z"/></svg>',
+  mic:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  star:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg>',
+  lock:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10V8a5 5 0 0 1 10 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V8a3 3 0 0 0-6 0z"/></svg>',
+  check:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  x:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  plane:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0v5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z"/></svg>'
+};
+const stars = (n, cls = 'stars') => `<span class="${cls}" aria-label="${n} z 3 gwiazdek">${[1,2,3].map(i => `<span class="${i <= n ? 'on' : ''}">${ICON.star}</span>`).join('')}</span>`;
+
+/* transkrypcja na polskie litery */
+const TR = {а:'a',б:'b',в:'w',г:'g',д:'d',е:'e',ж:'ż',з:'z',и:'i',й:'j',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'ch',ц:'c',ч:'cz',ш:'sz',щ:'szt',ъ:'ă',ь:'j',ю:'ju',я:'ja',ѝ:'i'};
+function translit(s) {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i], lo = ch.toLowerCase(); let t = TR[lo];
+    if (t === undefined) { out += ch; continue; }
+    if ((lo === 'я' || lo === 'ю') && i > 0 && /[бвгдзклмнпрстфхцчшщ]/i.test(s[i - 1])) t = lo === 'я' ? 'ia' : 'iu';
+    if (ch !== lo) t = t[0].toUpperCase() + t.slice(1);
+    out += t;
+  }
+  return out;
+}
+function norm(s) { return String(s).toLowerCase().replace(/ѝ/g, 'и').replace(/ё/g,'е').replace(/[.,!?;:„“”"«»()…–—\-]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({length: n + 1}, (_, i) => i);
+  for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; }
+  return prev[n];
+}
+function checkText(input, answers) {
+  const u = norm(input); if (!u) return {ok:false};
+  let best = 99;
+  for (const a of alts(answers)) { const d = lev(u, norm(a)); if (d === 0) return {ok:true}; best = Math.min(best, d); }
+  const tgt = norm(first(answers));
+  const tol = tgt.length > 14 ? 2 : tgt.length > 4 ? 1 : 0;
+  if (best <= tol) return {ok:true, typo:true};
+  return {ok:false};
+}
+function similarity(a, b) { a = norm(a); b = norm(b); const m = Math.max(a.length, b.length) || 1; return 1 - lev(a, b) / m; }
+
+/* ===== INDEKS TREŚCI ===== */
+const LEVELS = []; const LV = {};
+UNITS.forEach(u => u.levels.forEach((l, i) => { l.unit = u; l.n = i + 1; LEVELS.push(l); LV[l.id] = l; }));
+const TRACK = { day: LEVELS.filter(l => l.unit.track === 'day'), air: LEVELS.filter(l => l.unit.track === 'air') };
+const PH_UNIT = {id:'ph', t:'Zwroty', bt:'Изрази', track:'ph', cefr:''};
+PHRASES.forEach((c, ci) => { const items = c.items.filter(([pl, bg]) => !/[…\/]/.test(bg)); LV['ph' + ci] = {id:'ph' + ci, t:c.n, bt:'Изрази', unit:PH_UNIT, n:ci + 1, w:items, s:items, g:[], tip:''}; });
+const ALLW = LEVELS.flatMap(l => l.w.map((w, i) => ({lv:l, i, w, ref:`${l.id}:w:${i}`})));
+function getRef(ref) {
+  if (ref.startsWith('n:')) { const n = NOUNS[+ref.slice(2)]; return n ? {k:'n', ref, n, i:+ref.slice(2), lv:LV[n[4]]} : null; }
+  const [id, k, i] = ref.split(':'); const l = LV[id]; if (!l) return null;
+  const arr = k === 'w' ? l.w : k === 's' ? l.s : l.g; const d = arr && arr[+i]; if (!d) return null;
+  return {lv:l, i:+i, k, ref, w:k === 'w' ? d : null, s:k === 's' ? d : null, g:k === 'g' ? d : null};
+}
+
+/* ===== STAN I ZAPIS ===== */
+const KEY = 'bg-za-sterami-v1';
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true}; }
+let S = defaults();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
+/* motyw: auto (jak w systemie) / jasny / ciemny */
+function applyTheme() {
+  const r = document.documentElement;
+  if (S.theme === 'light' || S.theme === 'dark') r.dataset.theme = S.theme; else delete r.dataset.theme;
+}
+applyTheme();
+/* lekka wibracja na telefonie przy odpowiedzi */
+function buzz(pattern) { if (S.haptics && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
+let cloud = null, syncState = 'local', cloudBusy = false, cloudAgain = false, saveTimer = null;
+function save() {
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  clearTimeout(saveTimer); saveTimer = setTimeout(cloudSave, 1500);
+}
+async function cloudSave() {
+  if (!cloud) return;
+  if (cloudBusy) { cloudAgain = true; return; }
+  cloudBusy = true;
+  try { await cloud.set({state: JSON.stringify(S), updatedAt: S.updatedAt}); syncState = 'cloud'; }
+  catch (e) { syncState = 'local'; }
+  cloudBusy = false;
+  if (cloudAgain) { cloudAgain = false; cloudSave(); }
+}
+function mergeStates(a, b) {
+  a = Object.assign(defaults(), a); b = Object.assign(defaults(), b);
+  const nw = (a.updatedAt || 0) >= (b.updatedAt || 0) ? a : b, od = nw === a ? b : a;
+  const m = JSON.parse(JSON.stringify(nw));
+  m.xp = Math.max(a.xp, b.xp); m.answered = Math.max(a.answered, b.answered); m.correct = Math.max(a.correct, b.correct);
+  Object.entries(od.lv || {}).forEach(([id, v]) => { const c = m.lv[id]; if (!c || (v.stars || 0) > (c.stars || 0)) m.lv[id] = v; });
+  if ((od.lastDay || '') > (m.lastDay || '')) { m.lastDay = od.lastDay; m.streak = od.streak; }
+  else if (od.lastDay === m.lastDay) m.streak = Math.max(m.streak, od.streak);
+  if (od.daily && m.daily && od.daily.date === m.daily.date) m.daily.xp = Math.max(m.daily.xp, od.daily.xp);
+  const ga = m.game, gb = od.game || {};
+  ga.visited = [...new Set([...(ga.visited || []), ...(gb.visited || [])])];
+  if ((gb.stage || 0) > (ga.stage || 0)) { ga.stage = gb.stage; ga.day = gb.day; }
+  else if (gb.day && ga.day && gb.day.date === ga.day.date && gb.day.stage === ga.day.stage) {
+    ga.day.tiles.forEach((t, i) => { const o = gb.day.tiles[i]; if (o && o.done && !t.done) { t.done = true; t.stars = o.stars; if (o.id) t.id = o.id; } });
+    ga.day.finished = ga.day.finished || gb.day.finished;
+  }
+  Object.entries(od.best || {}).forEach(([k, v]) => { m.best[k] = Math.max(m.best[k] || 0, v); });
+  if (!m.placement && od.placement) m.placement = od.placement;
+  m.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
+  return m;
+}
+function applyRemote(d) {
+  if (!d || !d.state) return false;
+  let remote; try { remote = JSON.parse(d.state); } catch (e) { return false; }
+  const before = JSON.stringify(S);
+  S = mergeStates(S, remote);
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  const changed = JSON.stringify(S) !== before;
+  if (changed && !L) { renderHud(); route(); }
+  return JSON.stringify(S) !== d.state;
+}
+async function initCloud() {
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id(); if (!id) return;
+    const ref = db.doc('data/users/' + id + '/progress');
+    const snap = await Promise.race([ref.get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))]);
+    cloud = ref; syncState = 'cloud';
+    if (snap.exists) { if (applyRemote(snap.data())) cloudSave(); }
+    else if (S.updatedAt) cloudSave();
+    ref.onSnapshot(sn => { if (sn.exists && !cloudBusy) { const d = sn.data(); if (d && (d.updatedAt || 0) > (S.updatedAt || 0)) applyRemote(d); } }, () => {});
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && cloud) cloud.get().then(sn => { if (sn.exists && applyRemote(sn.data())) cloudSave(); }).catch(() => {}); });
+    if ($('#syncline')) $('#syncline').textContent = syncText();
+  } catch (e) { cloud = null; }
+}
+const syncText = () => syncState === 'cloud' ? 'Postęp zapisuje się na Twoim koncie – zobaczysz go na telefonie i komputerze.' : 'Postęp zapisuje się na tym urządzeniu. Zrób czasem kopię zapasową (niżej).';
+
+/* ===== XP, SERIA, RANGI ===== */
+const RANKS = [[0,'Курсантка','Kursantka'],[120,'Пилот','Pilotka'],[400,'Командир','Dowódczyni'],[900,'Инструктор','Instruktorka'],[1600,'Ас','As przestworzy']];
+const rankOf = xp => { let r = 0; RANKS.forEach((k, i) => { if (xp >= k[0]) r = i; }); return r; };
+function streakNow() { return (S.lastDay === today() || S.lastDay === yesterday()) ? S.streak : 0; }
+function dailyXP() { return S.daily.date === today() ? S.daily.xp : 0; }
+function addXP(n) {
+  if (n <= 0) return;
+  const before = rankOf(S.xp);
+  S.xp += n;
+  if (S.daily.date !== today()) S.daily = {date:today(), xp:0};
+  S.daily.xp += n;
+  if (S.lastDay !== today()) { S.streak = S.lastDay === yesterday() ? S.streak + 1 : 1; S.lastDay = today(); }
+  const after = rankOf(S.xp);
+  if (after > before) setTimeout(() => toast(`Awans! Nowa ranga: ${RANKS[after][1]} (${RANKS[after][2]})`), 600);
+}
+function renderHud() {
+  $('#xp').textContent = S.xp;
+  $('#streak').textContent = streakNow();
+  const r = RANKS[rankOf(S.xp)];
+  $('#rankline').innerHTML = `<span lang="bg">${r[1]}</span> · ${r[2]}`;
+  const dd = (S.game.day && S.game.day.date === today()) ? S.game.day.tiles.filter(t => t.done).length : 0;
+  const p = Math.min(1, dd / 6);
+  const earthTop = 6 + 34 * p;  /* sztuczny horyzont: im bliżej celu, tym więcej nieba */
+  $('#gauge').innerHTML = `<defs><clipPath id="gc"><circle cx="23" cy="23" r="20"/></clipPath></defs>
+    <g clip-path="url(#gc)"><rect x="0" y="0" width="46" height="46" fill="var(--sky)"/><rect x="0" y="${earthTop}" width="46" height="46" fill="var(--earth)"/>
+    <line x1="0" x2="46" y1="${earthTop}" y2="${earthTop}" stroke="#fff" stroke-width="1.5"/></g>
+    <circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="2"/>
+    <text x="23" y="27" text-anchor="middle" font-size="11" fill="#fff">${dd}/6</text>`;
+  $('#gauge').setAttribute('aria-label', `Dzisiejsza plansza: ${dd} z 6 lekcji`);
+  $('#gauge').innerHTML += `<title>Dzisiejsza plansza: ${dd} / 6</title>`;
+}
+
+/* ===== DOSTĘP DO LEVELI ===== */
+const lvState = id => S.lv[id] || null;
+const isDone = id => { const s = lvState(id); return !!(s && (s.stars > 0 || s.test)); };
+function isOpen(l) {
+  const list = TRACK[l.unit.track]; const idx = list.indexOf(l);
+  if (idx === 0) return l.unit.track === 'day' ? true : (isDone('d0-2') || isDone('d0-1'));
+  return isDone(list[idx - 1].id);
+}
+const nextLevel = track => TRACK[track].find(l => isOpen(l) && !isDone(l.id)) || null;
+
+/* ===== LEKTOR (TTS) I DYKTOWANIE ===== */
+let tts = null, audioMode = ('speechSynthesis' in window) ? 'browser' : 'none', dict = null, dictOff = false;
+function bgVoice() { try { return speechSynthesis.getVoices().find(v => (v.lang || '').toLowerCase().startsWith('bg')); } catch (e) { return null; } }
+function audioOK() { return audioMode === 'claude' || (audioMode === 'browser' && !!bgVoice()); }
+function speak(text, slow) {
+  text = String(text).replace(/…/g, ' ');
+  if (audioMode === 'claude' && tts) {
+    tts.speak(text, {language:'bg', rate: slow ? 0.72 : S.rate}).catch(e => {
+      const c = e && e.code;
+      if (c === 'not_granted' || c === 'unavailable') { audioMode = 'none'; applyAudioClass(); toast('Lektor jest wyłączony dla tej strony. Ćwiczenia ze słuchu pokażą tekst.'); }
+      else if (c === 'rate_limited') toast('Lektor potrzebuje chwili przerwy. Spróbuj za moment.');
+      else if (c === 'no_gesture') toast('Kliknij przycisk głośnika, aby odsłuchać.');
+    });
+    return;
+  }
+  if (audioMode === 'browser') {
+    try { const u = new SpeechSynthesisUtterance(text); u.lang = 'bg-BG'; const v = bgVoice(); if (v) u.voice = v; u.rate = slow ? 0.7 : S.rate; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+  }
+}
+function applyAudioClass() { document.body.classList.toggle('noaudio', !audioOK()); }
+/* Rozpoznawanie mowy przeglądarki (Chrome na Androidzie i komputerze, Safari) – ten sam interfejs co dyktowanie w claude.ai */
+function webDictation() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+  const subs = {final:new Set(), partial:new Set(), state:new Set()};
+  const emit = (k, v) => subs[k].forEach(f => { try { f(v); } catch (e) {} });
+  const on = k => cb => { subs[k].add(cb); return () => subs[k].delete(cb); };
+  const codeOf = err => (err === 'not-allowed' || err === 'service-not-allowed') ? 'not_granted' : err === 'language-not-supported' ? 'unavailable' : err === 'aborted' ? 'stopped' : err;
+  let rec = null, live = false;
+  return {
+    active: () => live,
+    start() {
+      return new Promise((res, rej) => {
+        try {
+          rec = new SR(); rec.lang = 'bg-BG'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+          let started = false;
+          rec.onstart = () => { started = live = true; emit('state', {state:'listening'}); res(); };
+          rec.onresult = e => {
+            let interim = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) emit('final', {text:' ' + r[0].transcript}); else interim += r[0].transcript; }
+            emit('partial', {text:interim});
+          };
+          rec.onerror = e => {
+            const code = codeOf(e.error);
+            if (!started) rej({code});
+            else if (code === 'not_granted' || code === 'unavailable') emit('state', {state:'idle', reason:code});
+          };
+          rec.onend = () => { live = false; emit('state', {state:'idle'}); };
+          emit('state', {state:'starting'}); rec.start();
+        } catch (err) { rej({code:'unavailable'}); }
+      });
+    },
+    stop() { try { if (rec) rec.stop(); } catch (e) {} return Promise.resolve(); },
+    onFinal: on('final'), onPartial: on('partial'), onState: on('state')
+  };
+}
+function initSpeech() {
+  if (!window.claude || !window.claude.use) { dict = webDictation(); applyAudioClass(); return; }
+  claude.use('tts').then(t => { if (t) { tts = t; audioMode = 'claude'; } applyAudioClass(); }).catch(() => applyAudioClass());
+  claude.use('dictation').then(d => { dict = d; }).catch(() => {});
+}
+if ('speechSynthesis' in window) { try { speechSynthesis.onvoiceschanged = applyAudioClass; } catch (e) {} }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-say]'); if (!b) return;
+  e.preventDefault(); speak(b.dataset.say, b.dataset.slow === '1');
+});
+const spkBtn = (t, extra = '') => `<button class="spk ${extra}" data-say="${esc(t)}" aria-label="Posłuchaj">${ICON.spk}</button>`;
+
+/* ===== TOAST ===== */
+let toastT = null;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3600); }
+
+/* ===== ROUTING ===== */
+const VIEWS = ['plansza','kurs','zwroty','gramatyka','slowka','gry','powtorki','profil','test'];
+function route() {
+  let v = (location.hash || '').slice(1); if (v === 'trasa') v = 'kurs'; if (!VIEWS.includes(v)) v = 'plansza';
+  const navV = v === 'test' ? 'plansza' : v === 'powtorki' ? 'profil' : v;
+  $$('nav.tabs a').forEach(a => a.setAttribute('aria-current', a.getAttribute('href') === '#' + navV ? 'page' : 'false'));
+  ({plansza:viewBoard, kurs:viewMap, gry:viewGames, zwroty:viewPhrases, gramatyka:viewGrammar, slowka:viewDict, powtorki:viewReview, profil:viewProfile, test:viewTest})[v]();
+  if (v !== lastView) { const el = $('#view'); el.classList.remove('fade'); void el.offsetWidth; el.classList.add('fade'); lastView = v; }
+  renderHud();
+}
+let lastView = '';
+window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
+
+/* ===== WIDOK: TRASA ===== */
+function viewMap() {
+  const tr = S.track;
+  const nx = nextLevel(tr);
+  let html = `<h2 class="view">Mapa kursu</h2><p class="muted" style="margin-top:0">Wszystkie levele po kolei. Codzienne lekcje dobiera plansza, ale tu możesz poćwiczyć dowolny otwarty level.</p>`;
+  html += `<div class="row" style="justify-content:space-between;margin-bottom:16px">
+    <div class="trackswitch" role="group" aria-label="Trasa">
+      <button data-track="day" aria-pressed="${tr === 'day'}">Na co dzień · ${TRACK.day.filter(l => isDone(l.id)).length}/${TRACK.day.length}</button>
+      <button data-track="air" aria-pressed="${tr === 'air'}">${ICON.plane} Lotnictwo · ${TRACK.air.filter(l => isDone(l.id)).length}/${TRACK.air.length}</button></div></div>
+    <div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between;font-size:14px"><span>Ukończone levele</span><span class="mono">${LEVELS.filter(l => isDone(l.id)).length} / ${LEVELS.length}</span></div><div class="bar" style="margin-top:6px"><i style="width:${100 * LEVELS.filter(l => isDone(l.id)).length / LEVELS.length}%"></i></div></div>`;
+  if (nx) html += `<div class="next"><div><span class="eyebrow">Następny lot · ${nx.unit.cefr}</span><b>${esc(nx.t)}</b><span lang="bg" style="opacity:.75">${esc(nx.bt)}</span></div><button class="btn" data-start="${nx.id}">Start</button></div>`;
+  else if (tr === 'air' && !isOpen(TRACK.air[0])) html += `<div class="card muted">Trasa lotnicza otworzy się po pierwszym levelu na trasie „Na co dzień” albo po teście wstępnym.</div>`;
+  else html += `<div class="card"><b>Trasa ukończona!</b> <span class="muted">Zdobywaj 3 gwiazdki i ćwicz w Powtórkach.</span></div>`;
+  UNITS.filter(u => u.track === tr).forEach((u, ui) => {
+    html += `<section class="unit"><div class="unit-head"><span class="eyebrow">Etap ${ui + 1} · ${u.cefr}</span><h3 lang="bg">${esc(u.bt)}</h3><span class="pl">${esc(u.t)}</span></div><ol class="route">`;
+    u.levels.forEach(l => {
+      const st = lvState(l.id), open = isOpen(l), done = isDone(l.id);
+      const cls = !open ? 'locked' : (st && st.stars > 0) ? 'done' : (st && st.test) ? 'test' : 'open';
+      const node = !open ? ICON.lock : (st && st.stars > 0) ? ICON.check : (st && st.test) ? ICON.check : `${u.id.toUpperCase()}${l.n}`;
+      const right = !open ? '' : (st && st.stars > 0) ? stars(st.stars) : (st && st.test) ? '<span class="eyebrow">zaliczone testem</span>' : '<span class="eyebrow" style="color:var(--sky)">gotowe</span>';
+      html += `<li class="wp ${cls}"><span class="node" aria-hidden="true">${node}</span>
+        <button class="wpbtn" ${open ? `data-start="${l.id}"` : 'disabled'} aria-label="${esc(l.t)}${open ? '' : ' – zablokowane'}">
+        <span style="min-width:0"><span class="t">${esc(l.t)}</span><span class="b" lang="bg">${esc(l.bt)}</span></span>${right}</button></li>`;
+    });
+    html += `</ol></section>`;
+  });
+  $('#view').innerHTML = html;
+  $$('[data-track]').forEach(b => b.onclick = () => { S.track = b.dataset.track; save(); viewMap(); });
+  $$('[data-start]').forEach(b => b.onclick = () => openBriefing(b.dataset.start));
+}
+
+/* ===== WIDOK: POWTÓRKI ===== */
+function viewReview() {
+  const refs = Object.entries(S.mistakes).filter(([r, c]) => c > 0 && getRef(r)).sort((a, b) => b[1] - a[1]);
+  const doneLv = LEVELS.filter(l => isDone(l.id));
+  $('#view').innerHTML = `<h2 class="view">Powtórki</h2><p class="muted" style="margin-top:0">Tu wracają słowa i zdania, w których się pomyliłaś. Poprawna odpowiedź zdejmuje je z listy.</p>
+  <div class="stack">
+   <div class="card stack"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Do powtórki</div><b class="mono" style="font-size:28px">${refs.length}</b></div>
+   <button class="btn" id="revGo" ${refs.length || doneLv.length ? '' : 'disabled'}>${refs.length ? 'Powtórz błędy' : 'Trening losowy'}</button></div>
+   ${!refs.length && !doneLv.length ? '<p class="muted" style="margin:0">Ukończ pierwszy level, a powtórki pojawią się tutaj.</p>' : ''}</div>
+   ${refs.length ? `<div class="plist">${refs.slice(0, 40).map(([r, c]) => { const it = getRef(r); const pl = it.n ? it.n[1] : it.w ? it.w[0] : it.s ? it.s[0] : (it.g.pl || it.g.q || ''); const bg = it.n ? `${it.n[0]} → ${it.n[3]}` : it.w ? first(it.w[1]) : it.s ? first(it.s[1]) : (it.g.s ? it.g.s.replace('___', it.g.o[0]) : it.g.o[0]);
+     return `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(bg)}</div><div class="pl">${esc(pl)}</div></div><span class="mono muted" title="Liczba pomyłek">×${c}</span></div>`; }).join('')}</div>` : ''}
+  </div>`;
+  const g = $('#revGo'); if (g) g.onclick = () => startReview();
+}
+
+/* ===== WIDOK: PROFIL ===== */
+function viewProfile() {
+  const ri = rankOf(S.xp), r = RANKS[ri], nr = RANKS[ri + 1];
+  const done = LEVELS.filter(l => isDone(l.id)).length;
+  const words = LEVELS.filter(l => isDone(l.id)).reduce((a, l) => a + l.w.length, 0);
+  const acc = S.answered ? Math.round(100 * S.correct / S.answered) : 0;
+  const p = nr ? (S.xp - r[0]) / (nr[0] - r[0]) : 1;
+  const pl = S.placement && !S.placement.skipped ? S.placement : null;
+  $('#view').innerHTML = `<h2 class="view">Profil pilotki</h2>
+  <div class="stack">
+   <div class="card stack"><div><div class="eyebrow">Ranga</div><b style="font-family:var(--f-display);font-size:22px" lang="bg">${r[1]}</b> <span class="muted">${r[2]}</span></div>
+    <div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>
+    <div class="muted" style="font-size:14px">${nr ? `${S.xp} / ${nr[0]} XP do rangi <span lang="bg">${nr[1]}</span> (${nr[2]})` : 'Najwyższa ranga. Gratulacje!'}</div></div>
+   <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
+   ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
+   <div class="card">
+    <div class="setrow"><div><b>Lektor po odpowiedzi</b><div class="muted" style="font-size:14px">Odczytuje poprawną odpowiedź po bułgarsku.</div></div>
+      <div class="seg" id="voiceSeg"><button data-v="1" aria-pressed="${S.autoVoice}">Włączony</button><button data-v="0" aria-pressed="${!S.autoVoice}">Wyłączony</button></div></div>
+    <div class="setrow"><div><b>Tempo lektora</b></div>
+      <div class="seg" id="rateSeg">${[[0.8,'Wolno'],[0.9,'Spokojnie'],[1,'Normalnie']].map(([v, n]) => `<button data-r="${v}" aria-pressed="${S.rate === v}">${n}</button>`).join('')}</div></div>
+    <div class="setrow"><div><b>Pisanie łacinką</b><div class="muted" style="font-size:14px">Wpisujesz „sz”, pojawia się „ш”; „cz” → ч, „ż” → ж, „ja” → я, „y” → ъ.</div></div>
+      <div class="seg" id="trSeg"><button data-x="1" aria-pressed="${S.translit}">Tak</button><button data-x="0" aria-pressed="${!S.translit}">Nie</button></div></div>
+    <div class="setrow"><div><b>Motyw</b></div>
+      <div class="seg" id="themeSeg">${[['auto','Auto'],['light','Jasny'],['dark','Ciemny']].map(([v, n]) => `<button data-t="${v}" aria-pressed="${S.theme === v}">${n}</button>`).join('')}</div></div>
+    ${'vibrate' in navigator ? `<div class="setrow"><div><b>Wibracje</b><div class="muted" style="font-size:14px">Krótka wibracja przy dobrej i złej odpowiedzi.</div></div>
+      <div class="seg" id="hapSeg"><button data-h="1" aria-pressed="${S.haptics}">Tak</button><button data-h="0" aria-pressed="${!S.haptics}">Nie</button></div></div>` : ''}
+    <div class="setrow"><div><b>Status</b><div class="muted" style="font-size:14px" id="syncline">${syncText()}</div><div class="muted" style="font-size:14px">${audioOK() ? 'Lektor dostępny.' : 'Lektor niedostępny w tej przeglądarce – ćwiczenia ze słuchu pokażą tekst.'}</div><div class="muted" style="font-size:14px">${dict ? 'Rozpoznawanie mowy dostępne.' : 'Rozpoznawanie mowy niedostępne – w ćwiczeniach mówienia ocenisz się sama.'}</div></div></div>
+   </div>
+   ${installCard()}
+   <div class="card stack"><div><div class="eyebrow">Kopia zapasowa</div><b>Przenieś postęp na inne urządzenie</b>
+    <div class="muted" style="font-size:14px;margin-top:4px">Pobierz plik z postępem i wczytaj go na drugim telefonie lub komputerze. Wczytanie łączy oba postępy – nic nie zginie.</div></div>
+    <div class="row"><button class="btn soft" id="bkSave">Pobierz kopię</button><label class="btn soft filebtn">Wczytaj kopię<input type="file" id="bkLoad" accept="application/json,.json"></label></div></div>
+   <div class="row"><a class="btn soft" href="#powtorki">Lista błędów (${Object.values(S.mistakes).filter(c => c > 0).length})</a><a class="btn soft" href="#test">Powtórz test wstępny</a><button class="btn ghost" id="resetBtn">Wyzeruj postęp</button></div>
+   <div id="resetConfirm" hidden class="card stack" style="border-color:var(--bad)"><b>Na pewno usunąć cały postęp?</b><span class="muted">Stracisz XP, gwiazdki, serię i powtórki. Tego nie da się cofnąć.</span>
+     <div class="row"><button class="btn bad" id="resetYes">Tak, wyzeruj</button><button class="btn ghost" id="resetNo">Anuluj</button></div></div>
+  </div>`;
+  $('#voiceSeg').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; S.autoVoice = b.dataset.v === '1'; save(); viewProfile(); };
+  $('#rateSeg').onclick = e => { const b = e.target.closest('[data-r]'); if (!b) return; S.rate = +b.dataset.r; save(); viewProfile(); speak('Здравей! Как си?'); };
+  $('#trSeg').onclick = e => { const b = e.target.closest('[data-x]'); if (!b) return; S.translit = b.dataset.x === '1'; save(); viewProfile(); };
+  $('#themeSeg').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; S.theme = b.dataset.t; applyTheme(); save(); viewProfile(); };
+  const hs = $('#hapSeg'); if (hs) hs.onclick = e => { const b = e.target.closest('[data-h]'); if (!b) return; S.haptics = b.dataset.h === '1'; save(); viewProfile(); buzz(20); };
+  const ib = $('#installBtn'); if (ib) ib.onclick = () => window.PWA.install();
+  $('#bkSave').onclick = exportProgress;
+  $('#bkLoad').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) importProgress(f); e.target.value = ''; };
+  $('#resetBtn').onclick = () => { $('#resetConfirm').hidden = false; };
+  $('#resetNo').onclick = () => { $('#resetConfirm').hidden = true; };
+  $('#resetYes').onclick = () => { const keep = {goal:S.goal, rate:S.rate, autoVoice:S.autoVoice, translit:S.translit}; S = Object.assign(defaults(), keep); save(); location.hash = '#plansza'; route(); toast('Postęp wyzerowany.'); };
+}
+
+function installCard() {
+  const head = t => `<div><div class="eyebrow">Na telefonie</div><b>${t}</b></div>`;
+  if (window.claude) return `<div class="card stack">${head('Aplikacja na ekranie głównym')}
+    <ol style="margin:0;padding-left:20px" class="muted"><li>Otwórz ten link w przeglądarce telefonu (Chrome na Androidzie, Safari na iPhonie) i zaloguj się do Claude.</li>
+    <li>Android: menu ⋮ → <b>Dodaj do ekranu głównego</b>. iPhone: przycisk Udostępnij → <b>Do ekranu początkowego</b>.</li>
+    <li>Ikona otwiera grę jak aplikację, a postęp jest wspólny z komputerem.</li></ol></div>`;
+  const P = window.PWA;
+  if (P && P.standalone()) return `<div class="card stack">${head('Aplikacja jest zainstalowana')}<span class="muted">Działa też bez internetu. Postęp zapisuje się na tym urządzeniu – pamiętaj o kopii zapasowej poniżej.</span></div>`;
+  if (P && P.prompt) return `<div class="card stack">${head('Zainstaluj jako aplikację')}<span class="muted">Ikona na ekranie głównym, pełny ekran i nauka bez internetu.</span><button class="btn" id="installBtn">Zainstaluj aplikację</button></div>`;
+  const ios = P && P.ios();
+  return `<div class="card stack">${head('Zainstaluj jako aplikację')}
+    <ol style="margin:0;padding-left:20px" class="muted">${ios
+      ? '<li>Otwórz tę stronę w <b>Safari</b>.</li><li>Dotknij przycisku <b>Udostępnij</b> (kwadrat ze strzałką).</li><li>Wybierz <b>Do ekranu początkowego</b> → <b>Dodaj</b>.</li>'
+      : '<li>Otwórz tę stronę w <b>Chrome</b> na telefonie.</li><li>Dotknij menu <b>⋮</b> → <b>Zainstaluj aplikację</b> (albo <b>Dodaj do ekranu głównego</b>).</li><li>Ikona pojawi się wśród aplikacji – gra działa też bez internetu.</li>'}</ol></div>`;
+}
+function exportProgress() {
+  const blob = new Blob([JSON.stringify({app:'bg-za-sterami', exportedAt:new Date().toISOString(), state:S}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `bulgarski-postep-${today()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('Kopia zapisana w Pobranych.');
+}
+function importProgress(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let d; try { d = JSON.parse(r.result); } catch (e) { toast('To nie jest plik z kopią postępu.'); return; }
+    const st = d && d.state ? d.state : d;
+    if (!st || typeof st.xp !== 'number' || typeof st.lv !== 'object') { toast('To nie jest plik z kopią postępu.'); return; }
+    S = mergeStates(S, st); applyTheme(); save(); route();
+    toast(`Wczytano kopię: ${S.xp} XP, ${LEVELS.filter(l => isDone(l.id)).length} leveli.`);
+  };
+  r.onerror = () => toast('Nie udało się odczytać pliku.');
+  r.readAsText(file);
+}
+
+/* ===== WIDOK: TEST WSTĘPNY ===== */
+let PT = null;
+function viewTest() {
+  if (!PT || PT.done) PT = {i:0, answers:[], qs:PLACEMENT.map(q => ({...q, opts: shuffle(q.o)})), done:false};
+  drawTestQ();
+}
+function drawTestQ() {
+  const q = PT.qs[PT.i];
+  $('#view').innerHTML = `<div class="stack">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Test wstępny</span><span class="qcount">${PT.i + 1} / ${PT.qs.length}</span></div>
+    <div class="pbar"><i style="width:${100 * PT.i / PT.qs.length}%"></i></div>
+    <div class="prompt" style="margin-top:8px">${q.q}</div>
+    <div class="opts">${q.opts.map((o, i) => `<button class="opt" data-a="${esc(o)}"><span class="k">${i + 1}</span><span ${/[а-я]/i.test(o) ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}
+    <button class="opt" data-a="__idk"><span class="k">${q.opts.length + 1}</span><span class="muted">Nie wiem</span></button></div>
+    <p class="muted" style="font-size:14px">Jeśli nie znasz odpowiedzi, wybierz „Nie wiem” – test będzie dokładniejszy niż przy zgadywaniu.</p></div>`;
+  $$('.opt').forEach(b => b.onclick = () => {
+    PT.answers[PT.i] = b.dataset.a === q.o[0];
+    PT.i++;
+    if (PT.i >= PT.qs.length) finishTest(); else drawTestQ();
+  });
+}
+function finishTest() {
+  PT.done = true;
+  const tiers = [0,1,2,3,4].map(t => { const idx = PT.qs.map((q, i) => q.tier === t ? i : -1).filter(i => i >= 0); const ok = idx.filter(i => PT.answers[i]).length; return {t, ok, n:idx.length, pass: ok >= idx.length - 1 && ok >= 2}; });
+  const skills = {}; PT.qs.forEach((q, i) => { skills[q.sk] = skills[q.sk] || {ok:0, n:0}; skills[q.sk].n++; if (PT.answers[i]) skills[q.sk].ok++; });
+  const score = PT.answers.filter(Boolean).length;
+  const cefr = score <= 4 ? 'A0' : score <= 9 ? 'A1' : score <= 14 ? 'A1+' : 'A2';
+  /* codzienne: zaliczamy etapy po kolei, dopóki zdany jest próg */
+  const dayUnits = [['d0'], ['d1','d2'], ['d3'], ['d4']];
+  const passedDay = []; for (let t = 0; t < 4; t++) { if (tiers[t].pass) passedDay.push(...dayUnits[t]); else break; }
+  const passedAir = tiers[4].pass && passedDay.length ? ['a0'] : [];
+  const nextDay = TRACK.day.find(l => !passedDay.includes(l.unit.id));
+  const nextAir = TRACK.air.find(l => !passedAir.includes(l.unit.id));
+  const skName = {voc:'Słownictwo', read:'Czytanie i rozumienie', gram:'Gramatyka', air:'Słownictwo lotnicze'};
+  const weakest = Object.entries(skills).sort((a, b) => a[1].ok / a[1].n - b[1].ok / b[1].n)[0][0];
+  const weakTip = {voc:'Codziennie przejrzyj 10 zwrotów w zakładce Zwroty i odsłuchaj je.', read:'Czytaj na głos zdania z lekcji – transkrypcja pod tekstem pomoże z cyrylicą.', gram:'Zacznij dzień od jednej karty w zakładce Gramatyka (najpierw: rodzajnik i „да”).', air:'Trasa lotnicza – jeden level dziennie, a potem rozmówki „Lotnisko i aeroklub”.'}[weakest];
+  const planShort = `Start: „${nextDay ? nextDay.t : 'trasa ukończona'}” i „${nextAir ? nextAir.t : 'trasa lotnicza ukończona'}”. Słabszy punkt: ${skName[weakest].toLowerCase()}.`;
+  PT.result = {score, cefr, passedDay, passedAir, planShort};
+  $('#view').innerHTML = `<div class="stack">
+   <div class="card stack"><div class="eyebrow">Wynik testu</div>
+    <div class="row" style="align-items:baseline"><b style="font-family:var(--f-display);font-size:34px">${cefr}</b><span class="muted">${score} z ${PT.qs.length} poprawnych</span></div>
+    ${Object.entries(skills).map(([k, v]) => `<div><div class="row" style="justify-content:space-between;font-size:14px"><span>${skName[k]}</span><span class="mono">${v.ok}/${v.n}</span></div><div class="bar"><i style="width:${100 * v.ok / v.n}%"></i></div></div>`).join('')}
+   </div>
+   <div class="card stack"><div class="eyebrow">Twój plan lotu</div>
+    <div><b>Na co dzień:</b> ${passedDay.length ? `zaliczasz ${passedDay.length} ${passedDay.length === 1 ? 'etap' : 'etapy'} i ` : ''}zaczynasz od „${esc(nextDay ? nextDay.t : '—')}”.</div>
+    <div><b>Lotnictwo:</b> ${passedAir.length ? 'znasz podstawy, więc ' : ''}zaczynasz od „${esc(nextAir ? nextAir.t : '—')}”.</div>
+    <div><b>Do poprawy:</b> ${skName[weakest].toLowerCase()}. ${weakTip}</div>
+    <div><b>Codzienna plansza:</b>
+     <ol style="margin:6px 0 0;padding-left:20px"><li>Nowy level „Na co dzień”.</li><li>Nowy level lotniczy.</li><li>Zwroty dnia.</li><li>Utrwalanie słówek.</li><li>Mówienie i gramatyka.</li><li>Powtórka błędów – i lądowanie w kolejnym mieście.</li></ol></div>
+    <div class="muted" style="font-size:14px">Każdego dnia plansza ułoży te lekcje sama. Cała trasa dnia to ok. 25 minut.</div>
+   </div>
+   <div class="row"><button class="btn" id="applyPlan">Zastosuj plan i lecimy</button><button class="btn ghost" id="redoTest">Powtórz test</button></div></div>`;
+  $('#applyPlan').onclick = () => {
+    LEVELS.forEach(l => { if ((passedDay.includes(l.unit.id) || passedAir.includes(l.unit.id)) && !isDone(l.id)) S.lv[l.id] = {stars:0, test:true}; });
+    S.placement = {score, cefr, planShort, date:today()}; S.track = 'day'; S.game.day = null; save();
+    location.hash = '#plansza'; toast('Plan zapisany. Powodzenia!');
+  };
+  $('#redoTest').onclick = () => { PT = null; viewTest(); };
+}
+
+/* ===== LEKCJA: ODPRAWA ===== */
+function openBriefing(id, tile = null) {
+  const l = LV[id]; const el = $('#lesson');
+  el.hidden = false; document.body.style.overflow = 'hidden';
+  el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Odprawa · ${esc(l.unit.t)}</span></div>
+   <div class="lesson-body"><div class="wrap brief stack">
+    <div><div class="prompt-kind">Level ${l.unit.id.toUpperCase()}${l.n} · ${l.unit.cefr}</div><h2 class="view">${esc(l.t)}</h2><div class="muted" lang="bg">${esc(l.bt)}</div></div>
+    <div class="tipbox tblwrap">${l.tip}</div>
+    <div><div class="eyebrow">Słówka w tym levelu</div><div class="words">${l.w.map(w => `<div class="wcell">${spkBtn(first(w[1]))}<div><b lang="bg">${esc(first(w[1]))}</b><small>${esc(w[0])} · <span class="mono">${esc(translit(first(w[1])))}</span></small></div></div>`).join('')}</div></div>
+   </div></div>
+   <div class="lesson-foot"><div class="wrap foot-in"><button class="btn block" id="lgo">Startujemy · ${13 + (l.g.length > 2 ? 1 : 0) + (l.g.length > 3 ? 1 : 0)} zadań</button></div></div>`;
+  $('#lx').onclick = closeLesson;
+  $('#lgo').onclick = () => startLesson(id, tile);
+}
+function closeLesson() {
+  if (micCleanup) { micCleanup(); micCleanup = null; }
+  if (dict && dict.active && dict.active()) dict.stop().catch(() => {});
+  $('#lesson').hidden = true; $('#lesson').innerHTML = ''; document.body.style.overflow = ''; L = null; route();
+}
+
+/* ===== LEKCJA: BUDOWANIE ZADAŃ ===== */
+const NI = i => ({kind:'n', i, n:NOUNS[i], lv:LV[NOUNS[i][4]], ref:'n:' + i});
+const W = (lv, i) => ({kind:'w', lv, i, w:lv.w[i], ref:`${lv.id}:w:${i}`});
+const SN = (lv, i) => ({kind:'s', lv, i, s:lv.s[i], ref:`${lv.id}:s:${i}`});
+const GR = (lv, i) => ({kind:'g', lv, i, g:lv.g[i], ref:`${lv.id}:g:${i}`});
+function distractWords(item, n, field) {
+  const pool = shuffle(item.lv.w.filter((_, i) => i !== item.i)).concat(shuffle(ALLW.filter(x => x.lv.unit === item.lv.unit && x.lv !== item.lv).map(x => x.w))).concat(shuffle(ALLW.map(x => x.w)));
+  const target = field === 'bg' ? first(item.w[1]) : item.w[0]; const out = [];
+  for (const w of pool) { const v = field === 'bg' ? first(w[1]) : w[0]; if (v !== target && !out.includes(v)) out.push(v); if (out.length >= n) break; }
+  return out;
+}
+function buildLesson(lv) {
+  const wi = shuffle(lv.w.map((_, i) => i)), si = shuffle(lv.s.map((_, i) => i)), gi = shuffle(lv.g.map((_, i) => i));
+  const w = k => W(lv, wi[k % wi.length]), s = k => SN(lv, si[k % si.length]), g = k => GR(lv, gi[k % gi.length]);
+  const items = [
+    {t:'mc', dir:'pl2bg', it:w(0)}, {t:'listen', it:w(1)}, {t:'gram', it:g(0)}, {t:'mc', dir:'bg2pl', it:w(2)},
+    {t:'order', it:s(0)}, {t:'match', its:[3,4,5,6,7].map(k => w(k)).filter((x, i, a) => a.findIndex(y => y.ref === x.ref) === i)},
+    {t:'write', it:w(8)}, {t:'gram', it:g(1)}, {t:'order', it:s(1)}, {t:'speak', it:s(2)}];
+  if (lv.g.length > 2) items.push({t:'gram', it:g(2)});
+  items.push({t:'dict', it:s(3)}, {t:'write', it:s(4)});
+  if (lv.g.length > 3) items.push({t:'gram', it:g(3)});
+  items.push({t:'mc', dir:'pl2bg', it:w(9)});
+  return items;
+}
+function exFromRef(ref) {
+  const it = getRef(ref); if (!it) return null;
+  if (it.k === 'n') return {t:pick(['gender','article']), it:NI(it.i)};
+  const obj = it.k === 'w' ? W(it.lv, it.i) : it.k === 's' ? SN(it.lv, it.i) : GR(it.lv, it.i);
+  if (it.k === 'w') return pick([{t:'mc', dir:'pl2bg', it:obj}, {t:'write', it:obj}, {t:'mc', dir:'bg2pl', it:obj}]);
+  if (it.k === 's') return pick([{t:'order', it:obj}, {t:'write', it:obj}, {t:'order', it:obj}]);
+  return {t:'gram', it:obj};
+}
+function startReview() {
+  const refs = Object.entries(S.mistakes).filter(([r, c]) => c > 0 && getRef(r)).sort((a, b) => b[1] - a[1]).slice(0, 10).map(x => x[0]);
+  let items = refs.map(exFromRef).filter(Boolean);
+  const done = LEVELS.filter(l => isDone(l.id));
+  while (items.length < 8 && done.length) {
+    const l = pick(done); const k = pick(['w','w','s','g']);
+    const arr = k === 'w' ? l.w : k === 's' ? l.s : l.g; const ref = `${l.id}:${k}:${Math.floor(Math.random() * arr.length)}`;
+    const ex = exFromRef(ref); if (ex) items.push(ex);
+  }
+  if (!items.length) items = buildWords(poolLevels()).slice(0, 8);
+  $('#lesson').hidden = false; document.body.style.overflow = 'hidden';
+  L = {mode:'review', lv:null, tile:5, queue:shuffle(items), i:0, first:0, right:0, scored:0, retried:new Set()};
+  renderLessonShell(); renderEx();
+}
+let L = null;
+function startLesson(id, tile = null) {
+  const lv = LV[id];
+  L = {mode:'level', lv, tile, queue:buildLesson(lv), i:0, right:0, scored:0, retried:new Set(), wrong:[]};
+  renderLessonShell(); renderEx();
+}
+function renderLessonShell() {
+  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Przerwij lekcję">${ICON.x}</button><div class="pbar"><i id="pb" style="width:0"></i></div><span class="qcount" id="qc"></span></div>
+   <div class="lesson-body" id="lbody"><div class="wrap" id="ex"></div></div>
+   <div class="lesson-foot" id="lfoot"><div class="wrap foot-in"><div class="fb" id="fb"></div><div class="foot-btns" id="fbtns"></div></div></div>`;
+  $('#lx').onclick = closeLesson;
+}
+
+/* ===== LEKCJA: SILNIK ===== */
+let CUR = null, micCleanup = null; /* {ready, check(), skip?} */
+function setFoot(mode) {
+  const f = $('#lfoot'); f.classList.remove('ok', 'bad');
+  if (mode === 'check') {
+    $('#fb').innerHTML = '';
+    $('#fbtns').innerHTML = `${CUR && CUR.skipLabel ? `<button class="btn ghost" id="skipB">${CUR.skipLabel}</button>` : ''}<button class="btn" id="chk" ${CUR && CUR.ready ? '' : 'disabled'}>Sprawdź</button>`;
+    $('#chk').onclick = doCheck;
+    const sk = $('#skipB'); if (sk) sk.onclick = () => CUR.skip();
+  }
+}
+function setReady(v) { if (CUR) CUR.ready = v; const c = $('#chk'); if (c) c.disabled = !v; }
+function renderEx() {
+  const q = L.queue[L.i];
+  $('#pb').style.width = `${100 * L.i / L.queue.length}%`;
+  $('#qc').textContent = `${L.i + 1}/${L.queue.length}`;
+  if (micCleanup) { micCleanup(); micCleanup = null; }
+  CUR = {ready:false, q};
+  const box = $('#ex'); $('#lbody').scrollTop = 0;
+  ({mc:exMC, listen:exListen, gram:exGram, order:exOrder, match:exMatch, write:exWrite, speak:exSpeak, dict:exDict, gender:exGender, article:exArticle})[q.t](box, q);
+  setFoot('check');
+}
+function doCheck() {
+  if (!CUR || !CUR.ready || CUR.checked) return;
+  const r = CUR.check(); if (!r) return;
+  CUR.checked = true; resolveAnswer(r);
+}
+function resolveAnswer(r) {
+  const q = L.queue[L.i];
+  const isRetry = L.retried.has(q);
+  if (!r.skipped) {
+    if (!isRetry) { L.scored++; if (r.ok) L.right++; S.answered++; if (r.ok) S.correct++; }
+    const refs = q.its ? (r.badRefs || []) : [q.it.ref];
+    if (!r.ok) { refs.forEach(ref => S.mistakes[ref] = (S.mistakes[ref] || 0) + 1); if (!isRetry) { const copy = {...q}; L.retried.add(copy); L.queue.push(copy); } }
+    else if (q.it && S.mistakes[q.it.ref]) { S.mistakes[q.it.ref]--; if (S.mistakes[q.it.ref] <= 0) delete S.mistakes[q.it.ref]; }
+  }
+  const f = $('#lfoot'); f.classList.add(r.ok ? 'ok' : 'bad');
+  if (!r.skipped) buzz(r.ok ? 15 : [40, 60, 40]);
+  const head = r.skipped ? 'Pominięte' : r.ok ? (r.typo ? 'Dobrze, ale uważaj na literówkę' : pick(['Świetnie!', 'Dobrze!', 'Brawo!', 'Tak jest!', 'Отлично!'])) : 'Nie tym razem';
+  $('#fb').innerHTML = `<div class="msg"><h4>${esc(head)}</h4>${r.answer ? `<div class="ans" ${r.answerBg ? 'lang="bg"' : ''}>${esc(r.answer)}</div>` : ''}${r.answerBg && r.answer ? `<div class="tr-line" style="text-align:left">${esc(translit(r.answer))}</div>` : ''}${r.extra ? `<div class="note">${r.extra}</div>` : ''}</div>${r.sayBg ? spkBtn(r.sayBg) : ''}`;
+  $('#fbtns').innerHTML = `<button class="btn ${r.ok ? 'ok' : 'bad'}" id="nxt">Dalej</button>`;
+  $('#nxt').onclick = nextEx; $('#nxt').focus();
+  if (r.sayBg && S.autoVoice && audioOK() && !r.noAuto) speak(r.sayBg);
+  save();
+}
+function nextEx() { L.i++; if (L.i >= L.queue.length) finishLesson(); else renderEx(); }
+document.addEventListener('keydown', e => {
+  if (!L || $('#lesson').hidden) return;
+  if (e.key === 'Enter' && !e.shiftKey) {
+    const n = $('#nxt'); if (n) { e.preventDefault(); n.click(); return; }
+    if (CUR && CUR.ready && document.activeElement && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); doCheck(); }
+    return;
+  }
+  if (/^[1-6]$/.test(e.key) && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
+    const o = $$('#ex .opt')[+e.key - 1]; if (o && !$('#nxt')) o.click();
+  }
+});
+
+/* --- typy zadań --- */
+function optsHTML(opts, bg) { return `<div class="opts">${opts.map((o, i) => `<button class="opt" data-v="${esc(o)}"><span class="k">${i + 1}</span><span ${bg ? 'lang="bg"' : ''}>${esc(o)}</span></button>`).join('')}</div>`; }
+function wireOpts(box, correct, mk) {
+  let sel = null;
+  $$('.opt', box).forEach(b => b.onclick = () => { if (CUR.checked) return; $$('.opt', box).forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); sel = b.dataset.v; setReady(true); });
+  CUR.check = () => { const ok = sel === correct; $$('.opt', box).forEach(x => { if (x.dataset.v === correct) x.classList.add('right'); else if (x.dataset.v === sel) x.classList.add('wrong'); }); return mk(ok, sel); };
+}
+function exMC(box, q) {
+  const w = q.it.w, bg = first(w[1]);
+  if (q.dir === 'pl2bg') {
+    const opts = shuffle([bg, ...distractWords(q.it, 3, 'bg')]);
+    box.innerHTML = `<div class="prompt-kind">Wybierz tłumaczenie</div><div class="prompt">${esc(w[0])}</div><div class="sub">Jak to powiedzieć po bułgarsku?</div>${optsHTML(opts, true)}`;
+    wireOpts(box, bg, ok => ({ok, answer:bg, answerBg:true, sayBg:bg, extra:w[2] ? esc(w[2]) : ''}));
+  } else {
+    const opts = shuffle([w[0], ...distractWords(q.it, 3, 'pl')]);
+    box.innerHTML = `<div class="prompt-kind">Co to znaczy?</div><div class="row" style="gap:12px;margin-bottom:6px">${spkBtn(bg)}<div class="prompt" lang="bg" style="margin:0">${esc(bg)}</div></div><div class="sub mono">${esc(translit(bg))}</div>${optsHTML(opts, false)}`;
+    wireOpts(box, w[0], ok => ({ok, answer:`${bg} = ${w[0]}`, sayBg:bg, extra:w[2] ? esc(w[2]) : '', noAuto:true}));
+  }
+}
+function exListen(box, q) {
+  const w = q.it.w, bg = first(w[1]);
+  const opts = shuffle([w[0], ...distractWords(q.it, 3, 'pl')]);
+  if (audioOK()) {
+    box.innerHTML = `<div class="prompt-kind">Słuchanie</div><div class="prompt">Co słyszysz?</div><div class="row" style="justify-content:center;gap:16px;margin:10px 0 20px">${spkBtn(bg, 'big')}<button class="spk" data-say="${esc(bg)}" data-slow="1" aria-label="Wolniej">${ICON.slow}</button></div>${optsHTML(opts, false)}`;
+    setTimeout(() => speak(bg), 250);
+  } else {
+    box.innerHTML = `<div class="prompt-kind">Czytanie</div><div class="prompt" lang="bg">${esc(bg)}</div><div class="sub">Lektor jest niedostępny, więc przeczytaj słowo i wybierz znaczenie.</div>${optsHTML(opts, false)}`;
+  }
+  wireOpts(box, w[0], ok => ({ok, answer:`${bg} = ${w[0]}`, sayBg:bg, noAuto:true}));
+}
+function exGram(box, q) {
+  const g = q.it.g, correct = g.o[0], opts = shuffle(g.o);
+  const prompt = g.s ? `<span lang="bg">${esc(g.s).replace('___', '<span style="border-bottom:3px solid var(--earth);padding:0 18px"></span>')}</span>` : g.q;
+  box.innerHTML = `<div class="prompt-kind">Gramatyka</div><div class="prompt">${prompt}</div>${g.pl ? `<div class="sub">${esc(g.pl)}</div>` : '<div class="sub"></div>'}${optsHTML(opts, /[а-я]/i.test(correct))}`;
+  wireOpts(box, correct, ok => {
+    const full = g.s ? g.s.replace('___', correct) : correct;
+    return {ok, answer: g.s ? full : correct, answerBg: !!g.s || /[а-я]/i.test(correct), sayBg: g.s ? full : (/[а-я]/i.test(correct) ? correct : ''), extra: g.why || ''};
+  });
+}
+const PROPER = ['София','Полша','Анна','Петър','Варна','България'];
+const tokens = s => s.replace(/[.,!?…]/g, '').split(/\s+/).filter(Boolean).map((t, i) => (i === 0 && !PROPER.includes(t)) ? t[0].toLowerCase() + t.slice(1) : t);
+function exOrder(box, q) {
+  const sent = q.it.s, main = first(sent[1]);
+  const toks = tokens(main);
+  const others = shuffle(q.it.lv.s.filter((_, i) => i !== q.it.i).flatMap(x => tokens(first(x[1]))).filter(t => !toks.includes(t)));
+  const extra = [...new Set(others)].slice(0, toks.length > 5 ? 2 : 3);
+  const bank = shuffle([...toks, ...extra]).map((t, i) => ({t, id:i}));
+  const chosen = [];
+  box.innerHTML = `<div class="prompt-kind">Ułóż zdanie</div><div class="prompt">${esc(sent[0])}</div><div class="sub">Dotknij słów w odpowiedniej kolejności. Niektóre słowa są zbędne.</div>
+   <div class="tiles" id="tl" aria-label="Twoje zdanie"></div><div class="tiles bank" id="tb"></div>`;
+  const draw = () => {
+    $('#tl').innerHTML = chosen.map(c => `<button class="tile" lang="bg" data-id="${c.id}">${esc(c.t)}</button>`).join('');
+    $('#tb').innerHTML = bank.map(c => `<button class="tile ${chosen.includes(c) ? 'used' : ''}" lang="bg" data-id="${c.id}" ${chosen.includes(c) ? 'tabindex="-1" aria-hidden="true"' : ''}>${esc(c.t)}</button>`).join('');
+    setReady(chosen.length > 0);
+  };
+  $('#tb').onclick = e => { const b = e.target.closest('.tile'); if (!b || CUR.checked) return; const c = bank[+b.dataset.id]; if (!chosen.includes(c)) { chosen.push(c); draw(); } };
+  $('#tl').onclick = e => { const b = e.target.closest('.tile'); if (!b || CUR.checked) return; const k = chosen.findIndex(c => c.id === +b.dataset.id); if (k >= 0) { chosen.splice(k, 1); draw(); } };
+  draw();
+  CUR.check = () => {
+    const got = norm(chosen.map(c => c.t).join(' '));
+    const ok = alts(sent[1]).some(a => norm(tokens(a).join(' ')) === got);
+    return {ok, answer:main, answerBg:true, sayBg:main};
+  };
+}
+function exMatch(box, q) {
+  const its = q.its.slice(0, 5);
+  const L1 = shuffle(its.map((x, j) => ({k:j, v:x.w[0]}))), R1 = shuffle(its.map((x, j) => ({k:j, v:first(x.w[1])})));
+  let selL = null, selR = null, left = its.length; const bad = new Set();
+  box.innerHTML = `<div class="prompt-kind">Dopasuj pary</div><div class="prompt">Połącz słowa w pary</div><div class="sub">Dotknij słowa po lewej i jego tłumaczenia po prawej.</div>
+   <div class="matchgrid"><div class="col">${L1.map(x => `<button class="mt" data-side="l" data-k="${x.k}">${esc(x.v)}</button>`).join('')}</div>
+   <div class="col">${R1.map(x => `<button class="mt" lang="bg" data-side="r" data-k="${x.k}">${esc(x.v)}</button>`).join('')}</div></div>`;
+  const tryPair = () => {
+    if (!selL || !selR) return;
+    const a = selL, b = selR; selL = selR = null;
+    if (a.dataset.k === b.dataset.k) {
+      a.classList.add('gone'); b.classList.add('gone'); a.setAttribute('aria-pressed','false'); b.setAttribute('aria-pressed','false');
+      if (audioOK()) speak(b.textContent);
+      if (--left === 0) { CUR.checked = true; const badRefs = [...bad].map(k => its[+k].ref); resolveAnswer({ok: bad.size <= 1, answer: bad.size ? `Pomyłki: ${bad.size}` : 'Wszystkie pary bez błędu', badRefs: bad.size > 1 ? badRefs : [], noAuto:true}); }
+    } else {
+      bad.add(a.dataset.k); [a, b].forEach(x => { x.classList.add('err'); x.setAttribute('aria-pressed','false'); setTimeout(() => x.classList.remove('err'), 500); });
+    }
+  };
+  box.querySelector('.matchgrid').onclick = e => {
+    const b = e.target.closest('.mt'); if (!b || b.classList.contains('gone')) return;
+    const side = b.dataset.side;
+    $$(`.mt[data-side="${side}"]`, box).forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    if (side === 'l') selL = b; else selR = b;
+    tryPair();
+  };
+  CUR.check = () => null;
+  setTimeout(() => { const c = $('#chk'); if (c) c.hidden = true; }, 0);
+}
+/* klawiatura i pisanie */
+const KB = ['я в е р т ъ у и о п ш щ', 'а с д ф г х й к л ж ч ю', 'з ь ц б н м'];
+const LAT = {a:'а',b:'б',v:'в',w:'в',g:'г',d:'д',e:'е','ż':'ж','ź':'ж',z:'з',i:'и',j:'й',k:'к',l:'л','ł':'л',m:'м',n:'н',o:'о','ó':'у',p:'п',r:'р',s:'с','ś':'с',t:'т',u:'у',f:'ф',h:'х',c:'ц','ć':'ц',y:'ъ',x:'ь',q:'я','ą':'ъ','ę':'е','ń':'н'};
+const DI = {'сz':'ш','цz':'ч','цh':'х','йa':'я','йu':'ю','шt':'щ'};
+function answerBox(placeholder) {
+  return `<textarea class="answer" id="ans" rows="2" lang="bg" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${esc(placeholder)}" aria-label="Twoja odpowiedź"></textarea>
+   <div class="kb" id="kb" aria-label="Klawiatura bułgarska">${KB.map((r, i) => `<div class="krow">${r.split(' ').map(k => `<button type="button" data-k="${k}">${k}</button>`).join('')}${i === 2 ? '<button type="button" class="wide" data-k=" ">spacja</button><button type="button" class="wide" data-k="⌫" aria-label="Usuń">⌫</button>' : ''}</div>`).join('')}</div>
+   <label class="toggle"><input type="checkbox" id="trl" ${S.translit ? 'checked' : ''}> Zamieniaj łacinkę na cyrylicę (sz → ш, cz → ч, ż → ж, ja → я, y → ъ)</label>`;
+}
+function wireAnswer(onChange) {
+  const inp = $('#ans');
+  $('#kb').onclick = e => {
+    const b = e.target.closest('[data-k]'); if (!b || CUR.checked) return;
+    const k = b.dataset.k, s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? s;
+    if (k === '⌫') { if (s !== en) inp.setRangeText('', s, en, 'end'); else if (s > 0) inp.setRangeText('', s - 1, s, 'end'); }
+    else inp.setRangeText(k, s, en, 'end');
+    onChange();
+  };
+  $('#trl').onchange = e => { S.translit = e.target.checked; save(); };
+  inp.addEventListener('input', e => {
+    if (S.translit && e.inputType === 'insertText' && e.data && e.data.length === 1) {
+      const ch = e.data, lo = ch.toLowerCase(), rep = LAT[lo];
+      if (rep) {
+        const pos = inp.selectionStart, before = inp.value.slice(0, pos - 1), after = inp.value.slice(pos);
+        const prev = before.slice(-1), key = prev.toLowerCase() + lo;
+        let nb;
+        if (DI[key]) { let r = DI[key]; if (prev !== prev.toLowerCase()) r = r.toUpperCase(); nb = before.slice(0, -1) + r; }
+        else nb = before + (ch !== lo ? rep.toUpperCase() : rep);
+        inp.value = nb + after; inp.setSelectionRange(nb.length, nb.length);
+      }
+    }
+    onChange();
+  });
+  setTimeout(() => { if (matchMedia('(pointer:fine)').matches) inp.focus(); }, 50);
+  return inp;
+}
+function exWrite(box, q) {
+  const isW = q.it.kind === 'w'; const pl = isW ? q.it.w[0] : q.it.s[0]; const ans = isW ? q.it.w[1] : q.it.s[1];
+  box.innerHTML = `<div class="prompt-kind">Pisanie</div><div class="prompt">${esc(pl)}</div><div class="sub">Napisz po bułgarsku.</div>${answerBox('Pisz tutaj…')}`;
+  const inp = wireAnswer(() => setReady(norm(inp.value).length > 0));
+  CUR.check = () => { const r = checkText(inp.value, ans); const main = first(ans); return {ok:r.ok, typo:r.typo, answer:main, answerBg:true, sayBg:main, extra: alts(ans).length > 1 ? `Też poprawnie: <span lang="bg">${alts(ans).slice(1).map(esc).join(' · ')}</span>` : (isW && q.it.w[2] ? esc(q.it.w[2]) : '')}; };
+}
+function exDict(box, q) {
+  const s = q.it.s, main = first(s[1]);
+  if (!audioOK()) { exWrite(box, q); return; }
+  box.innerHTML = `<div class="prompt-kind">Dyktando</div><div class="prompt">Zapisz, co słyszysz</div><div class="row" style="gap:12px;margin:8px 0 16px">${spkBtn(main, 'big')}<button class="spk" data-say="${esc(main)}" data-slow="1" aria-label="Wolniej">${ICON.slow}</button></div>${answerBox('Zapisz zdanie…')}`;
+  setTimeout(() => speak(main), 250);
+  const inp = wireAnswer(() => setReady(norm(inp.value).length > 0));
+  CUR.check = () => { const r = checkText(inp.value, s[1]); return {ok:r.ok, typo:r.typo, answer:main, answerBg:true, sayBg:main, extra:esc(s[0]), noAuto:true}; };
+}
+function exSpeak(box, q) {
+  const s = q.it.s || q.it.w, main = first(s[1]);
+  const canMic = !!dict && !dictOff;
+  box.innerHTML = `<div class="prompt-kind">Mówienie</div><div class="prompt">${esc(s[0])}</div><div class="sub">Powiedz to na głos po bułgarsku.</div>
+   <div class="card stack" style="text-align:center"><div class="target" lang="bg">${esc(main)}</div><div class="tr-line">${esc(translit(main))}</div><div class="row" style="justify-content:center">${spkBtn(main)}<button class="spk" data-say="${esc(main)}" data-slow="1" aria-label="Wolniej">${ICON.slow}</button></div></div>
+   <div id="spArea" style="margin-top:14px"></div>`;
+  CUR.skipLabel = 'Nie mogę teraz mówić';
+  CUR.skip = () => { CUR.checked = true; if (dict && dict.active && dict.active()) dict.stop().catch(() => {}); resolveAnswer({ok:true, skipped:true, answer:main, answerBg:true, sayBg:main, noAuto:true}); };
+  if (canMic) micMode(main); else selfMode(main);
+}
+function micMode(main) {
+  let heard = '', partial = '', unsubs = [];
+  $('#spArea').innerHTML = `<button class="mic" id="micB" aria-label="Nagrywaj">${ICON.mic}</button><div class="heard" id="heard"><i>Dotknij mikrofonu i mów</i></div>`;
+  const show = () => { $('#heard').innerHTML = heard || partial ? `<span lang="bg">${esc((heard + ' ' + partial).trim())}</span>` : '<i>Słucham…</i>'; setReady(!!heard.trim() || !!partial.trim()); };
+  unsubs.push(dict.onFinal(({text}) => { heard = (heard + text).replace(/^\s+/, ''); partial = ''; if ($('#heard')) show(); }));
+  unsubs.push(dict.onPartial(({text}) => { partial = text; if ($('#heard')) show(); }));
+  unsubs.push(dict.onState(({state, reason}) => {
+    const b = $('#micB'); if (!b) return;
+    b.classList.toggle('live', state === 'listening' || state === 'starting');
+    if (state === 'idle' && (reason === 'unavailable' || reason === 'not_granted')) { dictOff = true; cleanup(); selfMode(main, reason === 'not_granted' ? 'Mikrofon jest wyłączony dla tej strony.' : 'Rozpoznawanie mowy po bułgarsku nie jest tu dostępne.'); }
+  }));
+  const cleanup = () => { unsubs.forEach(u => { try { u(); } catch (e) {} }); unsubs = []; };
+  micCleanup = cleanup;
+  $('#micB').onclick = () => {
+    if (dict.active()) { dict.stop().catch(() => {}); return; }
+    heard = ''; partial = ''; show();
+    dict.start({language:'bg'}).catch(e => {
+      const c = e && e.code;
+      if (c === 'unavailable' || c === 'not_granted') { dictOff = true; cleanup(); selfMode(main, c === 'not_granted' ? 'Bez zgody na mikrofon – oceń się sama.' : 'Rozpoznawanie mowy po bułgarsku nie jest tu dostępne – oceń się sama.'); }
+      else if (c === 'rate_limited') toast('Za dużo nagrań naraz. Spróbuj za chwilę.');
+      else if (c !== 'stopped' && c !== 'dismissed') toast('Mikrofon nie zadziałał. Spróbuj ponownie.');
+    });
+  };
+  CUR.check = () => {
+    if (dict.active()) dict.stop().catch(() => {});
+    cleanup();
+    const said = (heard + ' ' + partial).trim();
+    const sim = Math.max(...alts(q_s_alts(main)).map(a => similarity(said, a)));
+    const ok = sim >= 0.75;
+    return {ok, answer:main, answerBg:true, sayBg:main, noAuto:ok, extra:`Rozpoznany tekst: <span lang="bg">${esc(said || '—')}</span> · zgodność ${Math.round(sim * 100)}%${ok ? '' : '. Posłuchaj lektora i spróbuj przy powtórce.'}`};
+  };
+}
+function q_s_alts(main) { const q = L.queue[L.i]; return q.it.s ? q.it.s[1] : q.it.w ? q.it.w[1] : main; }
+function selfMode(main, why) {
+  $('#spArea').innerHTML = `${why ? `<p class="muted" style="text-align:center;font-size:14px">${esc(why)}</p>` : '<p class="muted" style="text-align:center;font-size:14px">Rozpoznawanie mowy nie działa w tej przeglądarce (najlepiej sprawdza się Chrome). Oceń się sama.</p>'}
+   <ol style="margin:0 auto;max-width:420px;padding-left:20px;color:var(--muted)"><li>Posłuchaj lektora.</li><li>Powiedz zdanie na głos 2–3 razy.</li><li>Oceń, czy brzmiało podobnie.</li></ol>
+   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn ok" id="selfOk">Powiedziałam dobrze</button><button class="btn ghost" id="selfBad">Jeszcze nie</button></div>`;
+  $('#selfOk').onclick = () => { if (CUR.checked) return; CUR.checked = true; resolveAnswer({ok:true, answer:main, answerBg:true, sayBg:main, noAuto:true}); };
+  $('#selfBad').onclick = () => { if (CUR.checked) return; CUR.checked = true; resolveAnswer({ok:false, answer:main, answerBg:true, sayBg:main, extra:'Wrócimy do tego zdania na końcu lekcji.'}); };
+  CUR.check = () => null;
+  setReady(false);
+  setTimeout(() => { const c = $('#chk'); if (c) c.hidden = true; }, 0);
+}
+
+
+
+/* ===== GRA: DZIENNA PLANSZA ===== */
+function seedRng(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+}
+function sshuffle(a, r) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const city = s => CITIES[((s % CITIES.length) + CITIES.length) % CITIES.length];
+const TILE = {
+  day:{cap:'Nowy level', sub:'Na co dzień', icon:'<span class="glyph" lang="bg">Аа</span>'},
+  air:{cap:'Nowy level', sub:'Lotnictwo', icon:ICON.plane},
+  phr:{cap:'Zwroty', sub:'dnia', icon:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>'},
+  words:{cap:'Słówka', sub:'utrwalanie', icon:'<span class="glyph" lang="bg">Б</span>'},
+  mix:{cap:'Mówienie', sub:'i gramatyka', icon:ICON.mic},
+  review:{cap:'Powtórka', sub:'i lądowanie', icon:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>'}
+};
+/* punkty planszy w układzie 360×640: miasto startu, 6 pól, miasto docelowe */
+const P = [[180,600],[96,522],[266,452],[98,380],[262,306],[104,232],[250,160],[180,66]];
+
+function makeDay() {
+  const st = S.game.stage, r = seedRng(today() + '#' + st);
+  const cats = PHRASES.map((c, i) => catUnlocked(c.n) ? i : -1).filter(i => i >= 0);
+  const ci = cats.length ? cats[Math.floor(r() * cats.length)] : 0, ph = LV['ph' + ci];
+  const idx = sshuffle(ph.s.map((_, i) => i), r).slice(0, 5);
+  return {date:today(), stage:st, finished:false,
+    tiles:[{k:'day'}, {k:'air'}, {k:'phr', ph:ph.id, idx}, {k:'words'}, {k:'mix'}, {k:'review'}].map(t => ({...t, done:false, stars:0}))};
+}
+function ensureDay() { const g = S.game; if (!g.day || g.day.date !== today()) { g.day = makeDay(); save(); } }
+function resolveLevel(t) {
+  if (t.id && LV[t.id]) return LV[t.id];
+  if (t.k === 'day') return nextLevel('day');
+  return nextLevel('air') || nextLevel('day');
+}
+function tileTitle(t) {
+  if (t.k === 'day' || t.k === 'air') { const l = resolveLevel(t); return l ? l.t : 'Trening utrwalający'; }
+  if (t.k === 'phr') return `Zwroty: ${LV[t.ph].t}`;
+  if (t.k === 'words') return 'Słówka – utrwalanie';
+  if (t.k === 'mix') return 'Mówienie i gramatyka';
+  const n = Object.values(S.mistakes).filter(c => c > 0).length;
+  return n ? `Powtórka błędów (${n})` : 'Powtórka dnia';
+}
+function poolLevels() {
+  let ls = LEVELS.filter(l => isDone(l.id));
+  const cur = [nextLevel('day'), nextLevel('air')].filter(Boolean);
+  if (ls.length < 3) ls = ls.concat(cur.filter(l => !ls.includes(l)));
+  return ls.length ? ls : [LEVELS[0]];
+}
+function buildWords(levels) {
+  let pool = levels.flatMap(l => l.w.map((_, i) => W(l, i)));
+  pool = shuffle(pool).sort((a, b) => (S.mistakes[b.ref] || 0) - (S.mistakes[a.ref] || 0));
+  const a = k => pool[k % pool.length];
+  const m = [3,4,5,6,7].map(a).filter((x, i, arr) => arr.findIndex(y => y.ref === x.ref) === i);
+  return [{t:'mc', dir:'pl2bg', it:a(0)}, {t:'listen', it:a(1)}, {t:'mc', dir:'bg2pl', it:a(2)}, {t:'match', its:m},
+    {t:'write', it:a(8)}, {t:'mc', dir:'pl2bg', it:a(3)}, {t:'listen', it:a(4)}, {t:'write', it:a(5)}, {t:'mc', dir:'bg2pl', it:a(6)}];
+}
+function buildMix(levels) {
+  const G = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
+  const Sx = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i))));
+  const g = k => G[k % G.length], s = k => Sx[k % Sx.length];
+  return [{t:'gram', it:g(0)}, {t:'speak', it:s(0)}, {t:'order', it:s(1)}, {t:'gram', it:g(1)}, {t:'dict', it:s(2)},
+    {t:'gram', it:g(2)}, {t:'speak', it:s(3)}, {t:'order', it:s(4)}, {t:'gram', it:g(3)}, {t:'write', it:s(5)}];
+}
+function buildPhr(t) {
+  const lv = LV[t.ph], i = t.idx;
+  return [{t:'mc', dir:'pl2bg', it:W(lv, i[0])}, {t:'order', it:SN(lv, i[1])}, {t:'listen', it:W(lv, i[2])}, {t:'speak', it:SN(lv, i[0])},
+    {t:'order', it:SN(lv, i[3])}, {t:'mc', dir:'pl2bg', it:W(lv, i[4])}, {t:'write', it:SN(lv, i[2])}, {t:'speak', it:SN(lv, i[3])},
+    {t:'dict', it:SN(lv, i[4])}, {t:'order', it:SN(lv, i[0])}];
+}
+function startPractice(tile, items, title, againFn) {
+  $('#lesson').hidden = false; document.body.style.overflow = 'hidden';
+  L = {mode:'practice', title, lv:null, tile, queue:items, i:0, right:0, scored:0, retried:new Set(), again: againFn || (() => startTile(tile))};
+  renderLessonShell(); renderEx();
+}
+function startTile(i) {
+  ensureDay();
+  const t = S.game.day.tiles[i];
+  if (t.k === 'day' || t.k === 'air') {
+    const l = resolveLevel(t);
+    if (l) { t.id = l.id; save(); openBriefing(l.id, i); }
+    else startPractice(i, buildWords(LEVELS.filter(x => x.unit.track === t.k)), 'Trening utrwalający');
+  } else if (t.k === 'phr') openPhraseBrief(i);
+  else if (t.k === 'words') startPractice(i, buildWords(poolLevels()), 'Słówka – utrwalanie');
+  else if (t.k === 'mix') startPractice(i, buildMix(poolLevels()), 'Mówienie i gramatyka');
+  else startReview();
+}
+function openPhraseBrief(i) {
+  const t = S.game.day.tiles[i], lv = LV[t.ph];
+  const el = $('#lesson'); el.hidden = false; document.body.style.overflow = 'hidden';
+  el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Odprawa · Zwroty dnia</span></div>
+   <div class="lesson-body"><div class="wrap brief stack">
+    <div><div class="prompt-kind">${esc(lv.t)}</div><h2 class="view">5 zwrotów na dziś</h2><div class="muted">Odsłuchaj każdy i powtórz na głos. Potem sprawdzimy, czy zostały w głowie.</div></div>
+    <div class="plist">${t.idx.map(k => { const [pl, bg] = lv.s[k]; return `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(bg)}</div><div class="tr">${esc(translit(bg))}</div><div class="pl">${esc(pl)}</div></div>${spkBtn(bg)}</div>`; }).join('')}</div>
+   </div></div>
+   <div class="lesson-foot"><div class="wrap foot-in"><button class="btn block" id="lgo">Startujemy · 10 zadań</button></div></div>`;
+  $('#lx').onclick = closeLesson;
+  $('#lgo').onclick = () => startPractice(i, buildPhr(t), `Zwroty: ${lv.t}`);
+}
+function markTile(i, starsN) {
+  const d = S.game.day; if (!d || d.date !== today() || !d.tiles[i]) return null;
+  const t = d.tiles[i];
+  if (i > 0 && !d.tiles[i - 1].done) return null;
+  t.done = true; t.stars = Math.max(t.stars || 0, starsN);
+  if (!d.finished && d.tiles.every(x => x.done)) {
+    d.finished = true;
+    const to = (d.stage + 1) % CITIES.length;
+    if (!S.game.visited.includes(to)) S.game.visited.push(to);
+    S.game.stage = d.stage + 1;
+    return city(d.stage + 1);
+  }
+  return null;
+}
+
+/* --- postać: pilotka w wiatrakowcu (własny rysunek) --- */
+const HERO = `<svg viewBox="0 0 84 64" aria-hidden="true">
+  <rect x="38" y="9" width="3.5" height="17" rx="1" fill="var(--ink)"/>
+  <g class="rotor"><ellipse cx="40" cy="9" rx="36" ry="2.6" fill="var(--ink)" opacity=".8"/></g>
+  <circle cx="40" cy="9" r="3" fill="var(--ink)"/>
+  <rect x="56" y="33" width="17" height="3.5" rx="1.5" fill="var(--ink)"/>
+  <path d="M69 21h6.5v19l-6.5-2.5z" fill="var(--sky)"/>
+  <g class="prop"><ellipse cx="63" cy="35" rx="2" ry="10" fill="var(--muted)"/></g>
+  <path d="M14 37c0-9 7-14 19-14h14c8 0 13 5 13 12 0 5-4 8-11 8H24c-6 0-10-2-10-6z" fill="var(--earth)"/>
+  <path d="M18 33c1-6 6-9 13-9v10H18z" fill="var(--sky-soft)" stroke="var(--ink)" stroke-width="1"/>
+  <circle cx="36" cy="23" r="6.5" fill="#F1C7A1"/>
+  <path d="M29.5 22.5a6.5 6.5 0 0 1 13 0z" fill="var(--sky)"/>
+  <path d="M41 24c3 1 5 4 5.5 7" stroke="#7A4A2A" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <rect x="33" y="22" width="5" height="2.4" rx="1" fill="var(--ink)"/>
+  <path d="M24 43l-3 6M46 43l3 6" stroke="var(--ink)" stroke-width="2"/>
+  <circle cx="21" cy="51" r="4.5" fill="var(--ink)"/><circle cx="49" cy="51" r="4.5" fill="var(--ink)"/>
+</svg>`;
+let heroShown = {key:'', idx:-1};
+
+function viewBoard() {
+  ensureDay();
+  const d = S.game.day, from = city(d.stage), to = city(d.stage + 1);
+  const lap = Math.floor(d.stage / CITIES.length) + 1;
+  const doneN = d.tiles.filter(t => t.done).length;
+  const target = d.finished ? 7 : doneN;
+  const cur = d.tiles.findIndex(t => !t.done);
+  const key = d.date + '#' + d.stage;
+  const startIdx = heroShown.key === key && heroShown.idx >= 0 && heroShown.idx < target ? heroShown.idx : target;
+  const pct = ([x, y]) => `left:${(x / 360 * 100).toFixed(2)}%;top:${(y / 640 * 100).toFixed(2)}%`;
+  let segs = '';
+  for (let k = 0; k < 7; k++) {
+    const [x1, y1] = P[k], [x2, y2] = P[k + 1], done = k < target;
+    segs += `<path d="M${x1} ${y1} C${x1} ${y1 - 46} ${x2} ${y2 + 46} ${x2} ${y2}" fill="none" stroke="${done ? 'var(--sky)' : 'var(--line)'}" stroke-width="${done ? 6 : 4}" stroke-linecap="round" ${done ? '' : 'stroke-dasharray="2 11"'}/>`;
+  }
+  let html = '';
+  if (!S.placement && !Object.keys(S.lv).length) {
+    html += `<section class="card welcome stack" style="margin-bottom:18px">
+      <div><div class="eyebrow">Odprawa przed pierwszym lotem</div><h2 class="view" style="margin-top:4px">Sprawdźmy, od czego zacząć</h2>
+      <p class="muted" style="margin:6px 0 0">20 pytań, ok. 4 minuty. Test dobierze lekcje na planszy do tego, co już umiesz.</p></div>
+      <div class="row"><a class="btn" href="#test">Zacznij test wstępny</a><button class="btn ghost" id="skipTest">Zacznę od zera</button></div></section>`;
+  }
+  html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · dziś</div>
+    <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
+    <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+   <div class="board" id="board">
+    <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky-soft)"/><stop offset="1" style="stop-color:var(--surface)"/></linearGradient></defs>
+      <rect width="360" height="640" fill="url(#skyg)"/>
+      <path d="M0 120 L40 92 L70 110 L110 70 L150 104 L190 80 L230 112 L270 86 L320 116 L360 96 L360 140 L0 140z" fill="var(--surface2)"/>
+      <path d="M0 560 C60 530 120 556 180 540 C240 524 300 548 360 530 L360 640 L0 640z" fill="var(--earth-soft)"/>
+      <g class="cloud c1" fill="var(--surface)"><circle cx="300" cy="400" r="16"/><circle cx="318" cy="394" r="20"/><circle cx="338" cy="402" r="14"/><rect x="290" y="400" width="56" height="14" rx="7"/></g>
+      <g class="cloud c2" fill="var(--surface)"><circle cx="40" cy="300" r="13"/><circle cx="58" cy="292" r="17"/><circle cx="76" cy="300" r="12"/><rect x="30" y="298" width="56" height="12" rx="6"/></g>
+      <g class="cloud c1" fill="var(--surface)"><circle cx="60" cy="168" r="12"/><circle cx="76" cy="160" r="15"/><circle cx="92" cy="168" r="11"/></g>
+      ${segs}
+    </svg>
+    <div class="cityp start" style="${pct(P[0])}"><b lang="bg">${esc(from.bg)}</b><span>${esc(from.pl)}${from.icao ? ` · <i class="mono">${from.icao}</i>` : ''}</span></div>
+    <div class="cityp dest ${d.finished ? 'reached' : ''}" style="${pct(P[7])}"><b lang="bg">${esc(to.bg)}</b><span>${esc(to.pl)}${to.icao ? ` · <i class="mono">${to.icao}</i>` : ''}</span></div>
+    ${d.tiles.map((t, i) => {
+      const st = t.done ? 'done' : i === cur ? 'cur' : 'locked';
+      const T = TILE[t.k];
+      return `<button class="tnode ${st}" style="${pct(P[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
+        <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : T.icon}</span>
+        <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
+    }).join('')}
+    <div class="hero" id="hero" style="${pct(P[startIdx])}">${HERO}</div>
+   </div>`;
+  if (d.finished) {
+    html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
+      <div class="row"><button class="btn" id="bonus">Leć dalej: dodatkowy etap</button><a class="btn ghost" href="#kurs">Mapa kursu</a></div></section>`;
+  } else {
+    html += `<button class="btn block" style="margin-top:16px" data-tile="${cur}">Start · ${cur < 5 ? `Lekcja ${cur + 1}` : 'Powtórka'}: ${esc(tileTitle(d.tiles[cur]))}</button>`;
+  }
+  html += `<section style="margin-top:22px"><div class="eyebrow" style="margin-bottom:8px">Plan dnia</div><div class="plist">${d.tiles.map((t, i) => `
+    <div class="prow"><span class="pnum ${t.done ? 'on' : ''}">${t.done ? ICON.check : i + 1}</span><div class="txt"><b>${esc(tileTitle(t))}</b><div class="pl">${i < 5 ? TILE[t.k].sub : 'Błędy z całego kursu, potem lądowanie'}</div></div>
+    ${t.done || i === cur ? `<button class="btn ${t.done ? 'ghost' : ''}" style="min-height:38px;padding:6px 14px" data-tile="${i}">${t.done ? 'Powtórz' : 'Start'}</button>` : `<span class="muted">${ICON.lock}</span>`}</div>`).join('')}</div></section>`;
+  html += `<section style="margin-top:26px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="eyebrow">Kolekcja pocztówek</span><span class="qcount">${S.game.visited.length} / ${CITIES.length}</span></div>
+    <div class="cards">${CITIES.map((c, i) => S.game.visited.includes(i) ?
+      `<div class="pc"><b lang="bg">${esc(c.bg)}</b><small>${esc(c.pl)}${c.icao ? ` · <span class="mono">${c.icao}</span>` : ''}</small><p lang="bg">${esc(c.f)}</p><p class="muted">${esc(c.fpl)}</p>${spkBtn(c.f)}</div>` :
+      `<div class="pc locked"><b>?</b><small>${i === 0 ? 'Start' : 'Jeszcze nie odwiedzone'}</small></div>`).join('')}</div></section>`;
+  $('#view').innerHTML = html;
+  $$('[data-tile]').forEach(b => b.onclick = () => startTile(+b.dataset.tile));
+  const sk = $('#skipTest'); if (sk) sk.onclick = () => { S.placement = {skipped:true}; save(); viewBoard(); };
+  const bo = $('#bonus'); if (bo) bo.onclick = () => { S.game.day = makeDay(); save(); heroShown = {key:'', idx:-1}; viewBoard(); renderHud(); };
+  if (startIdx !== target) { const h = $('#hero'); requestAnimationFrame(() => requestAnimationFrame(() => { h.style.cssText = pct(P[target]); })); }
+  heroShown = {key, idx:target};
+}
+
+/* ===== LEKCJA: WYNIK ===== */
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
+  const colors = ['var(--sky)', 'var(--earth)', 'var(--gold)', 'var(--ok)', '#fff', '#00966E', '#D62612'];
+  box.innerHTML = Array.from({length:60}, () => `<i style="left:${Math.random() * 100}%;background:${pick(colors)};--dx:${Math.round(Math.random() * 160 - 80)}px;--rot:${Math.round(Math.random() * 900 - 450)}deg;animation-duration:${(1.8 + Math.random() * 1.6).toFixed(2)}s;animation-delay:${(Math.random() * .4).toFixed(2)}s"></i>`).join('');
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4200);
+}
+function finishLesson() {
+  const mode0 = L.mode;
+  const acc = L.scored ? L.right / L.scored : 1;
+  const starsN = acc >= 0.9 ? 3 : acc >= 0.75 ? 2 : acc >= 0.6 ? 1 : 0;
+  const pass = L.mode === 'review' || starsN > 0;
+  let xp = L.right * 2, nextId = null;
+  if (L.mode === 'level') {
+    if (starsN > 0) xp += 5 + (starsN === 3 ? 5 : 0);
+    const prev = S.lv[L.lv.id] || {stars:0};
+    if (starsN > (prev.stars || 0)) S.lv[L.lv.id] = {stars:starsN, best:Math.round(acc * 100)};
+    const n = nextLevel(L.lv.unit.track); nextId = n ? n.id : null;
+    S.track = L.lv.unit.track;
+  } else if (L.mode === 'practice' && pass) xp += 5;
+  let landed = null;
+  if (L.tile != null && pass) landed = markTile(L.tile, L.mode === 'review' ? 3 : starsN);
+  if (landed) xp += 20;
+  addXP(xp); save(); renderHud();
+  const onBoard = L.tile != null;
+  const name = L.mode === 'level' ? L.lv.t : L.mode === 'practice' ? L.title : 'Powtórka';
+  const title = landed ? `Lądowanie: ${landed.bg}!` : L.mode === 'review' ? 'Powtórka zakończona' : pass ? (starsN === 3 ? 'Idealnie!' : 'Zaliczone!') : 'Odejście na drugi krąg';
+  const sub = landed ? `Wylądowałaś w mieście ${landed.pl}. Cała dzisiejsza plansza zaliczona – brawo!` : L.mode === 'review' ? 'Błędy, które poprawiłaś, zniknęły z listy.' : pass ? `„${name}” zaliczone.${onBoard ? ' Wiatrakowiec leci na następne pole.' : ''}` : 'Do zaliczenia potrzeba 60% poprawnych odpowiedzi. Spróbuj jeszcze raz – tym razem pójdzie lepiej.';
+  $('#lesson').innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span style="flex:1"></span></div>
+   <div class="lesson-body"><div class="wrap result">
+    <div class="prompt-kind">${esc(L.mode === 'level' ? L.lv.unit.t : name)}</div>
+    <h2 class="view" style="font-size:28px">${esc(title)}</h2>
+    ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
+    <p class="muted">${esc(sub)}</p>
+    ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
+    <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
+   </div></div>
+   <div class="lesson-foot"><div class="wrap foot-in"><div class="foot-btns">
+    ${!pass || !onBoard ? `<button class="btn ghost" id="again">${pass ? 'Powtórz' : 'Spróbuj ponownie'}</button>` : ''}
+    ${onBoard ? `<button class="btn" id="toBoard">Wróć na planszę</button>` : (L.mode === 'level' && pass && nextId ? `<button class="btn" id="goNext">Następny level</button>` : `<button class="btn" id="toMap">Zamknij</button>`)}
+   </div></div></div>`;
+  if (landed || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
+  const lvId = L.lv && L.lv.id, tile = L.tile, again = L.again, mode = L.mode;
+  $('#lx').onclick = closeLesson;
+  const a = $('#again'); if (a) a.onclick = () => { if (mode === 'level') openBriefing(lvId, tile); else if (mode === 'review') startReview(); else if (again) again(); };
+  const g = $('#goNext'); if (g) g.onclick = () => openBriefing(nextId);
+  const t = $('#toMap'); if (t) t.onclick = closeLesson;
+  const tb = $('#toBoard'); if (tb) tb.onclick = () => { closeLesson(); if (location.hash !== '#plansza') location.hash = '#plansza'; window.scrollTo(0, 0); };
+}
+
+
+
+/* ===== TREŚCI DOPASOWANE DO POSTĘPU ===== */
+const reachedLevels = () => { const r = LEVELS.filter(l => isOpen(l)); return r.length ? r : [LEVELS[0]]; };
+const reachedNouns = () => { const ids = new Set(reachedLevels().map(l => l.id)); let idx = NOUNS.map((n, i) => ids.has(n[4]) ? i : -1).filter(i => i >= 0); if (idx.length < 8) idx = [...new Set([...idx, ...NOUNS.map((_, i) => i).slice(0, 10)])]; return idx; };
+const catUnlocked = name => name === 'Podstawy' || (PH_UNLOCK[name] && LV[PH_UNLOCK[name]] && isOpen(LV[PH_UNLOCK[name]]));
+function myPhrases(filter = 'all') {
+  const out = [];
+  if (filter === 'all' || filter !== 'lv') PHRASES.forEach((c, ci) => { if (!catUnlocked(c.n) || (filter !== 'all' && filter !== c.n)) return; const lv = LV['ph' + ci]; lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:c.n})); });
+  if (filter === 'all' || filter === 'lv') reachedLevels().forEach(lv => lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:lv.t})));
+  return out;
+}
+const byMistakes = arr => shuffle(arr).sort((a, b) => (S.mistakes[b.ref] || 0) - (S.mistakes[a.ref] || 0));
+const take = (arr, n) => { const out = []; for (let k = 0; k < n && arr.length; k++) out.push(arr[k % arr.length]); return out; };
+function finishBest(key, val) { if (val > (S.best[key] || 0)) { S.best[key] = val; save(); return true; } return false; }
+
+/* ===== NOWE TYPY ZADAŃ: RODZAJ I RODZAJNIK ===== */
+const GNAME = {m:'męski', f:'żeński', n:'nijaki'};
+const GPRON = {m:'той', f:'тя', n:'то'};
+const GRULE = {m:'Rodzaj męski: pełny rodzajnik -ът (podmiot), krótki -а w dopełnieniu.', f:'Rodzaj żeński: rodzajnik -та.', n:'Rodzaj nijaki: rodzajnik -то.'};
+function exGender(box, q) {
+  const n = q.it.n;
+  box.innerHTML = `<div class="prompt-kind">Rodzaj rzeczownika</div><div class="row" style="gap:12px;margin-bottom:6px">${spkBtn(n[0])}<div class="prompt" lang="bg" style="margin:0">${esc(n[0])}</div></div><div class="sub">${esc(n[1])} – jaki to rodzaj po bułgarsku?</div>
+   <div class="opts">${['m','f','n'].map((g, i) => `<button class="opt" data-v="${g}"><span class="k">${i + 1}</span><span>${GNAME[g]} <span class="muted" lang="bg">(${GPRON[g]})</span></span></button>`).join('')}</div>`;
+  wireOpts(box, n[2], ok => ({ok, answer:`${n[0]} – ${GNAME[n[2]]} → ${n[3]}`, sayBg:n[3], extra:esc(n[5] || GRULE[n[2]]), noAuto:true}));
+}
+function exArticle(box, q) {
+  const n = q.it.n, base = n[0];
+  const cands = [...new Set([base + 'ът', base + 'та', base + 'то', base.replace(/[аяоей]$/, '') + 'ът', base + 'ят'])].filter(x => x !== n[3]);
+  const opts = shuffle([n[3], ...shuffle(cands).slice(0, 2)]);
+  box.innerHTML = `<div class="prompt-kind">Rodzajnik: -ът / -та / -то</div><div class="prompt">Mówimy o czymś konkretnym: <span lang="bg">${esc(base)}</span> → ?</div><div class="sub">„${esc(n[1])}”, ale ten konkretny. Wybierz formę z rodzajnikiem.</div>${optsHTML(opts, true)}`;
+  wireOpts(box, n[3], ok => ({ok, answer:`${base} → ${n[3]}`, answerBg:false, sayBg:n[3], extra:esc(`${GNAME[n[2]]}. ${n[5] || GRULE[n[2]]}`)}));
+}
+
+/* ===== ZAKŁADKA: ZWROTY (fiszki, dopasowanie, lista) ===== */
+let phMode = 'fiszki', phFilter = 'all', FC = null, MG = null, phraseQ = '';
+function viewPhrases() {
+  const cats = PHRASES.filter(c => catUnlocked(c.n)).map(c => c.n);
+  if (phFilter !== 'all' && phFilter !== 'lv' && !cats.includes(phFilter)) phFilter = 'all';
+  const n = myPhrases(phFilter).length;
+  $('#view').innerHTML = `<h2 class="view">Zwroty</h2><p class="muted" style="margin-top:0">Twoja talia rośnie z każdym levelem: nowe kategorie zwrotów i zdania z odblokowanych lekcji. Teraz masz ${myPhrases().length} zwrotów.</p>
+   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
+   ${phMode !== 'lista' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+   <div id="phbox"></div>`;
+  $$('[data-m]').forEach(b => b.onclick = () => { phMode = b.dataset.m; viewPhrases(); });
+  $$('[data-f]').forEach(b => b.onclick = () => { phFilter = b.dataset.f; FC = null; MG = null; viewPhrases(); });
+  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else drawPhraseList();
+}
+function drawFlash() {
+  const key = phFilter;
+  if (!FC || FC.key !== key) FC = {key, deck:shuffle(myPhrases(key)), known:0, flipped:false, dir:(FC && FC.dir) || 'pl'};
+  const box = $('#phbox');
+  if (!FC.deck.length) {
+    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:20px">Talia przerobiona!</b><span class="muted">Znasz ${FC.known} zwrotów z tej talii.</span><button class="btn" id="fcAgain">Przetasuj i jeszcze raz</button></div>`;
+    $('#fcAgain').onclick = () => { FC = null; drawFlash(); };
+    return;
+  }
+  const c = FC.deck[0];
+  const front = FC.dir === 'pl' ? `<div class="fpl">${esc(c.pl)}</div>` : `<div class="fbg" lang="bg">${esc(c.bg)}</div><div class="tr-line">${esc(translit(c.bg))}</div>`;
+  const back = FC.dir === 'pl' ? `<div class="fbg" lang="bg">${esc(c.bg)}</div><div class="tr-line">${esc(translit(c.bg))}</div><div class="muted">${esc(c.pl)}</div>` : `<div class="fpl">${esc(c.pl)}</div><div class="muted" lang="bg">${esc(c.bg)}</div>`;
+  box.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="qcount">Zostało ${FC.deck.length} · umiesz ${FC.known}</span>
+     <button class="chip" id="fcDir">${FC.dir === 'pl' ? 'Najpierw polski' : 'Najpierw bułgarski'} ⇄</button></div>
+   <div class="flash ${FC.flipped ? 'flipped' : ''}" id="fcCard" role="button" tabindex="0" aria-label="Odwróć fiszkę">
+     <div class="face front"><span class="eyebrow">${esc(c.src)}</span>${front}<span class="muted" style="font-size:13px">Dotknij, aby odwrócić</span></div>
+     <div class="face back"><span class="eyebrow">${esc(c.src)}</span>${back}${spkBtn(c.bg)}</div></div>
+   <div class="foot-btns" style="margin-top:14px">${FC.flipped ? `<button class="btn ghost" id="fcNo">Jeszcze nie</button><button class="btn ok" id="fcYes">Umiem</button>` : `<button class="btn block" id="fcFlip">Pokaż odpowiedź</button>`}</div>`;
+  const flip = () => { FC.flipped = true; drawFlash(); if (S.autoVoice && audioOK()) speak(c.bg); };
+  $('#fcCard').onclick = () => { if (!FC.flipped) flip(); };
+  $('#fcCard').onkeydown = e => { if ((e.key === 'Enter' || e.key === ' ') && !FC.flipped) { e.preventDefault(); flip(); } };
+  const fl = $('#fcFlip'); if (fl) fl.onclick = flip;
+  $('#fcDir').onclick = () => { FC.dir = FC.dir === 'pl' ? 'bg' : 'pl'; FC.flipped = false; drawFlash(); };
+  const no = $('#fcNo'); if (no) no.onclick = () => { const x = FC.deck.shift(); FC.deck.splice(Math.min(3, FC.deck.length), 0, x); FC.flipped = false; drawFlash(); };
+  const yes = $('#fcYes'); if (yes) yes.onclick = () => { FC.deck.shift(); FC.known++; FC.flipped = false; if (FC.known % 5 === 0) { addXP(2); save(); renderHud(); } drawFlash(); };
+}
+function drawMatchGame() {
+  const box = $('#phbox');
+  if (!MG || MG.done) {
+    const pool = shuffle(myPhrases(phFilter));
+    MG = {pairs:pool.slice(0, 5), left:Math.min(5, pool.length), miss:0, t0:Date.now(), selL:null, selR:null, done:false};
+  }
+  const P5 = MG.pairs;
+  const Lc = shuffle(P5.map((x, j) => ({k:j, v:x.pl}))), Rc = shuffle(P5.map((x, j) => ({k:j, v:x.bg})));
+  box.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="qcount" id="mgInfo">Pary: 0/${P5.length} · błędy: 0</span><span class="qcount">Rekord: ${S.best.match || 0} pkt</span></div>
+   <div class="matchgrid phm"><div class="col">${Lc.map(x => `<button class="mt" data-side="l" data-k="${x.k}">${esc(x.v)}</button>`).join('')}</div>
+   <div class="col">${Rc.map(x => `<button class="mt" lang="bg" data-side="r" data-k="${x.k}">${esc(x.v)}</button>`).join('')}</div></div><div id="mgEnd"></div>`;
+  let got = 0;
+  box.querySelector('.matchgrid').onclick = e => {
+    const b = e.target.closest('.mt'); if (!b || b.classList.contains('gone')) return;
+    const side = b.dataset.side;
+    $$(`.mt[data-side="${side}"]`, box).forEach(x => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    if (side === 'l') MG.selL = b; else MG.selR = b;
+    if (!MG.selL || !MG.selR) return;
+    const a = MG.selL, c = MG.selR; MG.selL = MG.selR = null;
+    if (a.dataset.k === c.dataset.k) { a.classList.add('gone'); c.classList.add('gone'); got++; if (audioOK()) speak(c.textContent); }
+    else { MG.miss++; [a, c].forEach(x => { x.classList.add('err'); x.setAttribute('aria-pressed', 'false'); setTimeout(() => x.classList.remove('err'), 500); }); }
+    $('#mgInfo').textContent = `Pary: ${got}/${P5.length} · błędy: ${MG.miss}`;
+    if (got === P5.length) {
+      MG.done = true;
+      const sec = Math.round((Date.now() - MG.t0) / 1000), pts = Math.max(10, 150 - sec * 2 - MG.miss * 10);
+      const rec = finishBest('match', pts); addXP(3); save(); renderHud();
+      $('#mgEnd').innerHTML = `<div class="card stack" style="margin-top:14px;text-align:center"><b style="font-family:var(--f-display);font-size:20px">${pts} pkt${rec ? ' · nowy rekord!' : ''}</b><span class="muted">Czas: ${sec} s, błędy: ${MG.miss}</span><button class="btn" id="mgNext">Następna runda</button></div>`;
+      $('#mgNext').onclick = () => drawMatchGame();
+    }
+  };
+}
+function drawPhraseList() {
+  const q = norm(phraseQ);
+  $('#phbox').innerHTML = `<input class="search" id="pq" placeholder="Szukaj po polsku lub bułgarsku…" value="${esc(phraseQ)}" aria-label="Szukaj zwrotu" style="margin:12px 0"><div id="plist" class="stack"></div>`;
+  const draw = () => {
+    const q = norm(phraseQ);
+    $('#plist').innerHTML = PHRASES.map(c => {
+      if (!catUnlocked(c.n)) { const l = LV[PH_UNLOCK[c.n]]; return `<section class="card row" style="gap:10px"><span class="muted">${ICON.lock}</span><div><b>${esc(c.n)}</b><div class="muted" style="font-size:14px">Odblokujesz w levelu „${esc(l ? l.t : '')}”.</div></div></section>`; }
+      const items = c.items.filter(([pl, bg]) => !q || norm(pl).includes(q) || norm(bg).includes(q) || norm(translit(bg)).includes(q));
+      if (!items.length) return '';
+      return `<section><div class="eyebrow" style="margin:8px 0">${esc(c.n)}</div><div class="plist">${items.map(([pl, bg]) =>
+        `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(bg)}</div><div class="tr">${esc(translit(bg))}</div><div class="pl">${esc(pl)}</div></div>${spkBtn(bg)}</div>`).join('')}</div></section>`;
+    }).join('') || '<p class="muted">Brak wyników.</p>';
+  };
+  const pq = $('#pq'); pq.oninput = () => { phraseQ = pq.value; draw(); };
+  draw();
+}
+
+/* ===== ZAKŁADKA: SŁÓWKA (gra w pisanie, gra w mówienie, słowniczek) ===== */
+let dictTrack = 'mine', dictQ = '';
+const myWords = () => byMistakes(reachedLevels().flatMap(l => l.w.map((_, i) => W(l, i))));
+function startWordGame(kind) {
+  const ws = myWords();
+  const items = kind === 'write' ? take(ws, 10).map(it => ({t:'write', it})) : take(ws, 8).map(it => ({t:'speak', it}));
+  startPractice(null, items, kind === 'write' ? 'Gra: pisanie słówek' : 'Gra: mówienie słówek', () => startWordGame(kind));
+}
+function viewDict() {
+  const nMine = myWords().length;
+  $('#view').innerHTML = `<h2 class="view">Słówka</h2><p class="muted" style="margin-top:0">Obie gry losują słówka z Twoich odblokowanych leveli (teraz ${nMine}). Najpierw wracają te, w których były błędy.</p>
+   <div class="gamegrid">
+    <button class="gamecard" id="gWrite"><span class="gicon">${'<span class="glyph" lang="bg">Пиши</span>'}</span><b>Gra: pisanie</b><span class="muted">10 słówek. Widzisz polskie słowo, piszesz po bułgarsku – klawiaturą cyrylicy albo łacinką.</span><span class="btn">Graj</span></button>
+    <button class="gamecard" id="gSpeak"><span class="gicon">${ICON.mic}</span><b>Gra: mówienie</b><span class="muted">8 słówek. Słuchasz lektora i mówisz na głos; aplikacja sprawdza wymowę.</span><span class="btn">Graj</span></button>
+   </div>
+   <h3 class="eyebrow" style="margin:24px 0 8px">Słowniczek</h3>
+   <div class="stack"><input class="search" id="dq" placeholder="Szukaj…" value="${esc(dictQ)}" aria-label="Szukaj słowa">
+   <div class="chips">${[['mine','Moje'],['all','Wszystkie'],['day','Na co dzień'],['air','Lotnictwo']].map(([k, n]) => `<button class="chip" data-t="${k}" aria-pressed="${dictTrack === k}">${n}</button>`).join('')}</div>
+   <div id="dlist"></div></div>`;
+  $('#gWrite').onclick = () => startWordGame('write');
+  $('#gSpeak').onclick = () => startWordGame('speak');
+  $$('[data-t]').forEach(b => b.onclick = () => { dictTrack = b.dataset.t; viewDict(); });
+  const dq = $('#dq'); dq.oninput = () => { dictQ = dq.value; drawDict(); };
+  drawDict();
+}
+function drawDict() {
+  const q = norm(dictQ);
+  const groups = UNITS.filter(u => dictTrack === 'all' || dictTrack === 'mine' || u.track === dictTrack).map(u => {
+    const rows = u.levels.filter(l => dictTrack !== 'mine' || isOpen(l)).flatMap(l => l.w.map(w => ({w, l}))).filter(({w}) => !q || norm(w[0]).includes(q) || norm(w[1]).includes(q));
+    if (!rows.length) return '';
+    return `<section><div class="eyebrow" style="margin:14px 0 8px"><span lang="bg">${esc(u.bt)}</span> · ${esc(u.t)}</div><div class="plist">${rows.map(({w}) =>
+      `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(alts(w[1]).join(' / '))}</div><div class="tr">${esc(translit(first(w[1])))}</div><div class="pl">${esc(w[0])}${w[2] ? ` · <b style="color:var(--earth)">${esc(w[2])}</b>` : ''}</div></div>${spkBtn(first(w[1]))}</div>`).join('')}</div></section>`;
+  }).join('');
+  $('#dlist').innerHTML = groups || '<p class="muted">Nic nie znaleziono.</p>';
+}
+
+/* ===== ZAKŁADKA: GRAMATYKA (ćwiczenia + ściąga) ===== */
+function grammarItems(kind) {
+  const lv = reachedLevels();
+  if (kind === 'order') {
+    const pool = byMistakes([...lv.flatMap(l => l.s.map((_, i) => SN(l, i))), ...PHRASES.map((c, ci) => catUnlocked(c.n) ? LV['ph' + ci].s.map((_, i) => SN(LV['ph' + ci], i)) : []).flat()]);
+    return take(pool, 10).map(it => ({t:'order', it}));
+  }
+  if (kind === 'gender') return take(byMistakes(reachedNouns().map(NI)), 10).map(it => ({t:'gender', it}));
+  if (kind === 'article') return take(byMistakes(reachedNouns().map(NI)), 10).map(it => ({t:'article', it}));
+  return take(byMistakes(lv.flatMap(l => l.g.map((_, i) => GR(l, i)))), 10).map(it => ({t:'gram', it}));
+}
+const GTITLE = {order:'Ułóż zdanie', gender:'Rodzaj: męski, żeński, nijaki', article:'Rodzajnik: -ът / -та / -то', gram:'Gramatyka z leveli'};
+function viewGrammar() {
+  const lv = reachedLevels();
+  const nS = lv.reduce((a, l) => a + l.s.length, 0) + PHRASES.filter(c => catUnlocked(c.n)).reduce((a, c) => a + LV['ph' + PHRASES.indexOf(c)].s.length, 0);
+  const nN = reachedNouns().length, nG = lv.reduce((a, l) => a + l.g.length, 0);
+  const card = (k, icon, desc, cnt) => `<button class="gamecard" data-g="${k}"><span class="gicon">${icon}</span><b>${GTITLE[k]}</b><span class="muted">${desc}</span><span class="qcount">z Twoich leveli: ${cnt}</span><span class="btn">Ćwicz</span></button>`;
+  $('#view').innerHTML = `<h2 class="view">Gramatyka</h2><p class="muted" style="margin-top:0">Ćwiczenia biorą zdania i słowa z leveli, które masz odblokowane – każdy nowy level dokłada materiał.</p>
+   <div class="gamegrid">
+    ${card('order', '<span class="glyph" lang="bg">а б в</span>', 'U góry zdanie po polsku, na dole kafelki po bułgarsku. Ułóż je w dobrej kolejności.', nS + ' zdań')}
+    ${card('gender', '<span class="glyph" lang="bg">той тя то</span>', 'Czy słowo jest męskie, żeńskie czy nijakie? Po bułgarsku rodzaj często jest inny niż po polsku.', nN + ' rzeczowników')}
+    ${card('article', '<span class="glyph" lang="bg">-ът -та -то</span>', 'Bułgarzy doklejają końcówkę, gdy mówią o czymś konkretnym: самолет → самолетът.', nN + ' rzeczowników')}
+    ${card('gram', '<span class="glyph">___</span>', 'Uzupełnianie luk: formy czasowników, przyimki, czas przyszły i przeszły.', nG + ' zadań')}
+   </div>
+   <h3 class="eyebrow" style="margin:26px 0 8px">Ściąga</h3>
+   <div class="stack">${GRAMMAR.map(g => `<article class="card gcard"><h3>${esc(g.t)}</h3><div class="tblwrap">${g.h}</div></article>`).join('')}</div>`;
+  $$('[data-g]').forEach(b => b.onclick = () => { const k = b.dataset.g; const go = () => startPractice(null, grammarItems(k), GTITLE[k], go); go(); });
+}
+
+/* ===== ZAKŁADKA: GRY I ZABAWY ===== */
+let G = null, blitzT = null;
+function viewGames() {
+  if (blitzT) { clearInterval(blitzT); blitzT = null; }
+  $('#view').innerHTML = `<h2 class="view">Gry i zabawy</h2><p class="muted" style="margin-top:0">Na rozluźnienie po lekcjach. Za każdą grę dostajesz trochę XP.</p>
+   <div class="gamegrid">
+    <button class="gamecard" data-game="songs"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18a3 3 0 1 1-2-2.8V5l12-2v12a3 3 0 1 1-2-2.8V6.4L9 7.8z"/></svg>'}</span><b>Jaka to piosenka?</b><span class="muted">Słynne bułgarskie piosenki i wiersze: zgadnij tytuł lub wykonawcę, poznaj tłumaczenie.</span><span class="qcount">Rekord: ${S.best.songs || 0}/8</span></button>
+    <button class="gamecard" data-game="blitz"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>'}</span><b>Błyskawica 60 s</b><span class="muted">Ile słówek przetłumaczysz w minutę? Słówka z Twoich leveli.</span><span class="qcount">Rekord: ${S.best.blitz || 0}</span></button>
+    <button class="gamecard" data-game="ff"><span class="gicon"><span class="glyph" lang="bg">?!</span></span><b>Fałszywi przyjaciele</b><span class="muted">Prawda czy fałsz? Słowa, które brzmią po polsku, a znaczą coś zupełnie innego.</span><span class="qcount">Rekord: ${S.best.ff || 0}/10</span></button>
+   </div><div id="gamebox" style="margin-top:18px"></div>`;
+  $$('[data-game]').forEach(b => b.onclick = () => { ({songs:startSongs, blitz:startBlitz, ff:startFF})[b.dataset.game](); setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
+}
+function startSongs() {
+  const qs = shuffle([...shuffle(SONGS).slice(0, 5).map(x => ({...x, kind:'song'})), ...shuffle(TRIVIA).slice(0, 3).map(x => ({...x, kind:'trivia'}))]);
+  G = {type:'songs', qs, i:0, score:0}; drawSong();
+}
+function drawSong() {
+  const box = $('#gamebox'); if (!box) return;
+  if (G.i >= G.qs.length) {
+    const rec = finishBest('songs', G.score); addXP(G.score); save(); renderHud();
+    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:22px">${G.score} / ${G.qs.length}${rec ? ' · nowy rekord!' : ''}</b><span class="muted">+${G.score} XP</span><button class="btn" id="gAgain">Zagraj jeszcze raz</button></div>`;
+    $('#gAgain').onclick = startSongs; return;
+  }
+  const q = G.qs[G.i], correct = q.o[0], opts = shuffle(q.o);
+  box.innerHTML = `<div class="card stack lyric"><div class="row" style="justify-content:space-between"><span class="eyebrow">${q.kind === 'song' ? 'Cytat' : 'Pytanie'} ${G.i + 1}/${G.qs.length}</span><span class="qcount">Wynik: ${G.score}</span></div>
+    ${q.kind === 'song' ? `<div class="row" style="gap:12px">${spkBtn(q.line)}<div style="flex:1;min-width:0"><div class="lline" lang="bg">„${esc(q.line)}”</div><div class="tr-line" style="text-align:left">${esc(translit(q.line))}</div></div></div><b>${esc(q.q || 'Z jakiego utworu pochodzi ten tekst?')}</b>` : `<b style="font-size:18px">${esc(q.q)}</b>`}
+    ${optsHTML(opts, /[а-я]/i.test(correct))}<div id="sfb"></div></div>`;
+  let answered = false;
+  $$('#gamebox .opt').forEach(b => b.onclick = () => {
+    if (answered) return; answered = true;
+    const ok = b.dataset.v === correct; if (ok) G.score++;
+    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === correct) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    $('#sfb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Brawo!' : `To: ${esc(correct)}`}</b>${q.kind === 'song' ? `<div>Tłumaczenie: <i>${esc(q.tr)}</i></div><div class="muted">${esc(q.who)}</div>` : ''}<div>${esc(q.fact)}</div></div><button class="btn block" id="sNext" style="margin-top:10px">Dalej</button>`;
+    $('#sNext').onclick = () => { G.i++; drawSong(); };
+    if (q.kind === 'song' && audioOK() && S.autoVoice) speak(q.line);
+  });
+}
+function startBlitz() {
+  const pool = shuffle(reachedLevels().flatMap(l => l.w.map((_, i) => W(l, i))));
+  G = {type:'blitz', pool, k:0, score:0, end:Date.now() + 60000};
+  if (blitzT) clearInterval(blitzT);
+  blitzT = setInterval(() => {
+    const box = $('#gamebox'); if (!box || G.type !== 'blitz') { clearInterval(blitzT); blitzT = null; return; }
+    const left = Math.max(0, G.end - Date.now());
+    const bar = $('#bzBar'); if (bar) bar.style.width = `${left / 600}%`;
+    const tt = $('#bzT'); if (tt) tt.textContent = Math.ceil(left / 1000) + ' s';
+    if (left <= 0) { clearInterval(blitzT); blitzT = null; endBlitz(); }
+  }, 200);
+  drawBlitz();
+}
+function drawBlitz() {
+  const box = $('#gamebox'); if (!box) return;
+  const it = G.pool[G.k % G.pool.length], bg = first(it.w[1]);
+  const opts = shuffle([bg, ...distractWords(it, 3, 'bg')]);
+  box.innerHTML = `<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">Błyskawica</span><span class="mono" id="bzT">60 s</span><span class="qcount">Punkty: ${G.score}</span></div>
+    <div class="bar"><i id="bzBar" style="width:${Math.max(0, G.end - Date.now()) / 600}%;background:var(--earth)"></i></div>
+    <div class="prompt" style="text-align:center;margin:8px 0">${esc(it.w[0])}</div>${optsHTML(opts, true)}</div>`;
+  $$('#gamebox .opt').forEach(b => b.onclick = () => {
+    if (G.end <= Date.now()) return;
+    const ok = b.dataset.v === bg;
+    if (ok) { G.score++; G.k++; drawBlitz(); }
+    else { b.classList.add('wrong'); $$('#gamebox .opt').forEach(x => { if (x.dataset.v === bg) x.classList.add('right'); x.disabled = true; }); G.k++; setTimeout(() => { if (G.type === 'blitz' && G.end > Date.now()) drawBlitz(); }, 700); }
+  });
+}
+function endBlitz() {
+  const box = $('#gamebox'); if (!box) return;
+  const rec = finishBest('blitz', G.score); addXP(Math.min(20, G.score)); save(); renderHud();
+  box.innerHTML = `<div class="card stack" style="text-align:center"><span class="eyebrow">Koniec czasu</span><b style="font-family:var(--f-display);font-size:28px">${G.score} słówek${rec ? ' · rekord!' : ''}</b><span class="muted">Najlepszy wynik: ${S.best.blitz || 0}</span><button class="btn" id="gAgain">Jeszcze raz</button></div>`;
+  $('#gAgain').onclick = startBlitz;
+}
+function startFF() {
+  const qs = shuffle(FRIENDS).slice(0, 10).map(([bg, look, real]) => {
+    const isFalse = look !== real, claimLook = isFalse && Math.random() < 0.6;
+    return {bg, real, claim: claimLook ? look : real, truth: !claimLook, isFalse};
+  });
+  G = {type:'ff', qs, i:0, score:0}; drawFF();
+}
+function drawFF() {
+  const box = $('#gamebox'); if (!box) return;
+  if (G.i >= G.qs.length) {
+    const rec = finishBest('ff', G.score); addXP(G.score); save(); renderHud();
+    box.innerHTML = `<div class="card stack" style="text-align:center"><b style="font-family:var(--f-display);font-size:22px">${G.score} / 10${rec ? ' · rekord!' : ''}</b><span class="muted">Pełna lista pułapek jest w zakładce Gramatyka → Fałszywi przyjaciele.</span><button class="btn" id="gAgain">Jeszcze raz</button></div>`;
+    $('#gAgain').onclick = startFF; return;
+  }
+  const q = G.qs[G.i];
+  box.innerHTML = `<div class="card stack" style="text-align:center"><div class="row" style="justify-content:space-between"><span class="eyebrow">${G.i + 1}/10</span><span class="qcount">Wynik: ${G.score}</span></div>
+    <div class="prompt">Bułgarskie <span lang="bg">${esc(q.bg)}</span> znaczy „${esc(q.claim)}”.</div>
+    <div class="foot-btns"><button class="btn ok" data-a="1">Prawda</button><button class="btn bad" data-a="0">Fałsz</button></div><div id="ffb"></div></div>`;
+  let done = false;
+  $$('#gamebox [data-a]').forEach(b => b.onclick = () => {
+    if (done) return; done = true;
+    const ok = (b.dataset.a === '1') === q.truth; if (ok) G.score++;
+    $('#ffb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Dobrze!' : 'Pudło!'}</b> <span lang="bg">${esc(q.bg)}</span> = ${esc(q.real)}.${q.isFalse ? ' Uważaj na to słowo!' : ' Tu polski i bułgarski są zgodne.'}</div>${spkBtn(q.bg)}<button class="btn block" id="fNext" style="margin-top:10px">Dalej</button>`;
+    $('#fNext').onclick = () => { G.i++; drawFF(); };
+    if (audioOK() && S.autoVoice) speak(q.bg);
+  });
+}
+
+/* ===== START ===== */
+route();
+initSpeech();
+initCloud();
+
+</script>
+<script>
+/* ===== APLIKACJA NA TELEFON (PWA) – tylko w wersji z GitHub Pages ===== */
+const PWA = {
+  prompt: null,
+  standalone: () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
+  ios: () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+  async install() {
+    if (!PWA.prompt) return false;
+    PWA.prompt.prompt();
+    const r = await PWA.prompt.userChoice.catch(() => null);
+    PWA.prompt = null;
+    if (location.hash === '#profil') route();
+    return !!(r && r.outcome === 'accepted');
+  }
+};
+window.PWA = PWA;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.prompt = e; if (location.hash === '#profil') route(); });
+window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('Zainstalowano! Ikona jest na ekranie głównym.'); });
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading) return; reloading = true; location.reload(); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      const offer = w => {
+        const bar = document.createElement('div');
+        bar.className = 'toast update';
+        bar.innerHTML = '<span>Jest nowa wersja aplikacji.</span><button class="btn soft" type="button">Odśwież</button>';
+        bar.querySelector('button').onclick = () => { bar.remove(); w.postMessage('skipWaiting'); };
+        document.body.appendChild(bar);
+      };
+      if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing; if (!w) return;
+        w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w); });
+      });
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+    }).catch(() => {});
+  });
+}
+
+</script>
+</body></html>

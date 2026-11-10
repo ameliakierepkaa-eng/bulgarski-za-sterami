@@ -1,0 +1,25 @@
+{
+  "name": "Bułgarski za sterami",
+  "short_name": "Bułgarski",
+  "description": "Gra do nauki bułgarskiego z polskiego: codzienna plansza, kurs, zwroty, gramatyka, słówka i gry.",
+  "lang": "pl",
+  "id": "./",
+  "start_url": "./#plansza",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F7",
+  "theme_color": "#2A64BE",
+  "categories": ["education", "games"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    {"src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ],
+  "shortcuts": [
+    {"name": "Dzisiejsza plansza", "url": "./#plansza"},
+    {"name": "Powtórki", "url": "./#powtorki"},
+    {"name": "Gry i zabawy", "url": "./#gry"}
+  ]
+}
