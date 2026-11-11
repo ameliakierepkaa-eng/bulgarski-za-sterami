@@ -54,17 +54,36 @@ function resolveLevel(t) {
   return nextLevel('air') || nextLevel('day');
 }
 const isLevelTile = t => t.k === 'new' || t.k === 'day' || t.k === 'air';
-function recentLevels() {
-  const last = (tr, n) => TRACK[tr].filter(l => isDone(l.id)).slice(-n);
-  const ls = [...last('day', 2), ...last('air', 1)];
+/* Każda plansza miesza oba tory (średnio 2/3 pól codziennych, 1/3 lotniczych):
+   utrwalenie i mówienie idą torem nowego levelu, słówka zawsze z drugiego toru, zwroty są codzienne. */
+function tileTheme(t) {
+  const d = S.game.day, l0 = d && d.tiles[0] ? resolveLevel(d.tiles[0]) : null;
+  const nt = l0 ? l0.unit.track : 'day', other = nt === 'day' ? 'air' : 'day';
+  if (isLevelTile(t)) { const l = resolveLevel(t); return l ? l.unit.track : nt; }
+  return t.k === 'words' ? other : (t.k === 'recap' || t.k === 'mix') ? nt : t.k === 'phr' ? 'day' : null;
+}
+const THEME_PL = {day:'codzienne', air:'lotnicze'};
+function trackPool(tr) {
+  let ls = TRACK[tr].filter(l => isDone(l.id));
+  const nx = nextLevel(tr); if (ls.length < 2 && nx && !ls.includes(nx)) ls = ls.concat(nx);
   return ls.length ? ls : poolLevels();
+}
+function recentLevels(tr) {
+  const ls = TRACK[tr || 'day'].filter(l => isDone(l.id)).slice(-2);
+  return ls.length ? ls : trackPool(tr || 'day');
+}
+function tileSub(t) {
+  const th = tileTheme(t);
+  if (t.k === 'new') return th === 'air' ? 'lotniczy' : 'codzienny';
+  if (t.k === 'recap' || t.k === 'words' || t.k === 'mix') return THEME_PL[th];
+  return TILE[t.k].sub;
 }
 function tileTitle(t) {
   if (isLevelTile(t)) { const l = resolveLevel(t); return l ? l.t : 'Trening utrwalający'; }
-  if (t.k === 'recap') return 'Utrwalenie ostatnich lekcji';
+  if (t.k === 'recap') return `Utrwalenie – ${THEME_PL[tileTheme(t)]}`;
   if (t.k === 'phr') return `Zwroty: ${LV[t.ph].t}`;
-  if (t.k === 'words') return 'Słówka – utrwalanie';
-  if (t.k === 'mix') return 'Mówienie i gramatyka';
+  if (t.k === 'words') return `Słówka – ${THEME_PL[tileTheme(t)]}`;
+  if (t.k === 'mix') return `Mówienie i gramatyka – ${THEME_PL[tileTheme(t)]}`;
   const n = Object.values(S.mistakes).filter(c => c > 0).length;
   return n ? `Powtórka błędów (${n})` : 'Powtórka dnia';
 }
@@ -118,10 +137,10 @@ function startTile(i) {
     const l = resolveLevel(t);
     if (l) { t.id = l.id; save(); openBriefing(l.id, i); }
     else startPractice(i, buildWords(t.k === 'new' ? LEVELS : LEVELS.filter(x => x.unit.track === t.k)), 'Trening utrwalający');
-  } else if (t.k === 'recap') startPractice(i, buildRecap(recentLevels()), 'Utrwalenie ostatnich lekcji');
+  } else if (t.k === 'recap') startPractice(i, buildRecap(recentLevels(tileTheme(t))), tileTitle(t));
   else if (t.k === 'phr') openPhraseBrief(i);
-  else if (t.k === 'words') startPractice(i, buildWords(poolLevels()), 'Słówka – utrwalanie');
-  else if (t.k === 'mix') startPractice(i, buildMix(poolLevels()), 'Mówienie i gramatyka');
+  else if (t.k === 'words') startPractice(i, buildWords(trackPool(tileTheme(t))), tileTitle(t));
+  else if (t.k === 'mix') startPractice(i, buildMix(trackPool(tileTheme(t))), tileTitle(t));
   else startReview();
 }
 function openPhraseBrief(i) {
@@ -315,7 +334,7 @@ function viewBoard() {
   }
   html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · ${d.carried && !d.finished ? 'ciąg dalszy' : 'dziś'}</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
-    <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+    <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka, tematy codzienne i lotnicze na zmianę.`}</p></div>
    ${window.claude ? '' : '<a class="hintbar" href="#pomoc"><span>🔇</span><span>Lektor nie mówi po bułgarsku? <b>Zobacz, jak włączyć głos</b></span><span aria-hidden="true">→</span></a>'}
    ${gyroCard()}
    <div class="board" id="board">
@@ -339,7 +358,7 @@ function viewBoard() {
       const ico = lvl ? illus(lvl.unit) : T.icon;
       return `<button class="tnode ${st}" style="${pct(PP[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
         <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
-        <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
+        <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : `<i class="th ${tileTheme(t) || ''}">${esc(tileSub(t))}</i>`}</small></span></button>`;
     }).join('')}
     <div class="hero" id="hero" style="${pct(PP[startIdx])}">${heroSVG()}</div>
    </div>`;
@@ -347,10 +366,10 @@ function viewBoard() {
     html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
       <div class="row"><button class="btn" id="bonus">Leć dalej: dodatkowy etap</button><a class="btn ghost" href="#kurs">Mapa kursu</a></div></section>`;
   } else {
-    html += `<button class="btn block" style="margin-top:16px" data-tile="${cur}">Start · ${cur < 5 ? `Lekcja ${cur + 1}` : 'Powtórka'}: ${esc(tileTitle(d.tiles[cur]))}</button>`;
+    html += `<button class="btn block cta" data-tile="${cur}">${ICON.plane} Start ·${cur < 5 ? `Lekcja ${cur + 1}` : 'Powtórka'}: ${esc(tileTitle(d.tiles[cur]))}</button>`;
   }
   html += `<section style="margin-top:22px"><div class="eyebrow" style="margin-bottom:8px">Plan dnia</div><div class="plist">${d.tiles.map((t, i) => `
-    <div class="prow"><span class="pnum ${t.done ? 'on' : ''}">${t.done ? ICON.check : i + 1}</span><div class="txt"><b>${esc(tileTitle(t))}</b><div class="pl">${i < 5 ? TILE[t.k].sub : 'Błędy z całego kursu, potem lądowanie'}</div></div>
+    <div class="prow"><span class="pnum ${t.done ? 'on' : ''}">${t.done ? ICON.check : i + 1}</span><div class="txt"><b>${esc(tileTitle(t))}</b><div class="pl">${i < 5 ? `<span class="thdot ${tileTheme(t) || ''}"></span>${esc(tileTheme(t) === 'air' ? 'temat lotniczy' : 'temat codzienny')}` : 'Błędy z całego kursu, potem lądowanie'}</div></div>
     ${t.done || i === cur ? `<button class="btn ${t.done ? 'ghost' : ''}" style="min-height:38px;padding:6px 14px" data-tile="${i}">${t.done ? 'Powtórz' : 'Start'}</button>` : `<span class="muted">${ICON.lock}</span>`}</div>`).join('')}</div></section>`;
   html += `<section style="margin-top:26px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="eyebrow">Kolekcja pocztówek</span><span class="qcount">${S.game.visited.length} / ${CITIES.length}</span></div>
     <div class="cards">${CITIES.map((c, i) => S.game.visited.includes(i) ?

@@ -1,8 +1,8 @@
 <!doctype html><html lang="pl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Gra do nauki bułgarskiego z polskiego: codzienna plansza, kurs, zwroty, gramatyka, słówka i gry. Działa też bez internetu.">
-<meta name="theme-color" content="#F3EDE2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#171511" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#13233F" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bułgarski">
@@ -24,25 +24,25 @@
 <style>
 /* Styl: papierowa mapa lotnicza + bułgarski haft (шевица). Czcionka Sofia Sans – bułgarskie formy cyrylicy. */
 :root{
-  --bg:#F3EDE2; --surface:#FFFBF3; --surface2:#EAE2D3; --ink:#1D2733; --muted:#6A6455; --line:#DCD2C0;
-  --sky:#24466E; --sky-soft:#DFE5EA; --on-sky:#FFFBF3; --earth:#C2502D; --earth-soft:#F5E0D2; --on-earth:#FFFBF3;
-  --ok:#3B7A4C; --ok-soft:#DFEDDC; --bad:#B3261E; --bad-soft:#F6DAD5; --gold:#C8952A;
-  --map:#EFE6D2; --map-line:#DDD0B5; --water:#A9C3CC; --relief:#CDB892;
+  --bg:#E4F1FC; --sky-top:#9FD0F7; --cloud:#FFFFFF; --surface:#FFFFFF; --surface2:#DCEBF8; --ink:#12305A; --muted:#4F6B8C; --line:#C9DDF0;
+  --sky:#1767BD; --sky-soft:#DCEDFC; --on-sky:#FFFFFF; --earth:#D9601A; --earth-soft:#FDE8D8; --on-earth:#FFFFFF;
+  --ok:#1E8757; --ok-soft:#DBF3E6; --bad:#C7362F; --bad-soft:#FBE0DD; --gold:#E7A60F;
+  --map:#EEF7FE; --map-line:#D2E6F6; --water:#8CC4EC; --relief:#A9BFD6;
   --f-display:'Sofia Sans Condensed','Sofia Sans',system-ui,sans-serif;
   --f-body:'Sofia Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#171511; --surface:#221F1A; --surface2:#2C2821; --ink:#EEE7D8; --muted:#A69E8C; --line:#3B362D;
-  --sky:#93B4D8; --sky-soft:#26303B; --on-sky:#14181D; --earth:#E8774F; --earth-soft:#3E271D; --on-earth:#1A120E;
-  --ok:#7DBF8B; --ok-soft:#1E3224; --bad:#EE7B6D; --bad-soft:#3F221E; --gold:#E3B85B;
-  --map:#1E1B16; --map-line:#332E25; --water:#2D4650; --relief:#4B4334; color-scheme:dark}}
+  --bg:#0B1730; --sky-top:#152B55; --cloud:#1C3158; --surface:#13233F; --surface2:#1B3054; --ink:#EAF2FF; --muted:#9DB3D1; --line:#294270;
+  --sky:#7DB9F5; --sky-soft:#1A3358; --on-sky:#08203F; --earth:#FF9E5E; --earth-soft:#43291A; --on-earth:#2A1408;
+  --ok:#5FD39B; --ok-soft:#133528; --bad:#FF8377; --bad-soft:#45211E; --gold:#FFCF5A;
+  --map:#10203C; --map-line:#1E3559; --water:#2B5E8E; --relief:#3F5A82; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#171511; --surface:#221F1A; --surface2:#2C2821; --ink:#EEE7D8; --muted:#A69E8C; --line:#3B362D;
-  --sky:#93B4D8; --sky-soft:#26303B; --on-sky:#14181D; --earth:#E8774F; --earth-soft:#3E271D; --on-earth:#1A120E;
-  --ok:#7DBF8B; --ok-soft:#1E3224; --bad:#EE7B6D; --bad-soft:#3F221E; --gold:#E3B85B;
-  --map:#1E1B16; --map-line:#332E25; --water:#2D4650; --relief:#4B4334; color-scheme:dark}
+  --bg:#0B1730; --sky-top:#152B55; --cloud:#1C3158; --surface:#13233F; --surface2:#1B3054; --ink:#EAF2FF; --muted:#9DB3D1; --line:#294270;
+  --sky:#7DB9F5; --sky-soft:#1A3358; --on-sky:#08203F; --earth:#FF9E5E; --earth-soft:#43291A; --on-earth:#2A1408;
+  --ok:#5FD39B; --ok-soft:#133528; --bad:#FF8377; --bad-soft:#45211E; --gold:#FFCF5A;
+  --map:#10203C; --map-line:#1E3559; --water:#2B5E8E; --relief:#3F5A82; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -479,6 +479,63 @@ details.hg p{margin:0;padding:0 14px 10px;font-size:15px}
   nav.tabs{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:0 6px;border:1px solid var(--line);border-radius:999px;height:62px;
     box-shadow:0 10px 28px -12px color-mix(in srgb,var(--ink) 55%,transparent)}
   nav.tabs a{height:62px;border-radius:999px}
+}
+/* ===== niebo i chmury ===== */
+html{background:var(--bg)}
+body{background:linear-gradient(180deg,var(--sky-top) 0,var(--bg) 460px) no-repeat var(--bg);min-height:100vh}
+#app{position:relative;isolation:isolate}
+#app::before{content:"";position:absolute;inset:120px 0 auto;height:520px;z-index:-1;pointer-events:none;opacity:.75;
+  background:
+   radial-gradient(40px 26px at 12% 60px,var(--cloud) 98%,transparent),radial-gradient(56px 34px at 22% 52px,var(--cloud) 98%,transparent),radial-gradient(38px 24px at 31% 64px,var(--cloud) 98%,transparent),
+   radial-gradient(46px 28px at 74% 190px,var(--cloud) 98%,transparent),radial-gradient(64px 38px at 85% 180px,var(--cloud) 98%,transparent),radial-gradient(40px 24px at 95% 194px,var(--cloud) 98%,transparent),
+   radial-gradient(36px 22px at 8% 380px,var(--cloud) 98%,transparent),radial-gradient(52px 30px at 17% 372px,var(--cloud) 98%,transparent)}
+/* nagłówek: biała chmura z falistym brzegiem */
+.hud{background:var(--surface);box-shadow:0 8px 24px -18px color-mix(in srgb,var(--ink) 60%,transparent)}
+.hud::after{height:12px;margin-bottom:-12px;opacity:1;-webkit-mask:none;mask:none;background:radial-gradient(circle at 14px 0,var(--surface) 12px,transparent 12.6px) 0 0/28px 12px repeat-x}
+body::before{background:var(--surface)}
+.brand b em{color:var(--sky)}
+main{padding-top:30px}
+.stat{background:var(--surface2);border-radius:999px;padding:4px 10px}
+/* karty i przyciski */
+:root{--soft:0 1px 0 var(--line),0 14px 30px -18px color-mix(in srgb,var(--sky) 55%,transparent)}
+.card,.plist,.kpi,.gamecard,.wpbtn,.pc:not(.locked),.tipbox,.hstep,.gyrocard{border-color:transparent}
+.btn{background:linear-gradient(180deg,color-mix(in srgb,var(--sky) 86%,var(--cloud)),var(--sky));box-shadow:0 4px 0 color-mix(in srgb,var(--sky) 62%,#000),0 10px 18px -10px var(--sky)}
+.btn:not(:disabled):active{box-shadow:0 1px 0 color-mix(in srgb,var(--sky) 62%,#000)}
+.btn.ok{background:var(--ok)} .btn.bad{background:var(--bad)}
+.btn.ghost{background:var(--surface);border-color:var(--line);box-shadow:none}
+.btn.soft{background:var(--sky-soft);box-shadow:none}
+.next{background:linear-gradient(135deg,var(--sky),color-mix(in srgb,var(--sky) 70%,var(--ink)));color:var(--on-sky)}
+.next .btn{background:var(--cloud);color:var(--sky);box-shadow:none}
+.pbar i,.bar i{background:linear-gradient(90deg,var(--gold),var(--earth))}
+.opt{border-color:var(--line)}
+.opt[aria-pressed="true"]{border-color:var(--sky);box-shadow:0 0 0 3px var(--sky-soft)}
+.welcome{background:var(--surface)}
+.welcome::before,.postcard::before{display:none}
+.welcome,.postcard{padding-top:18px}
+.cityp{background:var(--sky);color:var(--on-sky)}
+.cityp.dest{background:var(--cloud);color:var(--ink);border-color:var(--sky)}
+.tnode.done .disc{background:var(--ok);border-color:var(--ok);color:var(--on-sky)}
+.disc{border-color:var(--sky);color:var(--sky)}
+.tnode.locked .disc{border-color:var(--line)}
+.board{box-shadow:0 0 0 4px var(--cloud),0 20px 40px -22px color-mix(in srgb,var(--sky) 70%,transparent)}
+.board::after{display:none}
+/* znaczniki tematu pola: codzienne / lotnicze */
+.th{font-style:normal}
+.th.air{color:var(--sky);font-weight:600}
+.th.day{color:var(--earth);font-weight:600}
+.thdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--earth)}
+.thdot.air{background:var(--sky)}
+/* główny przycisk zawsze pod ręką, nad dolnym menu */
+.cta{position:sticky;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));z-index:6;margin-top:16px;min-height:56px;font-size:17px}
+.cta .icon{transform:rotate(45deg)}
+@media (max-width:700px){
+  nav.tabs{background:color-mix(in srgb,var(--cloud) 92%,transparent);border-color:transparent}
+  nav.tabs a[aria-current="page"] .icon{background:var(--sky);color:var(--on-sky)}
+  .stat{background:none;padding:0}
+  .hud-in{gap:10px}
+  .brand b{font-size:19px}
+  .foot-btns{flex-direction:column-reverse}
+  .foot-btns .btn{min-height:54px;font-size:17px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -2558,17 +2615,36 @@ function resolveLevel(t) {
   return nextLevel('air') || nextLevel('day');
 }
 const isLevelTile = t => t.k === 'new' || t.k === 'day' || t.k === 'air';
-function recentLevels() {
-  const last = (tr, n) => TRACK[tr].filter(l => isDone(l.id)).slice(-n);
-  const ls = [...last('day', 2), ...last('air', 1)];
+/* Każda plansza miesza oba tory (średnio 2/3 pól codziennych, 1/3 lotniczych):
+   utrwalenie i mówienie idą torem nowego levelu, słówka zawsze z drugiego toru, zwroty są codzienne. */
+function tileTheme(t) {
+  const d = S.game.day, l0 = d && d.tiles[0] ? resolveLevel(d.tiles[0]) : null;
+  const nt = l0 ? l0.unit.track : 'day', other = nt === 'day' ? 'air' : 'day';
+  if (isLevelTile(t)) { const l = resolveLevel(t); return l ? l.unit.track : nt; }
+  return t.k === 'words' ? other : (t.k === 'recap' || t.k === 'mix') ? nt : t.k === 'phr' ? 'day' : null;
+}
+const THEME_PL = {day:'codzienne', air:'lotnicze'};
+function trackPool(tr) {
+  let ls = TRACK[tr].filter(l => isDone(l.id));
+  const nx = nextLevel(tr); if (ls.length < 2 && nx && !ls.includes(nx)) ls = ls.concat(nx);
   return ls.length ? ls : poolLevels();
+}
+function recentLevels(tr) {
+  const ls = TRACK[tr || 'day'].filter(l => isDone(l.id)).slice(-2);
+  return ls.length ? ls : trackPool(tr || 'day');
+}
+function tileSub(t) {
+  const th = tileTheme(t);
+  if (t.k === 'new') return th === 'air' ? 'lotniczy' : 'codzienny';
+  if (t.k === 'recap' || t.k === 'words' || t.k === 'mix') return THEME_PL[th];
+  return TILE[t.k].sub;
 }
 function tileTitle(t) {
   if (isLevelTile(t)) { const l = resolveLevel(t); return l ? l.t : 'Trening utrwalający'; }
-  if (t.k === 'recap') return 'Utrwalenie ostatnich lekcji';
+  if (t.k === 'recap') return `Utrwalenie – ${THEME_PL[tileTheme(t)]}`;
   if (t.k === 'phr') return `Zwroty: ${LV[t.ph].t}`;
-  if (t.k === 'words') return 'Słówka – utrwalanie';
-  if (t.k === 'mix') return 'Mówienie i gramatyka';
+  if (t.k === 'words') return `Słówka – ${THEME_PL[tileTheme(t)]}`;
+  if (t.k === 'mix') return `Mówienie i gramatyka – ${THEME_PL[tileTheme(t)]}`;
   const n = Object.values(S.mistakes).filter(c => c > 0).length;
   return n ? `Powtórka błędów (${n})` : 'Powtórka dnia';
 }
@@ -2622,10 +2698,10 @@ function startTile(i) {
     const l = resolveLevel(t);
     if (l) { t.id = l.id; save(); openBriefing(l.id, i); }
     else startPractice(i, buildWords(t.k === 'new' ? LEVELS : LEVELS.filter(x => x.unit.track === t.k)), 'Trening utrwalający');
-  } else if (t.k === 'recap') startPractice(i, buildRecap(recentLevels()), 'Utrwalenie ostatnich lekcji');
+  } else if (t.k === 'recap') startPractice(i, buildRecap(recentLevels(tileTheme(t))), tileTitle(t));
   else if (t.k === 'phr') openPhraseBrief(i);
-  else if (t.k === 'words') startPractice(i, buildWords(poolLevels()), 'Słówka – utrwalanie');
-  else if (t.k === 'mix') startPractice(i, buildMix(poolLevels()), 'Mówienie i gramatyka');
+  else if (t.k === 'words') startPractice(i, buildWords(trackPool(tileTheme(t))), tileTitle(t));
+  else if (t.k === 'mix') startPractice(i, buildMix(trackPool(tileTheme(t))), tileTitle(t));
   else startReview();
 }
 function openPhraseBrief(i) {
@@ -2819,7 +2895,7 @@ function viewBoard() {
   }
   html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · ${d.carried && !d.finished ? 'ciąg dalszy' : 'dziś'}</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
-    <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
+    <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka, tematy codzienne i lotnicze na zmianę.`}</p></div>
    ${window.claude ? '' : '<a class="hintbar" href="#pomoc"><span>🔇</span><span>Lektor nie mówi po bułgarsku? <b>Zobacz, jak włączyć głos</b></span><span aria-hidden="true">→</span></a>'}
    ${gyroCard()}
    <div class="board" id="board">
@@ -2843,7 +2919,7 @@ function viewBoard() {
       const ico = lvl ? illus(lvl.unit) : T.icon;
       return `<button class="tnode ${st}" style="${pct(PP[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
         <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
-        <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
+        <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : `<i class="th ${tileTheme(t) || ''}">${esc(tileSub(t))}</i>`}</small></span></button>`;
     }).join('')}
     <div class="hero" id="hero" style="${pct(PP[startIdx])}">${heroSVG()}</div>
    </div>`;
@@ -2851,10 +2927,10 @@ function viewBoard() {
     html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
       <div class="row"><button class="btn" id="bonus">Leć dalej: dodatkowy etap</button><a class="btn ghost" href="#kurs">Mapa kursu</a></div></section>`;
   } else {
-    html += `<button class="btn block" style="margin-top:16px" data-tile="${cur}">Start · ${cur < 5 ? `Lekcja ${cur + 1}` : 'Powtórka'}: ${esc(tileTitle(d.tiles[cur]))}</button>`;
+    html += `<button class="btn block cta" data-tile="${cur}">${ICON.plane} Start ·${cur < 5 ? `Lekcja ${cur + 1}` : 'Powtórka'}: ${esc(tileTitle(d.tiles[cur]))}</button>`;
   }
   html += `<section style="margin-top:22px"><div class="eyebrow" style="margin-bottom:8px">Plan dnia</div><div class="plist">${d.tiles.map((t, i) => `
-    <div class="prow"><span class="pnum ${t.done ? 'on' : ''}">${t.done ? ICON.check : i + 1}</span><div class="txt"><b>${esc(tileTitle(t))}</b><div class="pl">${i < 5 ? TILE[t.k].sub : 'Błędy z całego kursu, potem lądowanie'}</div></div>
+    <div class="prow"><span class="pnum ${t.done ? 'on' : ''}">${t.done ? ICON.check : i + 1}</span><div class="txt"><b>${esc(tileTitle(t))}</b><div class="pl">${i < 5 ? `<span class="thdot ${tileTheme(t) || ''}"></span>${esc(tileTheme(t) === 'air' ? 'temat lotniczy' : 'temat codzienny')}` : 'Błędy z całego kursu, potem lądowanie'}</div></div>
     ${t.done || i === cur ? `<button class="btn ${t.done ? 'ghost' : ''}" style="min-height:38px;padding:6px 14px" data-tile="${i}">${t.done ? 'Powtórz' : 'Start'}</button>` : `<span class="muted">${ICON.lock}</span>`}</div>`).join('')}</div></section>`;
   html += `<section style="margin-top:26px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="eyebrow">Kolekcja pocztówek</span><span class="qcount">${S.game.visited.length} / ${CITIES.length}</span></div>
     <div class="cards">${CITIES.map((c, i) => S.game.visited.includes(i) ?
