@@ -523,6 +523,30 @@ main{padding-top:30px}
 .kb button{color:var(--ink)}
 .shake{animation:shake .35s ease}
 @media (prefers-reduced-motion:reduce){.cloudbtn{left:auto;right:12px}}
+/* dialogi, słowniczek, skrzynia, kalendarz */
+.chat{display:flex;flex-direction:column;gap:8px}
+.bub{max-width:92%;background:var(--surface);border-radius:20px 20px 20px 6px;padding:10px 12px;box-shadow:var(--soft)}
+.bub.t{align-self:flex-end;background:var(--sky-soft);border-radius:20px 20px 6px 20px}
+.bub .pl{font-size:14px;color:var(--muted)}
+.starbtn{flex:none;border:0;background:none;color:var(--gold);font-size:22px;line-height:1;padding:4px 6px;border-radius:50%}
+.starbtn:disabled{opacity:.35}
+.prow.rd{cursor:pointer}
+.chest{margin-top:12px;border:2px dashed var(--gold)!important;background:color-mix(in srgb,var(--gold) 12%,var(--surface))}
+.calwrap{overflow-x:auto}
+.cal{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;min-width:250px}
+.cal i{display:block;aspect-ratio:1;border-radius:5px;background:var(--surface2)}
+.cal i.l1{background:color-mix(in srgb,var(--sky) 35%,var(--surface2))}
+.cal i.l2{background:color-mix(in srgb,var(--sky) 70%,var(--surface2))}
+.cal i.l3{background:var(--sky)}
+.cal i.fut{background:transparent;border:1px dashed var(--line)}
+.cal i.now{outline:2px solid var(--earth);outline-offset:1px}
+.cal.mini{display:inline-flex;min-width:0;gap:3px}
+.cal.mini i{width:12px;height:12px}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:110px;align-items:end}
+.bars div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.bars span{display:block;width:100%;max-width:30px;border-radius:8px 8px 3px 3px;background:var(--surface2)}
+.bars span.on{background:linear-gradient(180deg,var(--gold),var(--earth))}
+.bars small{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
 /* znaczniki tematu pola: codzienne / lotnicze */
 .th{font-style:normal}
 .th.air{color:var(--sky);font-weight:600}
@@ -1604,6 +1628,161 @@ const VERBS = [
  ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
 ];
 
+/* ---------------- DIALOGI ----------------
+   lines: [kto ('A' – rozmówca, 'T' – Ty), bułgarski, polski]. W kwestiach 'T' wybierasz właściwą odpowiedź. */
+const DIALOGS = [
+ {id:'kafe', t:'W kawiarni', bt:'В кафенето', lv:'A1', track:'day', lines:[
+  ['A','Добър ден! Какво ще желаете?','Dzień dobry! Co podać?'],
+  ['T','Добър ден! Едно кафе и една вода, моля.','Dzień dobry! Jedną kawę i jedną wodę, proszę.'],
+  ['A','С мляко ли искате кафето?','Kawę z mlekiem?'],
+  ['T','Да, с малко мляко.','Tak, z odrobiną mleka.'],
+  ['A','Нещо друго?','Coś jeszcze?'],
+  ['T','Не, благодаря. Колко струва?','Nie, dziękuję. Ile to kosztuje?'],
+  ['A','Четири евро.','Cztery euro.'],
+  ['T','Може ли да платя с карта?','Czy mogę zapłacić kartą?'],
+  ['A','Разбира се.','Oczywiście.']]},
+ {id:'gara', t:'Pytanie o drogę', bt:'Къде е гарата?', lv:'A1', track:'day', lines:[
+  ['T','Извинете, къде е гарата?','Przepraszam, gdzie jest dworzec?'],
+  ['A','Вървете направо и после завийте наляво.','Proszę iść prosto, a potem skręcić w lewo.'],
+  ['T','Далече ли е?','Czy to daleko?'],
+  ['A','Не, близо е. Пет минути пеша.','Nie, blisko. Pięć minut pieszo.'],
+  ['T','Благодаря много!','Dziękuję bardzo!'],
+  ['A','Няма защо. Приятен ден!','Nie ma za co. Miłego dnia!']]},
+ {id:'zapozn', t:'Poznajemy się', bt:'Запознанство', lv:'A2', track:'day', lines:[
+  ['A','Здравей! Аз съм Иван. Как се казваш?','Cześć! Jestem Iwan. Jak masz na imię?'],
+  ['T','Здравей! Казвам се Анна. Приятно ми е.','Cześć! Nazywam się Anna. Miło mi.'],
+  ['A','Откъде си?','Skąd jesteś?'],
+  ['T','От Полша съм. Уча български.','Jestem z Polski. Uczę się bułgarskiego.'],
+  ['A','Говориш много добре! Какво работиш?','Mówisz bardzo dobrze! Czym się zajmujesz?'],
+  ['T','Студентка съм и летя с автожир.','Jestem studentką i latam wiatrakowcem.'],
+  ['A','Наистина ли? Много интересно!','Naprawdę? Bardzo ciekawe!']]},
+ {id:'hotel', t:'W hotelu', bt:'В хотела', lv:'A2', track:'day', lines:[
+  ['T','Добър вечер! Имам резервация на името Ковалска.','Dobry wieczór! Mam rezerwację na nazwisko Kowalska.'],
+  ['A','Добър вечер! Да, двойна стая за две нощувки.','Dobry wieczór! Tak, pokój dwuosobowy na dwie noce.'],
+  ['T','Закуската включена ли е?','Czy śniadanie jest wliczone?'],
+  ['A','Да, закуската е от седем до десет часа.','Tak, śniadanie jest od siódmej do dziesiątej.'],
+  ['T','Каква е паролата за интернета?','Jakie jest hasło do internetu?'],
+  ['A','Паролата е на ключа. Стаята ви е на третия етаж.','Hasło jest na kluczu. Pani pokój jest na trzecim piętrze.'],
+  ['T','Благодаря. Има ли асансьор?','Dziękuję. Czy jest winda?'],
+  ['A','Да, вдясно от рецепцията.','Tak, na prawo od recepcji.']]},
+ {id:'lekar', t:'U lekarza', bt:'При лекаря', lv:'A2', track:'day', lines:[
+  ['A','Добър ден. Какво ви боли?','Dzień dobry. Co panią boli?'],
+  ['T','Боли ме гърлото и имам температура.','Boli mnie gardło i mam gorączkę.'],
+  ['A','От кога?','Od kiedy?'],
+  ['T','От вчера.','Od wczoraj.'],
+  ['A','Отворете уста, моля. Дишайте дълбоко.','Proszę otworzyć usta. Proszę głęboko oddychać.'],
+  ['T','Сериозно ли е?','Czy to coś poważnego?'],
+  ['A','Не, това е настинка. Ще ви дам рецепта.','Nie, to przeziębienie. Dam pani receptę.'],
+  ['T','Благодаря, докторе.','Dziękuję, panie doktorze.']]},
+ {id:'predi', t:'Przed lotem z instruktorem', bt:'Преди полета', lv:'A2', track:'air', lines:[
+  ['A','Добро утро! Готова ли си за полета?','Dzień dobry! Jesteś gotowa do lotu?'],
+  ['T','Добро утро! Да, готова съм.','Dzień dobry! Tak, jestem gotowa.'],
+  ['A','Провери ли горивото и маслото?','Sprawdziłaś paliwo i olej?'],
+  ['T','Да, проверих ги. Всичко е наред.','Tak, sprawdziłam je. Wszystko w porządku.'],
+  ['A','Какъв е вятърът днес?','Jaki jest dziś wiatr?'],
+  ['T','Вятърът е слаб, от запад.','Wiatr jest słaby, z zachodu.'],
+  ['A','Добре. Сложи си каската и затегни колана.','Dobrze. Załóż kask i zapnij pas.'],
+  ['T','Готово. Мога ли да запаля двигателя?','Gotowe. Mogę uruchomić silnik?'],
+  ['A','Да, запали двигателя.','Tak, uruchom silnik.']]},
+ {id:'kula', t:'Rozmowa z wieżą', bt:'Радиовръзка', lv:'B1', track:'air', lines:[
+  ['T','Кула, добър ден, автожир на точката на изчакване, готова за излитане.','Wieża, dzień dobry, wiatrakowiec w punkcie oczekiwania, gotowa do startu.'],
+  ['A','Добър ден. Изчакайте, каца самолет.','Dzień dobry. Proszę czekać, ląduje samolot.'],
+  ['T','Разбрано, чакам.','Zrozumiałam, czekam.'],
+  ['A','Пистата е свободна. Излитането е разрешено.','Pas jest wolny. Start dozwolony.'],
+  ['T','Излитането е разрешено, излитам.','Start dozwolony, startuję.'],
+  ['A','Докладвайте при напускане на зоната.','Proszę zgłosić opuszczenie strefy.'],
+  ['T','Ще докладвам при напускане на зоната.','Zgłoszę opuszczenie strefy.']]},
+ {id:'sled', t:'Omówienie po locie', bt:'След полета', lv:'B1', track:'air', lines:[
+  ['A','Как мина полетът?','Jak minął lot?'],
+  ['T','Добре, но кацането беше трудно.','Dobrze, ale lądowanie było trudne.'],
+  ['A','Защо?','Dlaczego?'],
+  ['T','Имаше силен страничен вятър.','Był silny wiatr boczny.'],
+  ['A','Справи се добре. Следващия път дръж скоростта по-висока.','Poradziłaś sobie dobrze. Następnym razem trzymaj większą prędkość.'],
+  ['T','Добре, ще запомня.','Dobrze, zapamiętam.'],
+  ['A','Запиши полета в летателната книжка.','Wpisz lot do dziennika lotów.'],
+  ['T','Веднага.','Już to robię.']]}
+];
+
+/* ---------------- SŁUCHANIE ZE ZROZUMIENIEM ----------------
+   qs: [pytanie, poprawna odpowiedź, błędna, błędna] */
+const LISTEN = [
+ {t:'Prognoza pogody', bg:'Добро утро. Днес времето ще бъде слънчево. Температурата ще бъде двайсет и пет градуса. Вятърът е слаб, от запад. Утре ще вали дъжд.', pl:'Dzień dobry. Dziś pogoda będzie słoneczna. Temperatura wyniesie dwadzieścia pięć stopni. Wiatr jest słaby, z zachodu. Jutro będzie padać deszcz.',
+  qs:[['Jaka będzie dziś pogoda?','słoneczna','deszczowa','mglista'],['Skąd wieje wiatr?','z zachodu','ze wschodu','z północy'],['Co będzie jutro?','deszcz','burza','śnieg']]},
+ {t:'Ogłoszenie na lotnisku', bg:'Внимание, моля. Полетът за Варна закъснява с трийсет минути. Пътниците да отидат на изход номер пет. Благодарим за разбирането.', pl:'Uwaga, proszę. Lot do Warny jest opóźniony o trzydzieści minut. Pasażerowie proszeni są o przejście do wyjścia numer pięć. Dziękujemy za zrozumienie.',
+  qs:[['Dokąd jest ten lot?','do Warny','do Sofii','do Burgas'],['O ile jest opóźniony?','o 30 minut','o 13 minut','o godzinę'],['Do którego wyjścia mają iść pasażerowie?','numer 5','numer 15','numer 3']]},
+ {t:'Moja rodzina', bg:'Казвам се Мария. Имам брат и сестра. Брат ми е пилот, а сестра ми е лекарка. Родителите ми живеят в Пловдив.', pl:'Nazywam się Maria. Mam brata i siostrę. Mój brat jest pilotem, a siostra lekarką. Moi rodzice mieszkają w Płowdiwie.',
+  qs:[['Jakie rodzeństwo ma Maria?','brata i siostrę','dwóch braci','dwie siostry'],['Kim jest jej brat?','pilotem','lekarzem','nauczycielem'],['Gdzie mieszkają rodzice?','w Płowdiwie','w Sofii','w Warnie']]},
+ {t:'W restauracji', bg:'Добър вечер. Маса за двама, моля. Бих искала шопска салата и супа. За пиене – една вода и чаша вино. Сметката, моля.', pl:'Dobry wieczór. Stolik dla dwojga, proszę. Chciałabym sałatkę szopską i zupę. Do picia – wodę i kieliszek wina. Rachunek, proszę.',
+  qs:[['Dla ilu osób jest stolik?','dla dwóch','dla trzech','dla czterech'],['Co zamawia do jedzenia?','sałatkę szopską i zupę','banicę i jogurt','mięso i chleb'],['Co zamawia do picia?','wodę i wino','kawę i sok','herbatę i piwo']]},
+ {t:'Mój dzień', bg:'Събуждам се в седем часа. Първо пия кафе и закусвам. В осем отивам на работа. Вечер се разхождам в парка. Лягам си в единайсет.', pl:'Budzę się o siódmej. Najpierw piję kawę i jem śniadanie. O ósmej idę do pracy. Wieczorem spaceruję w parku. Kładę się spać o jedenastej.',
+  qs:[['O której się budzi?','o siódmej','o szóstej','o ósmej'],['Co robi wieczorem?','spaceruje w parku','ogląda telewizję','gotuje kolację'],['O której kładzie się spać?','o jedenastej','o dziesiątej','o dwunastej']]},
+ {t:'Wycieczka', bg:'В събота отиваме на екскурзия до Рилския манастир. Автобусът тръгва в осем часа от гарата. Билетът струва двайсет евро. Вземете вода и удобни обувки.', pl:'W sobotę jedziemy na wycieczkę do Monastyru Rylskiego. Autobus odjeżdża o ósmej z dworca. Bilet kosztuje dwadzieścia euro. Weźcie wodę i wygodne buty.',
+  qs:[['Dokąd jest wycieczka?','do Monastyru Rylskiego','nad morze','do Płowdiwu'],['Skąd odjeżdża autobus?','z dworca','z lotniska','spod hotelu'],['Ile kosztuje bilet?','20 euro','12 euro','200 euro']]},
+ {t:'Komunikat pogodowy dla pilotów', bg:'Вятър двеста и седемдесет градуса, десет възела. Видимостта е добра. Базата на облаците е на три хиляди фута. Следобед има опасност от гръмотевични бури.', pl:'Wiatr dwieście siedemdziesiąt stopni, dziesięć węzłów. Widoczność jest dobra. Podstawa chmur jest na trzech tysiącach stóp. Po południu istnieje ryzyko burz.',
+  qs:[['Jaki jest wiatr?','270°, 10 węzłów','170°, 20 węzłów','270°, 20 węzłów'],['Na jakiej wysokości jest podstawa chmur?','3000 stóp','1300 stóp','13 000 stóp'],['Co grozi po południu?','burze','mgła','oblodzenie']]},
+ {t:'Przed startem', bg:'Правим предполетен оглед. Проверяваме горивото, маслото и лопатите на ротора. Слагаме каските и затягаме коланите. Включваме предварителното завъртане на ротора. Излитаме срещу вятъра.', pl:'Robimy przegląd przedlotowy. Sprawdzamy paliwo, olej i łopaty wirnika. Zakładamy kaski i zapinamy pasy. Włączamy wstępne rozkręcanie wirnika. Startujemy pod wiatr.',
+  qs:[['Co sprawdza załoga?','paliwo, olej i łopaty wirnika','radio i mapę','hamulce i opony'],['Co zakładają przed lotem?','kaski','kamizelki','rękawice'],['Jak startują?','pod wiatr','z wiatrem','z bocznym wiatrem']]}
+];
+
+/* ---------------- CZYTANKI O MIASTACH (indeks jak w CITIES) ----------------
+   s: [zdanie po bułgarsku, tłumaczenie], g: [słówko, znaczenie] */
+const READS = [
+ {s:[['София е столицата на България.','Sofia jest stolicą Bułgarii.'],['Градът е в подножието на планината Витоша.','Miasto leży u podnóża góry Witosza.'],['В центъра се намира катедралата „Свети Александър Невски“.','W centrum znajduje się katedra św. Aleksandra Newskiego.']], g:[['столица','stolica'],['подножие','podnóże'],['планина','góra, góry'],['намира се','znajduje się']]},
+ {s:[['Пловдив е вторият по големина град в България.','Płowdiw jest drugim co do wielkości miastem Bułgarii.'],['Той е построен на няколко хълма.','Jest zbudowany na kilku wzgórzach.'],['В Стария град има римски театър.','Na Starym Mieście jest rzymski teatr.']], g:[['по големина','co do wielkości'],['хълм','wzgórze'],['построен','zbudowany'],['римски','rzymski']]},
+ {s:[['Казанлък е в Розовата долина.','Kazanłyk leży w Dolinie Róż.'],['Тук през май и юни берат рози.','Tutaj w maju i czerwcu zbiera się róże.'],['От розите правят розово масло.','Z róż robi się olejek różany.']], g:[['долина','dolina'],['берат','zbierają'],['роза','róża'],['розово масло','olejek różany']]},
+ {s:[['Стара Загора е стар град с прави улици.','Stara Zagora to stare miasto o prostych ulicach.'],['В града има много липи.','W mieście jest dużo lip.'],['През пролетта липите ухаят чудесно.','Wiosną lipy cudownie pachną.']], g:[['прав','prosty'],['липа','lipa'],['ухаят','pachną'],['чудесно','cudownie']]},
+ {s:[['Бургас е голямо пристанище на Черно море.','Burgas to duży port nad Morzem Czarnym.'],['В Морската градина хората се разхождат край морето.','W Ogrodzie Morskim ludzie spacerują nad morzem.'],['Близо до града има три езера.','Blisko miasta są trzy jeziora.']], g:[['пристанище','port'],['градина','ogród'],['край','przy, nad'],['езеро','jezioro']]},
+ {s:[['Несебър е малък град на полуостров.','Nesebyr to małe miasto na półwyspie.'],['Старият град е в списъка на ЮНЕСКО.','Stare Miasto jest na liście UNESCO.'],['Тук има стари църкви и дървени къщи.','Są tu stare cerkwie i drewniane domy.']], g:[['полуостров','półwysep'],['списък','lista'],['църква','cerkiew'],['дървен','drewniany']]},
+ {s:[['Варна е най-големият град на българското море.','Warna to największe miasto nad bułgarskim morzem.'],['Наричат я морската столица.','Nazywają ją morską stolicą.'],['В музея се пази най-старото злато в света.','W muzeum przechowywane jest najstarsze złoto świata.']], g:[['наричат','nazywają'],['музей','muzeum'],['пази се','jest przechowywane'],['злато','złoto']]},
+ {s:[['Шумен е в Североизточна България.','Szumen leży w północno-wschodniej Bułgarii.'],['Близо до града е Мадарският конник.','Niedaleko miasta jest Jeździec z Madary.'],['Това е голям релеф на скала.','To duży relief wykuty w skale.']], g:[['североизточен','północno-wschodni'],['конник','jeździec'],['скала','skała'],['близо до','blisko']]},
+ {s:[['Русе е най-голямото българско пристанище на Дунав.','Ruse to największy bułgarski port na Dunaju.'],['Мост свързва Русе с Румъния.','Most łączy Ruse z Rumunią.'],['Заради красивите сгради го наричат „Малката Виена“.','Z powodu pięknych budynków nazywają je „Małym Wiedniem”.']], g:[['мост','most'],['свързва','łączy'],['сграда','budynek'],['заради','z powodu']]},
+ {s:[['Велико Търново е старата столица на България.','Wielkie Tyrnowo to dawna stolica Bułgarii.'],['Градът е над река Янтра.','Miasto leży nad rzeką Jantrą.'],['На хълма Царевец има голяма крепост.','Na wzgórzu Carewec stoi duża twierdza.']], g:[['стар','stary, dawny'],['река','rzeka'],['хълм','wzgórze'],['крепост','twierdza']]},
+ {s:[['Габрово е в подножието на Стара планина.','Gabrowo leży u podnóża Starej Płaniny.'],['Градът е известен с хумора си.','Miasto słynie z humoru.'],['Тук има Дом на хумора и сатирата.','Jest tu Dom Humoru i Satyry.']], g:[['известен с','znany z'],['хумор','humor'],['дом','dom'],['подножие','podnóże']]},
+ {s:[['Плевен е в Северна България.','Plewen leży w północnej Bułgarii.'],['В града има известна панорама.','W mieście jest słynna panorama.'],['Тя показва битката за Плевен през 1877 година.','Pokazuje bitwę o Plewen w 1877 roku.']], g:[['северен','północny'],['показва','pokazuje'],['битка','bitwa'],['година','rok']]},
+ {s:[['Видин е на брега на Дунав.','Widyń leży na brzegu Dunaju.'],['Тук се намира крепостта Баба Вида.','Znajduje się tu twierdza Baba Wida.'],['Тя е най-добре запазената средновековна крепост в България.','To najlepiej zachowana średniowieczna twierdza w Bułgarii.']], g:[['бряг','brzeg'],['запазен','zachowany'],['средновековен','średniowieczny'],['най-добре','najlepiej']]},
+ {s:[['Белоградчик е малък град в Северозападна България.','Biełogradczik to małe miasto w północno-zachodniej Bułgarii.'],['Белоградчишките скали са червени и имат странни форми.','Skały Biełogradczika są czerwone i mają dziwne kształty.'],['Между скалите има стара крепост.','Między skałami stoi stara twierdza.']], g:[['северозападен','północno-zachodni'],['червен','czerwony'],['странен','dziwny'],['между','między']]},
+ {s:[['Рила е най-високата планина в България.','Riła to najwyższe góry Bułgarii.'],['Връх Мусала е висок 2925 метра.','Szczyt Musała ma 2925 metrów wysokości.'],['В планината се намира Рилският манастир.','W górach znajduje się Monastyr Rylski.']], g:[['връх','szczyt'],['висок','wysoki'],['манастир','klasztor'],['най-висок','najwyższy']]},
+ {s:[['Банско е в подножието на Пирин.','Bansko leży u stóp Pirinu.'],['През зимата тук идват много скиори.','Zimą przyjeżdża tu wielu narciarzy.'],['В стария град има каменни къщи и механи.','Na starym mieście są kamienne domy i karczmy.']], g:[['зима','zima'],['скиор','narciarz'],['каменен','kamienny'],['механа','karczma']]},
+ {s:[['Мелник е най-малкият град в България.','Mielnik to najmniejsze miasto Bułgarii.'],['Около него има пясъчни пирамиди.','Wokół niego są piaskowe piramidy.'],['Градът е известен с червеното си вино.','Miasto słynie z czerwonego wina.']], g:[['около','wokół'],['пясъчен','piaskowy'],['пирамида','piramida'],['вино','wino']]}
+];
+
+/* ---------------- NOTATNIK PILOTA: ciekawostki techniczne (nagroda po lądowaniu) ----------------
+   [tytuł, treść, termin po bułgarsku, jego znaczenie] */
+const FACTS = [
+ ['Autorotacja to stan normalny','Wirnik wiatrakowca nie jest napędzany silnikiem. Powietrze przepływa przez tarczę wirnika od dołu do góry i to ono go obraca – dokładnie odwrotnie niż w śmigłowcu w locie z napędem, gdzie powietrze jest zasysane od góry.','авторотация','autorotacja'],
+ ['Tarcza pochylona do tyłu','Żeby powietrze wpływało w wirnik od spodu, tarcza wirnika musi być pochylona do tyłu względem kierunku lotu. Im wolniej lecisz, tym większego pochylenia potrzeba, by utrzymać obroty.','ъгъл на атака','kąt natarcia'],
+ ['Obszar napędzający i napędzany','Na łopacie w autorotacji są trzy strefy: przy piaście przeciągnięta, w środku napędzająca (siła aerodynamiczna „ciągnie” łopatę do przodu), a przy końcu napędzana, która hamuje. Obroty ustalają się tam, gdzie obie strefy się równoważą.','лопата','łopata'],
+ ['Obroty same się regulują','Wirnik nie ma regulatora obrotów. Gdy rośnie przeciążenie (np. w zakręcie), obroty rosną same; gdy maszyna jest odciążona, spadają. Dlatego obroty wirnika mówią pilotowi, jak bardzo wirnik jest obciążony.','обороти','obroty'],
+ ['Dlaczego odciążenie jest groźne','Przy przeciążeniu bliskim zera wirnik przestaje dostawać powietrze od spodu i szybko traci obroty, a wraz z nimi siłę nośną i sterowność. Stąd żelazna zasada: nie pchać gwałtownie drążka od siebie.','претоварване','przeciążenie'],
+ ['Przewrót przez nos','Jeśli linia ciągu śmigła przechodzi powyżej środka ciężkości, ciąg daje moment pochylający nos w dół. Zwykle równoważy go wirnik, ale przy odciążonym wirniku moment zostaje bez przeciwwagi i maszyna może przekoziołkować do przodu.','тяга','ciąg'],
+ ['Po co statecznik poziomy','Duży statecznik poziomy, najlepiej opływany strumieniem zaśmigłowym, tłumi ruchy pochylające i zmniejsza ryzyko oscylacji wzbudzanych przez pilota. Wczesne konstrukcje amatorskie często go nie miały.','стабилизатор','statecznik'],
+ ['Oscylacje wzbudzane przez pilota','Kadłub wisi pod wirnikiem jak wahadło i reaguje z opóźnieniem. Pilot, który „goni” ruchy maszyny, może wzmacniać kolejne wahania. Lekarstwem jest ustalenie drążka i zmniejszenie mocy, a nie coraz szybsze poprawki.','трептене','drganie, oscylacja'],
+ ['Wirnik wahliwy','Większość lekkich wiatrakowców ma wirnik dwułopatowy na jednym przegubie wahliwym – jak huśtawka. Gdy jedna łopata się wznosi, druga opada, co wyrównuje różnicę siły nośnej między łopatą nacierającą a powracającą.','главина','piasta'],
+ ['Łopata nacierająca i powracająca','W locie do przodu łopata idąca „pod wiatr” ma większą prędkość względem powietrza niż ta, która się cofa. Bez wahań wirnik przechylałby maszynę na bok – ten problem rozwiązał de la Cierva przegubami.','скорост','prędkość'],
+ ['Podwieszenie wirnika','Oś przegubu wahliwego leży nieco powyżej łopat. Dzięki temu przy wahaniach środek masy wirnika prawie się nie przesuwa i nie powstają drgania przenoszone na drążek.','ос','oś'],
+ ['Stożek wirnika','Łopaty w locie nie są płaskie – unoszą się lekko do góry, tworząc stożek. Jego kąt wynika z równowagi siły nośnej i siły odśrodkowej, dlatego rośnie przy dużym obciążeniu i małych obrotach.','центробежна сила','siła odśrodkowa'],
+ ['Wstępne rozkręcanie','Prerotator rozpędza wirnik na ziemi do części obrotów lotnych. Bywa mechaniczny (wałek lub pasek z silnika), hydrauliczny albo elektryczny. Bez niego rozbieg byłby bardzo długi.','предварително завъртане','wstępne rozkręcenie'],
+ ['Trzepotanie łopat przy starcie','Jeśli pilot rozpędza maszynę szybciej, niż rosną obroty wirnika, łopaty zaczynają gwałtownie się wahać i mogą uderzyć w ogon lub ziemię. Dlatego na rozbiegu prędkość dodaje się stopniowo, pilnując obrotów.','излитане','start'],
+ ['Skok zamiast rozbiegu','Niektóre wiatrakowce mają zmienny skok łopat. Wirnik rozkręca się na ziemi powyżej obrotów lotnych przy zerowym skoku, a potem skok się zwiększa – zgromadzona energia podrywa maszynę niemal pionowo.','стъпка','skok (łopaty)'],
+ ['Wiatrakowiec nie wpada w korkociąg','Przy zmniejszaniu prędkości wirnik dalej się kręci i daje siłę nośną, więc nie ma klasycznego przeciągnięcia skrzydła ani korkociągu. Maszyna zaczyna po prostu opadać, zachowując sterowność.','срив','przeciągnięcie'],
+ ['Druga strona krzywej mocy','Poniżej prędkości minimalnej mocy każde dalsze zwolnienie wymaga WIĘCEJ mocy, bo opór wirnika rośnie. Blisko ziemi to pułapka: maszyna leci wolno, z nosem w górze, na pełnej mocy – i mimo to opada.','мощност','moc'],
+ ['Opadanie pionowe','Wiatrakowiec może opadać pionowo jak spadochron, zwykle z prędkością rzędu kilku metrów na sekundę. Przed ziemią trzeba jednak nabrać prędkości postępowej, bo dopiero ona pozwala wyhamować opadanie przy wyrównaniu.','снижаване','zniżanie'],
+ ['Silnik Rotax 912','Najpopularniejszy silnik lekkich wiatrakowców to czterocylindrowy bokser. Głowice chłodzi ciecz, a cylindry – powietrze. Wersje mają 80 lub 100 KM przy masie około 60 kg.','двигател','silnik'],
+ ['Reduktor','Rotax 912 osiąga moc przy ponad 5000 obr./min – za dużo dla śmigła. Wbudowana przekładnia zmniejsza obroty śmigła mniej więcej 2,4 raza (w wersji 100 KM), dzięki czemu śmigło pracuje w sprawnym zakresie.','редуктор','reduktor'],
+ ['Sucha miska olejowa','W Rotaksie olej jest w osobnym zbiorniku, a do niego wypychają go gazy z karteru. Dlatego przed sprawdzeniem poziomu obraca się śmigłem, aż w zbiorniku zabulgocze – dopiero wtedy cały olej jest w zbiorniku.','масло','olej'],
+ ['Rozgrzewanie silnika','Przed startem olej musi osiągnąć około 50°C. Zimny olej jest gęsty i gorzej smaruje, a pełna moc na zimnym silniku przyspiesza zużycie i grozi uszkodzeniem.','температура','temperatura'],
+ ['Podwójny zapłon','Silniki lotnicze mają dwa niezależne układy zapłonowe i po dwie świece na cylinder. Podczas próby silnika wyłącza się je po kolei: mały spadek obrotów jest prawidłowy, duży albo brak spadku oznacza usterkę.','запалване','zapłon'],
+ ['Oblodzenie gaźnika','W gardzieli gaźnika powietrze rozpręża się i ochładza nawet o kilkanaście stopni, a parujące paliwo zabiera kolejne ciepło. Lód może się więc tworzyć przy +15°C i dużej wilgotności, zwłaszcza na małej mocy.','заледяване','oblodzenie'],
+ ['Turbosprężarka','Rotax 914 ma turbosprężarkę i daje 115 KM. Największą zaletą nie jest sama moc, lecz to, że silnik utrzymuje ją na dużej wysokości, gdzie zwykły silnik słabnie z powodu rzadkiego powietrza.','височина','wysokość'],
+ ['Wtrysk zamiast gaźników','Nowsze silniki (np. Rotax 912 iS i 915 iS) mają elektroniczny wtrysk paliwa z dwoma niezależnymi torami sterowania. Nie grozi im oblodzenie gaźnika, zużywają mniej paliwa i same dobierają mieszankę.','гориво','paliwo'],
+ ['Benzyna samochodowa czy lotnicza','Rotaksy najlepiej znoszą bezołowiową benzynę samochodową. Lotnicza 100LL zawiera ołów, który osadza się w silniku, więc przy lataniu na niej wymienia się olej dwa razy częściej.','бензин','benzyna'],
+ ['Skok śmigła','Śmigło o małym skoku daje lepsze przyspieszenie i wznoszenie, o dużym – większą prędkość przelotową. Śmigła przestawialne na ziemi ustawia się kompromisowo, a regulowane w locie pozwalają wybrać jedno i drugie.','витло','śmigło'],
+ ['Moment od śmigła','Śmigło pchające obraca się w jedną stronę, więc kadłub „chce” obracać się w przeciwną, a zawirowany strumień uderza w usterzenie pod kątem. Pilot równoważy to sterem kierunku, zwłaszcza przy zmianach mocy.','кормило','ster'],
+ ['Wysokość gęstościowa','W upale i wysoko w górach powietrze jest rzadsze. Silnik ma mniej mocy, śmigło mniej ciągu, a wirnik potrzebuje większej prędkości. Rozbieg na gorącym, wysoko położonym lotnisku może być nawet dwa razy dłuższy.','плътност','gęstość'],
+ ['Dlaczego wiatrakowiec znosi turbulencję','Wirnik ma bardzo duże obciążenie powierzchni łopat i wysokie obroty, więc podmuchy zmieniają jego siłę nośną znacznie mniej niż siłę nośną skrzydła. Dlatego w rzucającym powietrzu wiatrakowiec „płynie” spokojniej niż ultralekki samolot.','турбуленция','turbulencja'],
+ ['Rezonans naziemny','Śmigłowce z wirnikami wielołopatowymi na przegubach mogą wpaść na ziemi w niszczące drgania. Dwułopatowy wirnik wahliwy nie ma przegubów odchyleń, więc to zjawisko go praktycznie nie dotyczy.','вибрации','wibracje']
+];
+
 /* ---------------- GRA: WIEŻA KONTROLI ----------------
    [komenda po bułgarsku, co ma zrobić pilotka] – zwroty zbudowane ze słownictwa leveli lotniczych */
 const TOWER = [
@@ -1771,7 +1950,7 @@ function getRef(ref) {
 const KEY = 'bg-za-sterami-v1';
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[]}; }
+function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[], days:{}, facts:[], my:[], exams:{}, dlg:{}, name:''}; }
 let S = defaults();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
 /* motyw: auto (jak w systemie) / jasny / ciemny */
@@ -1815,6 +1994,12 @@ function mergeStates(a, b) {
   }
   Object.entries(od.best || {}).forEach(([k, v]) => { m.best[k] = Math.max(m.best[k] || 0, v); });
   if (!m.placement && od.placement) m.placement = od.placement;
+  Object.entries(od.days || {}).forEach(([k, v]) => { m.days[k] = Math.max(m.days[k] || 0, v); });
+  Object.entries(od.exams || {}).forEach(([k, v]) => { m.exams[k] = Math.max(m.exams[k] || 0, v); });
+  Object.entries(od.dlg || {}).forEach(([k, v]) => { m.dlg[k] = Math.max(m.dlg[k] || 0, v); });
+  m.facts = [...new Set([...(m.facts || []), ...(od.facts || [])])];
+  (od.my || []).forEach(x => { if (!m.my.some(y => y.bg === x.bg && y.pl === x.pl)) m.my.push(x); });
+  if (!m.name && od.name) m.name = od.name;
   m.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
   return m;
 }
@@ -1857,6 +2042,7 @@ function addXP(n) {
   S.xp += n;
   if (S.daily.date !== today()) S.daily = {date:today(), xp:0};
   S.daily.xp += n;
+  if (!S.days) S.days = {}; S.days[today()] = (S.days[today()] || 0) + n;
   if (S.lastDay !== today()) { S.streak = S.lastDay === yesterday() ? S.streak + 1 : 1; S.lastDay = today(); }
   const after = rankOf(S.xp);
   if (after > before) setTimeout(() => toast(`Awans! Nowa ranga: ${RANKS[after][1]} (${RANKS[after][2]})`), 600);
@@ -1983,6 +2169,7 @@ function viewMap() {
       <button data-track="day" aria-pressed="${tr === 'day'}">Na co dzień · ${TRACK.day.filter(l => isDone(l.id)).length}/${TRACK.day.length}</button>
       <button data-track="air" aria-pressed="${tr === 'air'}">${ICON.plane} Lotnictwo · ${TRACK.air.filter(l => isDone(l.id)).length}/${TRACK.air.length}</button></div></div>
     <div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between;font-size:14px"><span>Ukończone levele</span><span class="mono">${LEVELS.filter(l => isDone(l.id)).length} / ${LEVELS.length}</span></div><div class="bar" style="margin-top:6px"><i style="width:${100 * LEVELS.filter(l => isDone(l.id)).length / LEVELS.length}%"></i></div></div>`;
+  html += examCardHTML();
   if (nx) html += `<div class="next"><div><span class="eyebrow">Następny lot · ${nx.unit.cefr}</span><b>${esc(nx.t)}</b><span lang="bg" style="opacity:.75">${esc(nx.bt)}</span></div><button class="btn" data-start="${nx.id}">Start</button></div>`;
   else if (tr === 'air' && !isOpen(TRACK.air[0])) html += `<div class="card muted">Trasa lotnicza otworzy się po pierwszym levelu na trasie „Na co dzień” albo po teście wstępnym.</div>`;
   else html += `<div class="card"><b>Trasa ukończona!</b> <span class="muted">Zdobywaj 3 gwiazdki i ćwicz w Powtórkach.</span></div>`;
@@ -1997,9 +2184,12 @@ function viewMap() {
         <button class="wpbtn" ${open ? `data-start="${l.id}"` : 'disabled'} aria-label="${esc(l.t)}${open ? '' : ' – zablokowane'}">
         <span style="min-width:0"><span class="t">${esc(l.t)}</span><span class="b" lang="bg">${esc(l.bt)}</span></span>${right}</button></li>`;
     });
-    html += `</ol></section>`;
+    html += `</ol>${unitDone(u) ? `<button class="btn soft" data-utest="${u.id}" style="margin-top:8px">Sprawdzian działu${(S.exams || {})[u.id] ? ` · najlepiej ${S.exams[u.id]}%` : ''}</button>` : ''}</section>`;
   });
   $('#view').innerHTML = html;
+  $$('[data-utest]').forEach(b => b.onclick = () => startUnitTest(b.dataset.utest));
+  const pe = $('#pilotExam'); if (pe) pe.onclick = startPilotExam;
+  const db = $('#dipBtn'); if (db) db.onclick = () => { db.outerHTML = diplomaBoxHTML(); wireDiploma(S.exams.pilot); };
   $$('[data-track]').forEach(b => b.onclick = () => { S.track = b.dataset.track; save(); viewMap(); });
   $$('[data-start]').forEach(b => b.onclick = () => openBriefing(b.dataset.start));
 }
@@ -2033,7 +2223,9 @@ function viewProfile() {
     <div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>
     <div class="muted" style="font-size:14px">${nr ? `${S.xp} / ${nr[0]} XP do rangi <span lang="bg">${nr[1]}</span> (${nr[2]})` : 'Najwyższa ranga. Gratulacje!'}</div></div>
    <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
+   ${calendarHTML()}
    ${hangarHTML()}
+   ${notebookHTML()}
    ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
    <a class="card helpcard" href="#pomoc"><div><div class="eyebrow">Ustawienia telefonu</div><b>Lektor, mikrofon i instalacja</b>
      <div class="muted" style="font-size:14px;margin-top:2px">Co zrobić na Androidzie, a co na iPhonie, żeby aplikacja mówiła i rozpoznawała wymowę.</div>
@@ -2974,10 +3166,11 @@ function viewBoard() {
     ${t.done || i === cur ? `<button class="btn ${t.done ? 'ghost' : ''}" style="min-height:38px;padding:6px 14px" data-tile="${i}">${t.done ? 'Powtórz' : 'Start'}</button>` : `<span class="muted">${ICON.lock}</span>`}</div>`).join('')}</div></section>`;
   html += `<section style="margin-top:26px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="eyebrow">Kolekcja pocztówek</span><span class="qcount">${S.game.visited.length} / ${CITIES.length}</span></div>
     <div class="cards">${CITIES.map((c, i) => S.game.visited.includes(i) ?
-      `<div class="pc"><b lang="bg">${esc(c.bg)}</b><small>${esc(c.pl)}${c.icao ? ` · <span class="mono">${c.icao}</span>` : ''}</small><p lang="bg">${esc(c.f)}</p><p class="muted">${esc(c.fpl)}</p>${spkBtn(c.f)}</div>` :
+      `<div class="pc"><b lang="bg">${esc(c.bg)}</b><small>${esc(c.pl)}${c.icao ? ` · <span class="mono">${c.icao}</span>` : ''}</small><p lang="bg">${esc(c.f)}</p><p class="muted">${esc(c.fpl)}</p><div class="row" style="gap:8px">${spkBtn(c.f)}${READS[i] ? `<button class="chip" data-read="${i}">Czytanka</button>` : ''}</div></div>` :
       `<div class="pc locked"><b>?</b><small>${i === 0 ? 'Start' : 'Jeszcze nie odwiedzone'}</small></div>`).join('')}</div></section>`;
   $('#view').innerHTML = html;
   $$('[data-tile]').forEach(b => b.onclick = () => startTile(+b.dataset.tile));
+  $$('[data-read]').forEach(b => b.onclick = () => openReading(+b.dataset.read));
   const sk = $('#skipTest'); if (sk) sk.onclick = () => { S.placement = {skipped:true}; save(); viewBoard(); };
   const bo = $('#bonus'); if (bo) bo.onclick = () => { S.game.day = makeDay(); save(); heroShown = {key:'', idx:-1}; viewBoard(); renderHud(); };
   if (startIdx !== target) { const h = $('#hero'); requestAnimationFrame(() => requestAnimationFrame(() => { h.style.cssText = pct(PP[target]); })); }
@@ -3010,6 +3203,9 @@ function finishLesson() {
   let landed = null;
   if (L.tile != null && pass) landed = markTile(L.tile, L.mode === 'review' ? 3 : starsN);
   if (landed) xp += 20;
+  const factI = landed ? nextFact() : null, examId = L.exam || null, examPc = Math.round(acc * 100);
+  if (examId) { if (!S.exams) S.exams = {}; if (examPc > (S.exams[examId] || 0)) S.exams[examId] = examPc; }
+  const allDone = LEVELS.every(l => isDone(l.id));
   addXP(xp); save(); renderHud();
   const onBoard = L.tile != null;
   const name = L.mode === 'level' ? L.lv.t : L.mode === 'practice' ? L.title : 'Powtórka';
@@ -3024,6 +3220,9 @@ function finishLesson() {
     ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
     <p class="muted">${esc(sub)}</p>
     ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
+    ${factI != null ? chestHTML(factI) : ''}
+    ${landed && READS[CITIES.indexOf(landed)] ? `<button class="btn soft block" id="resRead" style="margin-top:10px">Przeczytaj czytankę o mieście</button>` : ''}
+    ${examId === 'pilot' ? (examPc >= 80 && allDone ? diplomaBoxHTML() : `<p class="muted">${examPc >= 80 ? 'Świetny wynik! Dyplom odblokuje się po ukończeniu wszystkich leveli.' : 'Do zaliczenia egzaminu potrzeba 80%.'}</p>`) : ''}
     ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b>${esc(upg[0])} <span class="muted">· ${esc(upg[1])} · ${esc(upg[2])}</span></b><small>${esc(upg[4])}</small><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
     <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
    </div></div>
@@ -3034,6 +3233,9 @@ function finishLesson() {
   if (landed || upg || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
   const lvId = L.lv && L.lv.id, tile = L.tile, again = L.again, mode = L.mode;
   $('#lx').onclick = closeLesson;
+  const co = $('#chestOpen'); if (co) co.onclick = () => { co.hidden = true; $('#chestIn').hidden = false; confetti(); };
+  const rr = $('#resRead'); if (rr) rr.onclick = () => openReading(CITIES.indexOf(landed));
+  wireDiploma(examPc);
   const a = $('#again'); if (a) a.onclick = () => { if (mode === 'level') openBriefing(lvId, tile); else if (mode === 'review') startReview(); else if (again) again(); };
   const g = $('#goNext'); if (g) g.onclick = () => openBriefing(nextId);
   const t = $('#toMap'); if (t) t.onclick = closeLesson;
@@ -3050,6 +3252,7 @@ function myPhrases(filter = 'all') {
   const out = [];
   if (filter === 'all' || filter !== 'lv') PHRASES.forEach((c, ci) => { if (!catUnlocked(c.n) || (filter !== 'all' && filter !== c.n)) return; const lv = LV['ph' + ci]; lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:c.n})); });
   if (filter === 'all' || filter === 'lv') reachedLevels().forEach(lv => lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:lv.t})));
+  if (filter === 'all' || filter === 'my') (S.my || []).forEach((x, i) => out.push({pl:x.pl, bg:x.bg, lv:null, i, src:'Mój słowniczek'}));
   return out;
 }
 const byMistakes = arr => shuffle(arr).sort((a, b) => (S.mistakes[b.ref] || 0) - (S.mistakes[a.ref] || 0));
@@ -3078,15 +3281,16 @@ function exArticle(box, q) {
 let phMode = 'fiszki', phFilter = 'all', FC = null, MG = null, phraseQ = '';
 function viewPhrases() {
   const cats = PHRASES.filter(c => catUnlocked(c.n)).map(c => c.n);
-  if (phFilter !== 'all' && phFilter !== 'lv' && !cats.includes(phFilter)) phFilter = 'all';
+  if (phFilter !== 'all' && phFilter !== 'lv' && phFilter !== 'my' && !cats.includes(phFilter)) phFilter = 'all';
+  if (phMode !== 'dialogi') DG = null;
   const n = myPhrases(phFilter).length;
   $('#view').innerHTML = `<h2 class="view">Zwroty</h2><p class="muted" style="margin-top:0">Twoja talia rośnie z każdym levelem: nowe kategorie zwrotów i zdania z odblokowanych lekcji. Teraz masz ${myPhrases().length} zwrotów.</p>
-   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista'],['tlumacz','Tłumacz']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
-   ${phMode !== 'lista' && phMode !== 'tlumacz' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['dialogi','Dialogi'],['lista','Lista'],['tlumacz','Tłumacz'],['moje','Mój słowniczek ★']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
+   ${phMode === 'fiszki' || phMode === 'dopasuj' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...((S.my || []).length ? [['my','Mój słowniczek']] : []), ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
    <div id="phbox"></div>`;
   $$('[data-m]').forEach(b => b.onclick = () => { phMode = b.dataset.m; viewPhrases(); });
   $$('[data-f]').forEach(b => b.onclick = () => { phFilter = b.dataset.f; FC = null; MG = null; viewPhrases(); });
-  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else drawPhraseList();
+  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else if (phMode === 'dialogi') drawDialogs(); else if (phMode === 'moje') drawMy(); else drawPhraseList();
 }
 /* ===== TŁUMACZ (maszynowy, przez internet – serwis MyMemory) ===== */
 let trDir = 'pl|bg', trText = '';
@@ -3117,7 +3321,7 @@ function drawTranslator() {
     try {
       const res = await translateText(text, trDir), bg = toBg ? res : text, pl = toBg ? text : res;
       out.innerHTML = `<div class="okbox"><div class="row" style="gap:10px;flex-wrap:nowrap;align-items:flex-start">${toBg ? spkBtn(bg) : ''}<div style="flex:1;min-width:0"><div class="lline" ${toBg ? 'lang="bg"' : ''}>${esc(res)}</div>${toBg ? `<div class="tr-line" style="text-align:left">${esc(translit(res))}</div>` : ''}</div></div>
-        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button></div></div>`;
+        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button><button class="btn soft" data-addmy="${esc(JSON.stringify([pl, bg]))}" style="min-height:38px;padding:6px 16px">★ Do słowniczka</button></div></div>`;
       $('#trCopy').onclick = async () => { try { await navigator.clipboard.writeText(res); toast('Skopiowano.'); } catch (e) { toast('Nie udało się skopiować.'); } };
       S.tr = [{pl, bg}, ...(S.tr || []).filter(h => h.pl !== pl)].slice(0, 12); save();
       if (toBg && audioOK() && S.autoVoice) speak(bg);
@@ -3313,12 +3517,13 @@ function viewGames() {
        ['scr','б а в','Rozsypanka','Ułóż słowo z pomieszanych liter.', (S.best.scr || 0) + '/8'],
        ['dict','🔊','Dyktando 90 s','Lektor mówi słowo, Ty je wpisujesz. Ile zdążysz w półtorej minuty?', S.best.dict || 0],
        ['tower','✈','Wieża kontroli','Słyszysz komendę przez radio. Co ma zrobić pilotka?', (S.best.tower || 0) + '/10'],
-       ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15']
+       ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15'],
+       ['listen','👂','Słuchanie ze zrozumieniem','Krótki tekst czytany przez lektora – prognoza, ogłoszenie, komunikat dla pilotów – i trzy pytania.', (S.best.listen || 0) + '/3']
       ].map(([k, ic, t, d, rec]) => `<button class="gamecard" data-game="${k}"><span class="gicon"><span class="glyph" lang="bg">${ic}</span></span><b>${t}</b><span class="muted">${d}</span><span class="qcount">Rekord: ${rec}</span></button>`).join('')}
    </div><div id="gamebox" style="margin-top:18px"></div>`;
   gStop();
   $$('[data-game]').forEach(b => b.onclick = () => { if (blitzT) { clearInterval(blitzT); blitzT = null; } gStop();
-    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF})[b.dataset.game]();
+    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF, listen:startListen})[b.dataset.game]();
     setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
 }
 /* ===== SZEŚĆ DODATKOWYCH GIER ===== */
@@ -3598,6 +3803,197 @@ function endMemo() {
   addXP(Math.round(pts / 10)); save(); renderHud();
   $('#gamebox').insertAdjacentHTML('beforeend', `<div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:24px">Wszystkie pary! ${pts} pkt${rec ? ' · rekord!' : ''}</b><span class="muted">${G.moves} ruchów (idealnie: 6) · +${Math.round(pts / 10)} XP</span><button class="btn" id="gAgain">Nowa plansza</button></div>`);
   $('#gAgain').onclick = startMemo;
+}
+
+/* ===== MÓJ SŁOWNICZEK ===== */
+function addMy(pl, bg) {
+  pl = String(pl || '').trim(); bg = String(bg || '').trim(); if (!pl || !bg) return false;
+  if (!S.my) S.my = [];
+  if (S.my.some(x => x.bg === bg && x.pl === pl)) { toast('To już jest w słowniczku.'); return false; }
+  S.my.unshift({pl, bg}); save(); toast('Dodano do słowniczka ★'); return true;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-addmy]'); if (!b) return; e.preventDefault();
+  let p; try { p = JSON.parse(b.dataset.addmy); } catch (err) { return; }
+  if (addMy(p[0], p[1])) b.disabled = true;
+});
+const starBtn = (pl, bg) => `<button class="starbtn" data-addmy="${esc(JSON.stringify([pl, bg]))}" aria-label="Dodaj do słowniczka" title="Dodaj do słowniczka">★</button>`;
+function drawMy() {
+  const my = S.my || [];
+  $('#phbox').innerHTML = `<section class="card stack" style="margin-top:12px"><div><b style="font-family:var(--f-display);font-size:20px">Mój słowniczek (${my.length})</b>
+    <div class="muted" style="font-size:14px">Własne słówka i zdania. Dodajesz je gwiazdką ★ w Tłumaczu, dialogach i czytankach albo ręcznie tutaj.</div></div>
+    <input class="search" id="myPl" placeholder="po polsku" aria-label="Po polsku"><input class="search" id="myBg" lang="bg" placeholder="по български" aria-label="Po bułgarsku">
+    <div class="row"><button class="btn" id="myAdd">Dodaj</button>${my.length >= 2 ? '<button class="btn soft" id="myFlash">Ćwicz jako fiszki</button>' : ''}</div></section>
+    ${my.length ? `<div class="plist" style="margin-top:14px">${my.map((x, i) => `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(x.bg)}</div><div class="tr">${esc(translit(x.bg))}</div><div class="pl">${esc(x.pl)}</div></div>${spkBtn(x.bg)}<button class="xbtn" data-mydel="${i}" aria-label="Usuń">${ICON.x}</button></div>`).join('')}</div>` : ''}`;
+  $('#myAdd').onclick = () => { if (addMy($('#myPl').value, $('#myBg').value)) drawMy(); else if (!$('#myPl').value.trim() || !$('#myBg').value.trim()) toast('Wpisz słowo po polsku i po bułgarsku.'); };
+  const fl = $('#myFlash'); if (fl) fl.onclick = () => { phMode = 'fiszki'; phFilter = 'my'; FC = null; viewPhrases(); };
+  $$('[data-mydel]').forEach(b => b.onclick = () => { S.my.splice(+b.dataset.mydel, 1); save(); drawMy(); });
+}
+
+/* ===== DIALOGI ===== */
+let DG = null;
+function drawDialogs() {
+  if (DG) return drawDialogStep();
+  $('#phbox').innerHTML = `<p class="muted" style="margin:12px 0">Rozmowa krok po kroku. Rozmówcę czyta lektor, a Ty wybierasz swoją kwestię.</p>
+    <div class="gamegrid">${DIALOGS.map((d, i) => `<button class="gamecard" data-dlg="${i}"><span class="eyebrow">${d.lv} · <i class="th ${d.track}">${THEME_PL[d.track]}</i></span><b>${esc(d.t)}</b><span class="muted" lang="bg">${esc(d.bt)}</span><span class="qcount">${S.dlg && S.dlg[d.id] ? `Najlepiej: ${S.dlg[d.id]}%` : 'Jeszcze nie grane'}</span></button>`).join('')}</div>`;
+  $$('[data-dlg]').forEach(b => b.onclick = () => { const d = DIALOGS[+b.dataset.dlg]; DG = {d, i:0, score:0, miss:false, shown:[], n:d.lines.filter(l => l[0] === 'T').length}; drawDialogStep(); });
+}
+function drawDialogStep() {
+  const d = DG.d, box = $('#phbox'); if (!box) return;
+  let said = null;
+  while (DG.i < d.lines.length && d.lines[DG.i][0] === 'A') { said = d.lines[DG.i]; DG.shown.push(said); DG.i++; }
+  const bubbles = DG.shown.map(([who, bg, pl]) => `<div class="bub ${who === 'T' ? 't' : 'a'}"><div class="row" style="gap:8px;flex-wrap:nowrap;align-items:flex-start">${spkBtn(bg)}<div style="flex:1;min-width:0"><div lang="bg"><b>${esc(bg)}</b></div><div class="pl">${esc(pl)}</div></div>${starBtn(pl, bg)}</div></div>`).join('');
+  const head = `<div class="row" style="justify-content:space-between;margin:12px 0 8px"><b style="font-family:var(--f-display);font-size:20px">${esc(d.t)} · <span lang="bg">${esc(d.bt)}</span></b><button class="chip" id="dgBack">← Lista</button></div>`;
+  if (DG.i >= d.lines.length) {
+    const pc = Math.round(100 * DG.score / DG.n);
+    if (!S.dlg) S.dlg = {}; if (pc > (S.dlg[d.id] || 0)) S.dlg[d.id] = pc; addXP(DG.score * 2); save(); renderHud();
+    box.innerHTML = `${head}<div class="chat">${bubbles}</div><div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:22px">${DG.score} / ${DG.n} za pierwszym razem</b><span class="muted">+${DG.score * 2} XP. Odsłuchaj rozmowę jeszcze raz głośnikami i powtarzaj na głos.</span><div class="row" style="justify-content:center"><button class="btn" id="dgAgain">Jeszcze raz</button></div></div>`;
+    $('#dgAgain').onclick = () => { DG = {d, i:0, score:0, miss:false, shown:[], n:DG.n}; drawDialogStep(); };
+  } else {
+    const [, bg, pl] = d.lines[DG.i];
+    const others = shuffle(DIALOGS.flatMap(x => x.lines.filter(l => l[0] === 'T').map(l => l[1])).filter(x => x !== bg)).slice(0, 2);
+    box.innerHTML = `${head}<div class="chat">${bubbles}</div><div class="card stack" style="margin-top:12px"><span class="eyebrow">Twoja kolej</span><b>${esc(pl)}</b>${optsHTML(shuffle([bg, ...others]), true, true)}</div>`;
+    $$('#phbox .opt').forEach(b => b.onclick = () => {
+      if (b.dataset.v !== bg) { b.classList.add('wrong'); b.disabled = true; DG.miss = true; buzz([40, 60, 40]); return; }
+      if (!DG.miss) DG.score++; DG.miss = false; buzz(15); DG.shown.push(d.lines[DG.i]); DG.i++;
+      if (audioOK() && S.autoVoice) speak(bg); drawDialogStep();
+    });
+    if (said && audioOK() && S.autoVoice) speak(said[1]);
+  }
+  $('#dgBack').onclick = () => { DG = null; drawDialogs(); };
+  const last = box.querySelector('.card:last-child'); if (last && DG && DG.shown.length > 2) last.scrollIntoView({block:'nearest'});
+}
+
+/* ===== SŁUCHANIE ZE ZROZUMIENIEM (gra) ===== */
+function startListen() {
+  gStop(); let k; do { k = Math.floor(Math.random() * LISTEN.length); } while (LISTEN.length > 1 && G && G.type === 'listen' && k === G.k);
+  G = {type:'listen', k, q:0, score:0}; drawListen();
+}
+function drawListen() {
+  const box = $('#gamebox'); if (!box) return; const it = LISTEN[G.k], hear = audioOK(), done = G.q >= it.qs.length;
+  const player = hear ? `<div class="row" style="gap:10px;flex-wrap:nowrap">${spkBtn(it.bg, 'big')}<button class="spk" data-say="${esc(it.bg)}" data-slow="1" aria-label="Posłuchaj wolniej">${ICON.slow}</button><span class="muted" style="font-size:14px">Posłuchaj (możesz kilka razy). Żółw czyta wolniej.</span></div>` : '';
+  const text = `<div class="tipbox"><div lang="bg" style="font-weight:600">${esc(it.bg)}</div><p class="muted">${esc(it.pl)}</p></div>`;
+  if (done) {
+    const rec = finishBest('listen', G.score); addXP(G.score * 3); save(); renderHud();
+    box.innerHTML = `<div class="card stack">${gHead(`Słuchanie · ${esc(it.t)}`, `${G.score} / ${it.qs.length}${rec ? ' · rekord!' : ''}`)}${player}${text}<button class="btn block" id="lsNext">Następny tekst</button></div>`;
+    $('#lsNext').onclick = startListen; return;
+  }
+  const [q, ok, ...bad] = it.qs[G.q];
+  box.innerHTML = `<div class="card stack">${gHead(`Słuchanie · ${esc(it.t)}`, `Pytanie ${G.q + 1}/${it.qs.length}`)}${player}${hear ? '' : text}
+    <b>${esc(q)}</b>${optsHTML(shuffle([ok, ...bad]), false, true)}<div id="lsFb"></div></div>`;
+  let ans = false;
+  $$('#gamebox .opt').forEach(b => b.onclick = () => {
+    if (ans) return; ans = true; const good = b.dataset.v === ok; if (good) G.score++; buzz(good ? 15 : [40, 60, 40]);
+    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === ok) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    $('#lsFb').innerHTML = `<button class="btn block" id="lsGo">Dalej</button>`; $('#lsGo').onclick = () => { G.q++; drawListen(); };
+  });
+  if (hear && G.q === 0) speak(it.bg);
+}
+
+/* ===== CZYTANKI O MIASTACH ===== */
+function openReading(ci) {
+  const c = CITIES[ci], r = READS[ci]; if (!c || !r) return;
+  const el = $('#lesson'); el.hidden = false; document.body.style.overflow = 'hidden';
+  el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Czytanka · ${esc(c.pl)}</span></div>
+   <div class="lesson-body"><div class="wrap brief stack">
+    <div><h2 class="view" lang="bg">${esc(c.bg)}</h2><div class="muted">Przeczytaj na głos. Dotknij zdania, żeby zobaczyć tłumaczenie.</div></div>
+    <div class="plist">${[[c.f, c.fpl], ...r.s].map(([bg, pl]) => `<div class="prow rd" tabindex="0">${spkBtn(bg)}<div class="txt"><div class="bg" lang="bg">${esc(bg)}</div><div class="tr">${esc(translit(bg))}</div><div class="pl" hidden>${esc(pl)}</div></div></div>`).join('')}</div>
+    <div><div class="eyebrow" style="margin-bottom:8px">Słówka z tekstu</div><div class="plist">${r.g.map(([bg, pl]) => `<div class="prow">${spkBtn(bg)}<div class="txt"><b lang="bg">${esc(bg)}</b> <span class="muted">– ${esc(pl)}</span></div>${starBtn(pl, bg)}</div>`).join('')}</div></div>
+   </div></div>
+   <div class="lesson-foot"><div class="wrap foot-in"><button class="btn block" id="rdClose">Zamknij</button></div></div>`;
+  $('#lx').onclick = closeLesson; $('#rdClose').onclick = closeLesson;
+  $$('#lesson .rd').forEach(row => row.onclick = e => { if (e.target.closest('.spk')) return; const p = row.querySelector('.pl'); p.hidden = !p.hidden; });
+}
+
+/* ===== SKRZYNIA PO LĄDOWANIU I NOTATNIK PILOTA ===== */
+function nextFact() {
+  if (!S.facts) S.facts = [];
+  const i = FACTS.findIndex((_, k) => !S.facts.includes(k)); if (i < 0) return null;
+  S.facts.push(i); save(); return i;
+}
+const factHTML = i => { const f = FACTS[i]; return `<p style="margin:6px 0">${esc(f[1])}</p><div class="row" style="gap:8px;flex-wrap:nowrap">${spkBtn(f[2])}<span class="muted">Po bułgarsku: <b lang="bg">${esc(f[2])}</b> – ${esc(f[3])}</span>${starBtn(f[3], f[2])}</div>`; };
+function chestHTML(i) {
+  return `<div class="card chest" style="text-align:left"><button class="btn block" id="chestOpen">🎁 Otwórz skrzynię z nagrodą</button>
+    <div id="chestIn" hidden><span class="eyebrow">Notatnik pilota · karta ${S.facts.length}/${FACTS.length}</span><b style="display:block;font-family:var(--f-display);font-size:21px;margin-top:2px">${esc(FACTS[i][0])}</b>${factHTML(i)}</div></div>`;
+}
+function notebookHTML() {
+  const got = (S.facts || []).filter(i => FACTS[i]);
+  return `<section class="card stack"><div><div class="eyebrow">Notatnik pilota</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Ciekawostki techniczne · ${got.length}/${FACTS.length}</h3>
+    <p class="muted" style="margin:4px 0 0">Po każdym lądowaniu otwierasz skrzynię z nową kartą: aerodynamika wirnika, silniki, technika pilotażu.</p></div>
+    ${got.length ? `<div class="stack" style="gap:6px">${got.map(i => `<details class="vb"><summary><b>${esc(FACTS[i][0])}</b></summary>${factHTML(i)}</details>`).join('')}</div>` : '<span class="muted">Pierwsza karta czeka po najbliższym lądowaniu.</span>'}</section>`;
+}
+
+/* ===== KALENDARZ NAUKI I STATYSTYKI ===== */
+const dkey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function calendarHTML() {
+  const days = S.days || {}, now = new Date(); now.setHours(12, 0, 0, 0);
+  const dow = (now.getDay() + 6) % 7, start = new Date(now); start.setDate(now.getDate() - (11 * 7 + dow));
+  let cells = '';
+  for (let k = 0; k < 84; k++) { const d = new Date(start); d.setDate(start.getDate() + k); const key = dkey(d), xp = days[key] || 0, fut = d > now;
+    cells += `<i class="${fut ? 'fut' : 'l' + (xp >= 50 ? 3 : xp >= 20 ? 2 : xp > 0 ? 1 : 0)}${key === dkey(now) ? ' now' : ''}" title="${key}: ${xp} XP"></i>`; }
+  const last7 = [...Array(7)].map((_, k) => { const d = new Date(now); d.setDate(now.getDate() - (6 - k)); return {d, xp:days[dkey(d)] || 0}; });
+  const mx = Math.max(30, ...last7.map(x => x.xp)), DN = ['nd','pn','wt','śr','cz','pt','sb'];
+  const active = Object.values(days).filter(v => v > 0).length, best = Math.max(0, ...Object.values(days)), week = last7.reduce((a, x) => a + x.xp, 0);
+  const weak = {}; Object.entries(S.mistakes || {}).forEach(([ref, c]) => { const lv = LV[ref.split(':')[0]]; if (lv && lv.unit && c > 0) weak[lv.unit.t] = (weak[lv.unit.t] || 0) + c; });
+  const weakTop = Object.entries(weak).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return `<section class="card stack"><div><div class="eyebrow">Kalendarz nauki</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Ostatnie 12 tygodni</h3></div>
+    <div class="calwrap"><div class="cal" role="img" aria-label="Dni z nauką w ostatnich 12 tygodniach">${cells}</div></div>
+    <div class="row muted" style="font-size:13px;gap:6px"><span>mniej</span><span class="cal mini"><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i></span><span>więcej XP</span></div>
+    <div class="kpis" style="margin:0"><div class="kpi"><b>${active}</b><span>dni z nauką</span></div><div class="kpi"><b>${week}</b><span>XP w 7 dni</span></div><div class="kpi"><b>${best}</b><span>rekord dnia</span></div></div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Ostatnie 7 dni</div><div class="bars">${last7.map(x => `<div><span style="height:${Math.max(3, Math.round(100 * x.xp / mx))}%" class="${x.xp ? 'on' : ''}"></span><small>${DN[x.d.getDay()]}</small></div>`).join('')}</div></div>
+    ${weakTop.length ? `<div><div class="eyebrow" style="margin-bottom:6px">Najwięcej błędów</div>${weakTop.map(([t, c]) => `<div class="row" style="justify-content:space-between"><span>${esc(t)}</span><span class="qcount">${c}</span></div>`).join('')}<a class="btn soft" href="#powtorki" style="margin-top:8px">Powtórz błędy</a></div>` : ''}</section>`;
+}
+
+/* ===== SPRAWDZIANY DZIAŁÓW I EGZAMIN PILOTA ===== */
+const unitDone = u => u.levels.every(l => isDone(l.id));
+function examItems(levels, nMc, nGram, nOrder, nWrite) {
+  const Ws = shuffle(levels.flatMap(l => l.w.map((_, i) => W(l, i)))), Ss = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i)))), Gs = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
+  const out = [];
+  for (let k = 0; k < nMc && k < Ws.length; k++) out.push({t:'mc', dir:k % 2 ? 'bg2pl' : 'pl2bg', it:Ws[k]});
+  for (let k = 0; k < nGram && k < Gs.length; k++) out.push({t:'gram', it:Gs[k]});
+  for (let k = 0; k < nOrder && k < Ss.length; k++) out.push({t:'order', it:Ss[k]});
+  for (let k = 0; k < nWrite && nMc + k < Ws.length; k++) out.push({t:'write', it:Ws[nMc + k]});
+  return shuffle(out);
+}
+function startUnitTest(uid) {
+  const u = UNITS.find(x => x.id === uid); if (!u) return;
+  startPractice(null, examItems(u.levels, 5, 3, 2, 2), `Sprawdzian: ${u.t}`, () => startUnitTest(uid)); L.exam = uid;
+}
+function startPilotExam() {
+  const ls = LEVELS.filter(l => isDone(l.id)); if (ls.length < 10) { toast('Egzamin próbny otworzy się po 10 ukończonych levelach.'); return; }
+  startPractice(null, examItems(ls, 12, 8, 5, 5), 'Egzamin pilota', startPilotExam); L.exam = 'pilot';
+}
+function examCardHTML() {
+  const done = LEVELS.filter(l => isDone(l.id)).length, all = done >= LEVELS.length, best = (S.exams || {}).pilot || 0;
+  return `<div class="card stack" style="margin-bottom:16px"><div><div class="eyebrow">Egzamin pilota</div><b style="font-family:var(--f-display);font-size:20px">${all ? 'Egzamin końcowy z dyplomem' : 'Egzamin próbny'}</b>
+    <div class="muted" style="font-size:14px">30 zadań z ukończonych leveli. ${all ? 'Wynik od 80% daje dyplom do pobrania.' : `Dyplom będzie dostępny po ukończeniu wszystkich leveli (${done}/${LEVELS.length}).`}${best ? ` Najlepszy wynik: ${best}%.` : ''}</div></div>
+    <div class="row"><button class="btn ${done >= 10 ? '' : 'ghost'}" id="pilotExam">${done >= 10 ? 'Zacznij egzamin' : 'Dostępny po 10 levelach'}</button>${all && best >= 80 ? '<button class="btn soft" id="dipBtn">Pobierz dyplom</button>' : ''}</div></div>`;
+}
+function diplomaBoxHTML() {
+  return `<div class="card stack" style="text-align:left"><b style="font-family:var(--f-display);font-size:20px">Dyplom gotowy do pobrania</b>
+    <input class="search" id="dipName" placeholder="Imię i nazwisko na dyplomie" value="${esc(S.name || '')}" aria-label="Imię i nazwisko"><button class="btn" id="dipGo">Pobierz dyplom (PNG)</button></div>`;
+}
+function wireDiploma(score) {
+  const go = $('#dipGo'); if (!go) return;
+  go.onclick = () => { const n = $('#dipName').value.trim(); if (!n) { toast('Wpisz imię i nazwisko.'); return; } S.name = n; save(); makeDiploma(n, score); };
+}
+function makeDiploma(name, score) {
+  const cs = getComputedStyle(document.documentElement), col = v => cs.getPropertyValue(v).trim();
+  const c = document.createElement('canvas'); c.width = 1400; c.height = 990; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 990); g.addColorStop(0, '#9FD0F7'); g.addColorStop(.55, '#EAF5FE'); g.addColorStop(1, '#FFFFFF'); x.fillStyle = g; x.fillRect(0, 0, 1400, 990);
+  x.fillStyle = '#FFFFFF'; [[230, 190, 70], [320, 170, 95], [420, 195, 65], [1010, 250, 60], [1100, 230, 85], [1190, 255, 60]].forEach(([a, b, r]) => { x.beginPath(); x.ellipse(a, b, r * 1.5, r * .8, 0, 0, 7); x.fill(); });
+  x.strokeStyle = '#1767BD'; x.lineWidth = 8; x.strokeRect(40, 40, 1320, 910); x.lineWidth = 2; x.strokeRect(58, 58, 1284, 874);
+  x.textAlign = 'center'; x.fillStyle = '#12305A';
+  x.font = '800 96px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillText('ДИПЛОМА', 700, 330);
+  x.font = '500 34px "Sofia Sans",Arial,sans-serif'; x.fillStyle = '#4F6B8C'; x.fillText('Dyplom ukończenia kursu „Bułgarski za sterami”', 700, 390);
+  x.fillStyle = '#1767BD'; x.font = '800 78px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillText(name, 700, 520, 1200);
+  x.strokeStyle = '#E7A60F'; x.lineWidth = 4; x.beginPath(); x.moveTo(350, 548); x.lineTo(1050, 548); x.stroke();
+  x.fillStyle = '#12305A'; x.font = '500 36px "Sofia Sans",Arial,sans-serif';
+  x.fillText('ukończyła kurs języka bułgarskiego na poziomie A2–B1', 700, 620);
+  x.fillText(`z modułem lotniczym i zdała egzamin pilota z wynikiem ${score}%.`, 700, 670);
+  x.font = '800 44px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillStyle = '#D9601A'; x.fillText('Честито! Успешни полети!', 700, 770);
+  x.font = '500 28px "Sofia Sans",Arial,sans-serif'; x.fillStyle = '#4F6B8C'; x.fillText(`${today()} · ${LEVELS.length} leveli · ${S.xp} XP`, 700, 860);
+  c.toBlob(b => { if (!b) { toast('Nie udało się utworzyć dyplomu.'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'dyplom-bulgarski-za-sterami.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); toast('Dyplom zapisany w Pobranych.'); }, 'image/png');
 }
 
 /* ===== START ===== */

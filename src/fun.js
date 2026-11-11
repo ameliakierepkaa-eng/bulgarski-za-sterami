@@ -7,6 +7,7 @@ function myPhrases(filter = 'all') {
   const out = [];
   if (filter === 'all' || filter !== 'lv') PHRASES.forEach((c, ci) => { if (!catUnlocked(c.n) || (filter !== 'all' && filter !== c.n)) return; const lv = LV['ph' + ci]; lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:c.n})); });
   if (filter === 'all' || filter === 'lv') reachedLevels().forEach(lv => lv.s.forEach((x, i) => out.push({pl:x[0], bg:x[1], lv, i, src:lv.t})));
+  if (filter === 'all' || filter === 'my') (S.my || []).forEach((x, i) => out.push({pl:x.pl, bg:x.bg, lv:null, i, src:'Mój słowniczek'}));
   return out;
 }
 const byMistakes = arr => shuffle(arr).sort((a, b) => (S.mistakes[b.ref] || 0) - (S.mistakes[a.ref] || 0));
@@ -35,15 +36,16 @@ function exArticle(box, q) {
 let phMode = 'fiszki', phFilter = 'all', FC = null, MG = null, phraseQ = '';
 function viewPhrases() {
   const cats = PHRASES.filter(c => catUnlocked(c.n)).map(c => c.n);
-  if (phFilter !== 'all' && phFilter !== 'lv' && !cats.includes(phFilter)) phFilter = 'all';
+  if (phFilter !== 'all' && phFilter !== 'lv' && phFilter !== 'my' && !cats.includes(phFilter)) phFilter = 'all';
+  if (phMode !== 'dialogi') DG = null;
   const n = myPhrases(phFilter).length;
   $('#view').innerHTML = `<h2 class="view">Zwroty</h2><p class="muted" style="margin-top:0">Twoja talia rośnie z każdym levelem: nowe kategorie zwrotów i zdania z odblokowanych lekcji. Teraz masz ${myPhrases().length} zwrotów.</p>
-   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista'],['tlumacz','Tłumacz']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
-   ${phMode !== 'lista' && phMode !== 'tlumacz' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['dialogi','Dialogi'],['lista','Lista'],['tlumacz','Tłumacz'],['moje','Mój słowniczek ★']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
+   ${phMode === 'fiszki' || phMode === 'dopasuj' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...((S.my || []).length ? [['my','Mój słowniczek']] : []), ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
    <div id="phbox"></div>`;
   $$('[data-m]').forEach(b => b.onclick = () => { phMode = b.dataset.m; viewPhrases(); });
   $$('[data-f]').forEach(b => b.onclick = () => { phFilter = b.dataset.f; FC = null; MG = null; viewPhrases(); });
-  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else drawPhraseList();
+  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else if (phMode === 'dialogi') drawDialogs(); else if (phMode === 'moje') drawMy(); else drawPhraseList();
 }
 /* ===== TŁUMACZ (maszynowy, przez internet – serwis MyMemory) ===== */
 let trDir = 'pl|bg', trText = '';
@@ -74,7 +76,7 @@ function drawTranslator() {
     try {
       const res = await translateText(text, trDir), bg = toBg ? res : text, pl = toBg ? text : res;
       out.innerHTML = `<div class="okbox"><div class="row" style="gap:10px;flex-wrap:nowrap;align-items:flex-start">${toBg ? spkBtn(bg) : ''}<div style="flex:1;min-width:0"><div class="lline" ${toBg ? 'lang="bg"' : ''}>${esc(res)}</div>${toBg ? `<div class="tr-line" style="text-align:left">${esc(translit(res))}</div>` : ''}</div></div>
-        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button></div></div>`;
+        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button><button class="btn soft" data-addmy="${esc(JSON.stringify([pl, bg]))}" style="min-height:38px;padding:6px 16px">★ Do słowniczka</button></div></div>`;
       $('#trCopy').onclick = async () => { try { await navigator.clipboard.writeText(res); toast('Skopiowano.'); } catch (e) { toast('Nie udało się skopiować.'); } };
       S.tr = [{pl, bg}, ...(S.tr || []).filter(h => h.pl !== pl)].slice(0, 12); save();
       if (toBg && audioOK() && S.autoVoice) speak(bg);
@@ -270,12 +272,13 @@ function viewGames() {
        ['scr','б а в','Rozsypanka','Ułóż słowo z pomieszanych liter.', (S.best.scr || 0) + '/8'],
        ['dict','🔊','Dyktando 90 s','Lektor mówi słowo, Ty je wpisujesz. Ile zdążysz w półtorej minuty?', S.best.dict || 0],
        ['tower','✈','Wieża kontroli','Słyszysz komendę przez radio. Co ma zrobić pilotka?', (S.best.tower || 0) + '/10'],
-       ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15']
+       ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15'],
+       ['listen','👂','Słuchanie ze zrozumieniem','Krótki tekst czytany przez lektora – prognoza, ogłoszenie, komunikat dla pilotów – i trzy pytania.', (S.best.listen || 0) + '/3']
       ].map(([k, ic, t, d, rec]) => `<button class="gamecard" data-game="${k}"><span class="gicon"><span class="glyph" lang="bg">${ic}</span></span><b>${t}</b><span class="muted">${d}</span><span class="qcount">Rekord: ${rec}</span></button>`).join('')}
    </div><div id="gamebox" style="margin-top:18px"></div>`;
   gStop();
   $$('[data-game]').forEach(b => b.onclick = () => { if (blitzT) { clearInterval(blitzT); blitzT = null; } gStop();
-    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF})[b.dataset.game]();
+    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF, listen:startListen})[b.dataset.game]();
     setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
 }
 /* ===== SZEŚĆ DODATKOWYCH GIER ===== */
@@ -555,6 +558,197 @@ function endMemo() {
   addXP(Math.round(pts / 10)); save(); renderHud();
   $('#gamebox').insertAdjacentHTML('beforeend', `<div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:24px">Wszystkie pary! ${pts} pkt${rec ? ' · rekord!' : ''}</b><span class="muted">${G.moves} ruchów (idealnie: 6) · +${Math.round(pts / 10)} XP</span><button class="btn" id="gAgain">Nowa plansza</button></div>`);
   $('#gAgain').onclick = startMemo;
+}
+
+/* ===== MÓJ SŁOWNICZEK ===== */
+function addMy(pl, bg) {
+  pl = String(pl || '').trim(); bg = String(bg || '').trim(); if (!pl || !bg) return false;
+  if (!S.my) S.my = [];
+  if (S.my.some(x => x.bg === bg && x.pl === pl)) { toast('To już jest w słowniczku.'); return false; }
+  S.my.unshift({pl, bg}); save(); toast('Dodano do słowniczka ★'); return true;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-addmy]'); if (!b) return; e.preventDefault();
+  let p; try { p = JSON.parse(b.dataset.addmy); } catch (err) { return; }
+  if (addMy(p[0], p[1])) b.disabled = true;
+});
+const starBtn = (pl, bg) => `<button class="starbtn" data-addmy="${esc(JSON.stringify([pl, bg]))}" aria-label="Dodaj do słowniczka" title="Dodaj do słowniczka">★</button>`;
+function drawMy() {
+  const my = S.my || [];
+  $('#phbox').innerHTML = `<section class="card stack" style="margin-top:12px"><div><b style="font-family:var(--f-display);font-size:20px">Mój słowniczek (${my.length})</b>
+    <div class="muted" style="font-size:14px">Własne słówka i zdania. Dodajesz je gwiazdką ★ w Tłumaczu, dialogach i czytankach albo ręcznie tutaj.</div></div>
+    <input class="search" id="myPl" placeholder="po polsku" aria-label="Po polsku"><input class="search" id="myBg" lang="bg" placeholder="по български" aria-label="Po bułgarsku">
+    <div class="row"><button class="btn" id="myAdd">Dodaj</button>${my.length >= 2 ? '<button class="btn soft" id="myFlash">Ćwicz jako fiszki</button>' : ''}</div></section>
+    ${my.length ? `<div class="plist" style="margin-top:14px">${my.map((x, i) => `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(x.bg)}</div><div class="tr">${esc(translit(x.bg))}</div><div class="pl">${esc(x.pl)}</div></div>${spkBtn(x.bg)}<button class="xbtn" data-mydel="${i}" aria-label="Usuń">${ICON.x}</button></div>`).join('')}</div>` : ''}`;
+  $('#myAdd').onclick = () => { if (addMy($('#myPl').value, $('#myBg').value)) drawMy(); else if (!$('#myPl').value.trim() || !$('#myBg').value.trim()) toast('Wpisz słowo po polsku i po bułgarsku.'); };
+  const fl = $('#myFlash'); if (fl) fl.onclick = () => { phMode = 'fiszki'; phFilter = 'my'; FC = null; viewPhrases(); };
+  $$('[data-mydel]').forEach(b => b.onclick = () => { S.my.splice(+b.dataset.mydel, 1); save(); drawMy(); });
+}
+
+/* ===== DIALOGI ===== */
+let DG = null;
+function drawDialogs() {
+  if (DG) return drawDialogStep();
+  $('#phbox').innerHTML = `<p class="muted" style="margin:12px 0">Rozmowa krok po kroku. Rozmówcę czyta lektor, a Ty wybierasz swoją kwestię.</p>
+    <div class="gamegrid">${DIALOGS.map((d, i) => `<button class="gamecard" data-dlg="${i}"><span class="eyebrow">${d.lv} · <i class="th ${d.track}">${THEME_PL[d.track]}</i></span><b>${esc(d.t)}</b><span class="muted" lang="bg">${esc(d.bt)}</span><span class="qcount">${S.dlg && S.dlg[d.id] ? `Najlepiej: ${S.dlg[d.id]}%` : 'Jeszcze nie grane'}</span></button>`).join('')}</div>`;
+  $$('[data-dlg]').forEach(b => b.onclick = () => { const d = DIALOGS[+b.dataset.dlg]; DG = {d, i:0, score:0, miss:false, shown:[], n:d.lines.filter(l => l[0] === 'T').length}; drawDialogStep(); });
+}
+function drawDialogStep() {
+  const d = DG.d, box = $('#phbox'); if (!box) return;
+  let said = null;
+  while (DG.i < d.lines.length && d.lines[DG.i][0] === 'A') { said = d.lines[DG.i]; DG.shown.push(said); DG.i++; }
+  const bubbles = DG.shown.map(([who, bg, pl]) => `<div class="bub ${who === 'T' ? 't' : 'a'}"><div class="row" style="gap:8px;flex-wrap:nowrap;align-items:flex-start">${spkBtn(bg)}<div style="flex:1;min-width:0"><div lang="bg"><b>${esc(bg)}</b></div><div class="pl">${esc(pl)}</div></div>${starBtn(pl, bg)}</div></div>`).join('');
+  const head = `<div class="row" style="justify-content:space-between;margin:12px 0 8px"><b style="font-family:var(--f-display);font-size:20px">${esc(d.t)} · <span lang="bg">${esc(d.bt)}</span></b><button class="chip" id="dgBack">← Lista</button></div>`;
+  if (DG.i >= d.lines.length) {
+    const pc = Math.round(100 * DG.score / DG.n);
+    if (!S.dlg) S.dlg = {}; if (pc > (S.dlg[d.id] || 0)) S.dlg[d.id] = pc; addXP(DG.score * 2); save(); renderHud();
+    box.innerHTML = `${head}<div class="chat">${bubbles}</div><div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:22px">${DG.score} / ${DG.n} za pierwszym razem</b><span class="muted">+${DG.score * 2} XP. Odsłuchaj rozmowę jeszcze raz głośnikami i powtarzaj na głos.</span><div class="row" style="justify-content:center"><button class="btn" id="dgAgain">Jeszcze raz</button></div></div>`;
+    $('#dgAgain').onclick = () => { DG = {d, i:0, score:0, miss:false, shown:[], n:DG.n}; drawDialogStep(); };
+  } else {
+    const [, bg, pl] = d.lines[DG.i];
+    const others = shuffle(DIALOGS.flatMap(x => x.lines.filter(l => l[0] === 'T').map(l => l[1])).filter(x => x !== bg)).slice(0, 2);
+    box.innerHTML = `${head}<div class="chat">${bubbles}</div><div class="card stack" style="margin-top:12px"><span class="eyebrow">Twoja kolej</span><b>${esc(pl)}</b>${optsHTML(shuffle([bg, ...others]), true, true)}</div>`;
+    $$('#phbox .opt').forEach(b => b.onclick = () => {
+      if (b.dataset.v !== bg) { b.classList.add('wrong'); b.disabled = true; DG.miss = true; buzz([40, 60, 40]); return; }
+      if (!DG.miss) DG.score++; DG.miss = false; buzz(15); DG.shown.push(d.lines[DG.i]); DG.i++;
+      if (audioOK() && S.autoVoice) speak(bg); drawDialogStep();
+    });
+    if (said && audioOK() && S.autoVoice) speak(said[1]);
+  }
+  $('#dgBack').onclick = () => { DG = null; drawDialogs(); };
+  const last = box.querySelector('.card:last-child'); if (last && DG && DG.shown.length > 2) last.scrollIntoView({block:'nearest'});
+}
+
+/* ===== SŁUCHANIE ZE ZROZUMIENIEM (gra) ===== */
+function startListen() {
+  gStop(); let k; do { k = Math.floor(Math.random() * LISTEN.length); } while (LISTEN.length > 1 && G && G.type === 'listen' && k === G.k);
+  G = {type:'listen', k, q:0, score:0}; drawListen();
+}
+function drawListen() {
+  const box = $('#gamebox'); if (!box) return; const it = LISTEN[G.k], hear = audioOK(), done = G.q >= it.qs.length;
+  const player = hear ? `<div class="row" style="gap:10px;flex-wrap:nowrap">${spkBtn(it.bg, 'big')}<button class="spk" data-say="${esc(it.bg)}" data-slow="1" aria-label="Posłuchaj wolniej">${ICON.slow}</button><span class="muted" style="font-size:14px">Posłuchaj (możesz kilka razy). Żółw czyta wolniej.</span></div>` : '';
+  const text = `<div class="tipbox"><div lang="bg" style="font-weight:600">${esc(it.bg)}</div><p class="muted">${esc(it.pl)}</p></div>`;
+  if (done) {
+    const rec = finishBest('listen', G.score); addXP(G.score * 3); save(); renderHud();
+    box.innerHTML = `<div class="card stack">${gHead(`Słuchanie · ${esc(it.t)}`, `${G.score} / ${it.qs.length}${rec ? ' · rekord!' : ''}`)}${player}${text}<button class="btn block" id="lsNext">Następny tekst</button></div>`;
+    $('#lsNext').onclick = startListen; return;
+  }
+  const [q, ok, ...bad] = it.qs[G.q];
+  box.innerHTML = `<div class="card stack">${gHead(`Słuchanie · ${esc(it.t)}`, `Pytanie ${G.q + 1}/${it.qs.length}`)}${player}${hear ? '' : text}
+    <b>${esc(q)}</b>${optsHTML(shuffle([ok, ...bad]), false, true)}<div id="lsFb"></div></div>`;
+  let ans = false;
+  $$('#gamebox .opt').forEach(b => b.onclick = () => {
+    if (ans) return; ans = true; const good = b.dataset.v === ok; if (good) G.score++; buzz(good ? 15 : [40, 60, 40]);
+    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === ok) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    $('#lsFb').innerHTML = `<button class="btn block" id="lsGo">Dalej</button>`; $('#lsGo').onclick = () => { G.q++; drawListen(); };
+  });
+  if (hear && G.q === 0) speak(it.bg);
+}
+
+/* ===== CZYTANKI O MIASTACH ===== */
+function openReading(ci) {
+  const c = CITIES[ci], r = READS[ci]; if (!c || !r) return;
+  const el = $('#lesson'); el.hidden = false; document.body.style.overflow = 'hidden';
+  el.innerHTML = `<div class="wrap lesson-top"><button class="xbtn" id="lx" aria-label="Zamknij">${ICON.x}</button><span class="eyebrow" style="flex:1">Czytanka · ${esc(c.pl)}</span></div>
+   <div class="lesson-body"><div class="wrap brief stack">
+    <div><h2 class="view" lang="bg">${esc(c.bg)}</h2><div class="muted">Przeczytaj na głos. Dotknij zdania, żeby zobaczyć tłumaczenie.</div></div>
+    <div class="plist">${[[c.f, c.fpl], ...r.s].map(([bg, pl]) => `<div class="prow rd" tabindex="0">${spkBtn(bg)}<div class="txt"><div class="bg" lang="bg">${esc(bg)}</div><div class="tr">${esc(translit(bg))}</div><div class="pl" hidden>${esc(pl)}</div></div></div>`).join('')}</div>
+    <div><div class="eyebrow" style="margin-bottom:8px">Słówka z tekstu</div><div class="plist">${r.g.map(([bg, pl]) => `<div class="prow">${spkBtn(bg)}<div class="txt"><b lang="bg">${esc(bg)}</b> <span class="muted">– ${esc(pl)}</span></div>${starBtn(pl, bg)}</div>`).join('')}</div></div>
+   </div></div>
+   <div class="lesson-foot"><div class="wrap foot-in"><button class="btn block" id="rdClose">Zamknij</button></div></div>`;
+  $('#lx').onclick = closeLesson; $('#rdClose').onclick = closeLesson;
+  $$('#lesson .rd').forEach(row => row.onclick = e => { if (e.target.closest('.spk')) return; const p = row.querySelector('.pl'); p.hidden = !p.hidden; });
+}
+
+/* ===== SKRZYNIA PO LĄDOWANIU I NOTATNIK PILOTA ===== */
+function nextFact() {
+  if (!S.facts) S.facts = [];
+  const i = FACTS.findIndex((_, k) => !S.facts.includes(k)); if (i < 0) return null;
+  S.facts.push(i); save(); return i;
+}
+const factHTML = i => { const f = FACTS[i]; return `<p style="margin:6px 0">${esc(f[1])}</p><div class="row" style="gap:8px;flex-wrap:nowrap">${spkBtn(f[2])}<span class="muted">Po bułgarsku: <b lang="bg">${esc(f[2])}</b> – ${esc(f[3])}</span>${starBtn(f[3], f[2])}</div>`; };
+function chestHTML(i) {
+  return `<div class="card chest" style="text-align:left"><button class="btn block" id="chestOpen">🎁 Otwórz skrzynię z nagrodą</button>
+    <div id="chestIn" hidden><span class="eyebrow">Notatnik pilota · karta ${S.facts.length}/${FACTS.length}</span><b style="display:block;font-family:var(--f-display);font-size:21px;margin-top:2px">${esc(FACTS[i][0])}</b>${factHTML(i)}</div></div>`;
+}
+function notebookHTML() {
+  const got = (S.facts || []).filter(i => FACTS[i]);
+  return `<section class="card stack"><div><div class="eyebrow">Notatnik pilota</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Ciekawostki techniczne · ${got.length}/${FACTS.length}</h3>
+    <p class="muted" style="margin:4px 0 0">Po każdym lądowaniu otwierasz skrzynię z nową kartą: aerodynamika wirnika, silniki, technika pilotażu.</p></div>
+    ${got.length ? `<div class="stack" style="gap:6px">${got.map(i => `<details class="vb"><summary><b>${esc(FACTS[i][0])}</b></summary>${factHTML(i)}</details>`).join('')}</div>` : '<span class="muted">Pierwsza karta czeka po najbliższym lądowaniu.</span>'}</section>`;
+}
+
+/* ===== KALENDARZ NAUKI I STATYSTYKI ===== */
+const dkey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function calendarHTML() {
+  const days = S.days || {}, now = new Date(); now.setHours(12, 0, 0, 0);
+  const dow = (now.getDay() + 6) % 7, start = new Date(now); start.setDate(now.getDate() - (11 * 7 + dow));
+  let cells = '';
+  for (let k = 0; k < 84; k++) { const d = new Date(start); d.setDate(start.getDate() + k); const key = dkey(d), xp = days[key] || 0, fut = d > now;
+    cells += `<i class="${fut ? 'fut' : 'l' + (xp >= 50 ? 3 : xp >= 20 ? 2 : xp > 0 ? 1 : 0)}${key === dkey(now) ? ' now' : ''}" title="${key}: ${xp} XP"></i>`; }
+  const last7 = [...Array(7)].map((_, k) => { const d = new Date(now); d.setDate(now.getDate() - (6 - k)); return {d, xp:days[dkey(d)] || 0}; });
+  const mx = Math.max(30, ...last7.map(x => x.xp)), DN = ['nd','pn','wt','śr','cz','pt','sb'];
+  const active = Object.values(days).filter(v => v > 0).length, best = Math.max(0, ...Object.values(days)), week = last7.reduce((a, x) => a + x.xp, 0);
+  const weak = {}; Object.entries(S.mistakes || {}).forEach(([ref, c]) => { const lv = LV[ref.split(':')[0]]; if (lv && lv.unit && c > 0) weak[lv.unit.t] = (weak[lv.unit.t] || 0) + c; });
+  const weakTop = Object.entries(weak).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return `<section class="card stack"><div><div class="eyebrow">Kalendarz nauki</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Ostatnie 12 tygodni</h3></div>
+    <div class="calwrap"><div class="cal" role="img" aria-label="Dni z nauką w ostatnich 12 tygodniach">${cells}</div></div>
+    <div class="row muted" style="font-size:13px;gap:6px"><span>mniej</span><span class="cal mini"><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i></span><span>więcej XP</span></div>
+    <div class="kpis" style="margin:0"><div class="kpi"><b>${active}</b><span>dni z nauką</span></div><div class="kpi"><b>${week}</b><span>XP w 7 dni</span></div><div class="kpi"><b>${best}</b><span>rekord dnia</span></div></div>
+    <div><div class="eyebrow" style="margin-bottom:6px">Ostatnie 7 dni</div><div class="bars">${last7.map(x => `<div><span style="height:${Math.max(3, Math.round(100 * x.xp / mx))}%" class="${x.xp ? 'on' : ''}"></span><small>${DN[x.d.getDay()]}</small></div>`).join('')}</div></div>
+    ${weakTop.length ? `<div><div class="eyebrow" style="margin-bottom:6px">Najwięcej błędów</div>${weakTop.map(([t, c]) => `<div class="row" style="justify-content:space-between"><span>${esc(t)}</span><span class="qcount">${c}</span></div>`).join('')}<a class="btn soft" href="#powtorki" style="margin-top:8px">Powtórz błędy</a></div>` : ''}</section>`;
+}
+
+/* ===== SPRAWDZIANY DZIAŁÓW I EGZAMIN PILOTA ===== */
+const unitDone = u => u.levels.every(l => isDone(l.id));
+function examItems(levels, nMc, nGram, nOrder, nWrite) {
+  const Ws = shuffle(levels.flatMap(l => l.w.map((_, i) => W(l, i)))), Ss = shuffle(levels.flatMap(l => l.s.map((_, i) => SN(l, i)))), Gs = shuffle(levels.flatMap(l => l.g.map((_, i) => GR(l, i))));
+  const out = [];
+  for (let k = 0; k < nMc && k < Ws.length; k++) out.push({t:'mc', dir:k % 2 ? 'bg2pl' : 'pl2bg', it:Ws[k]});
+  for (let k = 0; k < nGram && k < Gs.length; k++) out.push({t:'gram', it:Gs[k]});
+  for (let k = 0; k < nOrder && k < Ss.length; k++) out.push({t:'order', it:Ss[k]});
+  for (let k = 0; k < nWrite && nMc + k < Ws.length; k++) out.push({t:'write', it:Ws[nMc + k]});
+  return shuffle(out);
+}
+function startUnitTest(uid) {
+  const u = UNITS.find(x => x.id === uid); if (!u) return;
+  startPractice(null, examItems(u.levels, 5, 3, 2, 2), `Sprawdzian: ${u.t}`, () => startUnitTest(uid)); L.exam = uid;
+}
+function startPilotExam() {
+  const ls = LEVELS.filter(l => isDone(l.id)); if (ls.length < 10) { toast('Egzamin próbny otworzy się po 10 ukończonych levelach.'); return; }
+  startPractice(null, examItems(ls, 12, 8, 5, 5), 'Egzamin pilota', startPilotExam); L.exam = 'pilot';
+}
+function examCardHTML() {
+  const done = LEVELS.filter(l => isDone(l.id)).length, all = done >= LEVELS.length, best = (S.exams || {}).pilot || 0;
+  return `<div class="card stack" style="margin-bottom:16px"><div><div class="eyebrow">Egzamin pilota</div><b style="font-family:var(--f-display);font-size:20px">${all ? 'Egzamin końcowy z dyplomem' : 'Egzamin próbny'}</b>
+    <div class="muted" style="font-size:14px">30 zadań z ukończonych leveli. ${all ? 'Wynik od 80% daje dyplom do pobrania.' : `Dyplom będzie dostępny po ukończeniu wszystkich leveli (${done}/${LEVELS.length}).`}${best ? ` Najlepszy wynik: ${best}%.` : ''}</div></div>
+    <div class="row"><button class="btn ${done >= 10 ? '' : 'ghost'}" id="pilotExam">${done >= 10 ? 'Zacznij egzamin' : 'Dostępny po 10 levelach'}</button>${all && best >= 80 ? '<button class="btn soft" id="dipBtn">Pobierz dyplom</button>' : ''}</div></div>`;
+}
+function diplomaBoxHTML() {
+  return `<div class="card stack" style="text-align:left"><b style="font-family:var(--f-display);font-size:20px">Dyplom gotowy do pobrania</b>
+    <input class="search" id="dipName" placeholder="Imię i nazwisko na dyplomie" value="${esc(S.name || '')}" aria-label="Imię i nazwisko"><button class="btn" id="dipGo">Pobierz dyplom (PNG)</button></div>`;
+}
+function wireDiploma(score) {
+  const go = $('#dipGo'); if (!go) return;
+  go.onclick = () => { const n = $('#dipName').value.trim(); if (!n) { toast('Wpisz imię i nazwisko.'); return; } S.name = n; save(); makeDiploma(n, score); };
+}
+function makeDiploma(name, score) {
+  const cs = getComputedStyle(document.documentElement), col = v => cs.getPropertyValue(v).trim();
+  const c = document.createElement('canvas'); c.width = 1400; c.height = 990; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 990); g.addColorStop(0, '#9FD0F7'); g.addColorStop(.55, '#EAF5FE'); g.addColorStop(1, '#FFFFFF'); x.fillStyle = g; x.fillRect(0, 0, 1400, 990);
+  x.fillStyle = '#FFFFFF'; [[230, 190, 70], [320, 170, 95], [420, 195, 65], [1010, 250, 60], [1100, 230, 85], [1190, 255, 60]].forEach(([a, b, r]) => { x.beginPath(); x.ellipse(a, b, r * 1.5, r * .8, 0, 0, 7); x.fill(); });
+  x.strokeStyle = '#1767BD'; x.lineWidth = 8; x.strokeRect(40, 40, 1320, 910); x.lineWidth = 2; x.strokeRect(58, 58, 1284, 874);
+  x.textAlign = 'center'; x.fillStyle = '#12305A';
+  x.font = '800 96px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillText('ДИПЛОМА', 700, 330);
+  x.font = '500 34px "Sofia Sans",Arial,sans-serif'; x.fillStyle = '#4F6B8C'; x.fillText('Dyplom ukończenia kursu „Bułgarski za sterami”', 700, 390);
+  x.fillStyle = '#1767BD'; x.font = '800 78px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillText(name, 700, 520, 1200);
+  x.strokeStyle = '#E7A60F'; x.lineWidth = 4; x.beginPath(); x.moveTo(350, 548); x.lineTo(1050, 548); x.stroke();
+  x.fillStyle = '#12305A'; x.font = '500 36px "Sofia Sans",Arial,sans-serif';
+  x.fillText('ukończyła kurs języka bułgarskiego na poziomie A2–B1', 700, 620);
+  x.fillText(`z modułem lotniczym i zdała egzamin pilota z wynikiem ${score}%.`, 700, 670);
+  x.font = '800 44px "Sofia Sans Condensed","Sofia Sans",Arial,sans-serif'; x.fillStyle = '#D9601A'; x.fillText('Честито! Успешни полети!', 700, 770);
+  x.font = '500 28px "Sofia Sans",Arial,sans-serif'; x.fillStyle = '#4F6B8C'; x.fillText(`${today()} · ${LEVELS.length} leveli · ${S.xp} XP`, 700, 860);
+  c.toBlob(b => { if (!b) { toast('Nie udało się utworzyć dyplomu.'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'dyplom-bulgarski-za-sterami.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); toast('Dyplom zapisany w Pobranych.'); }, 'image/png');
 }
 
 /* ===== START ===== */

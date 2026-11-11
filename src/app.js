@@ -93,7 +93,7 @@ function getRef(ref) {
 const KEY = 'bg-za-sterami-v1';
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[]}; }
+function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[], days:{}, facts:[], my:[], exams:{}, dlg:{}, name:''}; }
 let S = defaults();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
 /* motyw: auto (jak w systemie) / jasny / ciemny */
@@ -137,6 +137,12 @@ function mergeStates(a, b) {
   }
   Object.entries(od.best || {}).forEach(([k, v]) => { m.best[k] = Math.max(m.best[k] || 0, v); });
   if (!m.placement && od.placement) m.placement = od.placement;
+  Object.entries(od.days || {}).forEach(([k, v]) => { m.days[k] = Math.max(m.days[k] || 0, v); });
+  Object.entries(od.exams || {}).forEach(([k, v]) => { m.exams[k] = Math.max(m.exams[k] || 0, v); });
+  Object.entries(od.dlg || {}).forEach(([k, v]) => { m.dlg[k] = Math.max(m.dlg[k] || 0, v); });
+  m.facts = [...new Set([...(m.facts || []), ...(od.facts || [])])];
+  (od.my || []).forEach(x => { if (!m.my.some(y => y.bg === x.bg && y.pl === x.pl)) m.my.push(x); });
+  if (!m.name && od.name) m.name = od.name;
   m.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
   return m;
 }
@@ -179,6 +185,7 @@ function addXP(n) {
   S.xp += n;
   if (S.daily.date !== today()) S.daily = {date:today(), xp:0};
   S.daily.xp += n;
+  if (!S.days) S.days = {}; S.days[today()] = (S.days[today()] || 0) + n;
   if (S.lastDay !== today()) { S.streak = S.lastDay === yesterday() ? S.streak + 1 : 1; S.lastDay = today(); }
   const after = rankOf(S.xp);
   if (after > before) setTimeout(() => toast(`Awans! Nowa ranga: ${RANKS[after][1]} (${RANKS[after][2]})`), 600);
@@ -305,6 +312,7 @@ function viewMap() {
       <button data-track="day" aria-pressed="${tr === 'day'}">Na co dzień · ${TRACK.day.filter(l => isDone(l.id)).length}/${TRACK.day.length}</button>
       <button data-track="air" aria-pressed="${tr === 'air'}">${ICON.plane} Lotnictwo · ${TRACK.air.filter(l => isDone(l.id)).length}/${TRACK.air.length}</button></div></div>
     <div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between;font-size:14px"><span>Ukończone levele</span><span class="mono">${LEVELS.filter(l => isDone(l.id)).length} / ${LEVELS.length}</span></div><div class="bar" style="margin-top:6px"><i style="width:${100 * LEVELS.filter(l => isDone(l.id)).length / LEVELS.length}%"></i></div></div>`;
+  html += examCardHTML();
   if (nx) html += `<div class="next"><div><span class="eyebrow">Następny lot · ${nx.unit.cefr}</span><b>${esc(nx.t)}</b><span lang="bg" style="opacity:.75">${esc(nx.bt)}</span></div><button class="btn" data-start="${nx.id}">Start</button></div>`;
   else if (tr === 'air' && !isOpen(TRACK.air[0])) html += `<div class="card muted">Trasa lotnicza otworzy się po pierwszym levelu na trasie „Na co dzień” albo po teście wstępnym.</div>`;
   else html += `<div class="card"><b>Trasa ukończona!</b> <span class="muted">Zdobywaj 3 gwiazdki i ćwicz w Powtórkach.</span></div>`;
@@ -319,9 +327,12 @@ function viewMap() {
         <button class="wpbtn" ${open ? `data-start="${l.id}"` : 'disabled'} aria-label="${esc(l.t)}${open ? '' : ' – zablokowane'}">
         <span style="min-width:0"><span class="t">${esc(l.t)}</span><span class="b" lang="bg">${esc(l.bt)}</span></span>${right}</button></li>`;
     });
-    html += `</ol></section>`;
+    html += `</ol>${unitDone(u) ? `<button class="btn soft" data-utest="${u.id}" style="margin-top:8px">Sprawdzian działu${(S.exams || {})[u.id] ? ` · najlepiej ${S.exams[u.id]}%` : ''}</button>` : ''}</section>`;
   });
   $('#view').innerHTML = html;
+  $$('[data-utest]').forEach(b => b.onclick = () => startUnitTest(b.dataset.utest));
+  const pe = $('#pilotExam'); if (pe) pe.onclick = startPilotExam;
+  const db = $('#dipBtn'); if (db) db.onclick = () => { db.outerHTML = diplomaBoxHTML(); wireDiploma(S.exams.pilot); };
   $$('[data-track]').forEach(b => b.onclick = () => { S.track = b.dataset.track; save(); viewMap(); });
   $$('[data-start]').forEach(b => b.onclick = () => openBriefing(b.dataset.start));
 }
@@ -355,7 +366,9 @@ function viewProfile() {
     <div class="bar"><i style="width:${Math.round(p * 100)}%"></i></div>
     <div class="muted" style="font-size:14px">${nr ? `${S.xp} / ${nr[0]} XP do rangi <span lang="bg">${nr[1]}</span> (${nr[2]})` : 'Najwyższa ranga. Gratulacje!'}</div></div>
    <div class="kpis" style="margin:0"><div class="kpi"><b>${done}/${LEVELS.length}</b><span>leveli</span></div><div class="kpi"><b>${words}</b><span>słówek</span></div><div class="kpi"><b>${acc}%</b><span>trafność</span></div></div>
+   ${calendarHTML()}
    ${hangarHTML()}
+   ${notebookHTML()}
    ${pl ? `<div class="card"><div class="eyebrow">Test wstępny</div><b>Poziom ${esc(pl.cefr)}</b> <span class="muted">· ${pl.score}/${PLACEMENT.length} pkt</span><p style="margin:6px 0 0" class="muted">${esc(pl.planShort || '')}</p></div>` : ''}
    <a class="card helpcard" href="#pomoc"><div><div class="eyebrow">Ustawienia telefonu</div><b>Lektor, mikrofon i instalacja</b>
      <div class="muted" style="font-size:14px;margin-top:2px">Co zrobić na Androidzie, a co na iPhonie, żeby aplikacja mówiła i rozpoznawała wymowę.</div>

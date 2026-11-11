@@ -373,10 +373,11 @@ function viewBoard() {
     ${t.done || i === cur ? `<button class="btn ${t.done ? 'ghost' : ''}" style="min-height:38px;padding:6px 14px" data-tile="${i}">${t.done ? 'Powtórz' : 'Start'}</button>` : `<span class="muted">${ICON.lock}</span>`}</div>`).join('')}</div></section>`;
   html += `<section style="margin-top:26px"><div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="eyebrow">Kolekcja pocztówek</span><span class="qcount">${S.game.visited.length} / ${CITIES.length}</span></div>
     <div class="cards">${CITIES.map((c, i) => S.game.visited.includes(i) ?
-      `<div class="pc"><b lang="bg">${esc(c.bg)}</b><small>${esc(c.pl)}${c.icao ? ` · <span class="mono">${c.icao}</span>` : ''}</small><p lang="bg">${esc(c.f)}</p><p class="muted">${esc(c.fpl)}</p>${spkBtn(c.f)}</div>` :
+      `<div class="pc"><b lang="bg">${esc(c.bg)}</b><small>${esc(c.pl)}${c.icao ? ` · <span class="mono">${c.icao}</span>` : ''}</small><p lang="bg">${esc(c.f)}</p><p class="muted">${esc(c.fpl)}</p><div class="row" style="gap:8px">${spkBtn(c.f)}${READS[i] ? `<button class="chip" data-read="${i}">Czytanka</button>` : ''}</div></div>` :
       `<div class="pc locked"><b>?</b><small>${i === 0 ? 'Start' : 'Jeszcze nie odwiedzone'}</small></div>`).join('')}</div></section>`;
   $('#view').innerHTML = html;
   $$('[data-tile]').forEach(b => b.onclick = () => startTile(+b.dataset.tile));
+  $$('[data-read]').forEach(b => b.onclick = () => openReading(+b.dataset.read));
   const sk = $('#skipTest'); if (sk) sk.onclick = () => { S.placement = {skipped:true}; save(); viewBoard(); };
   const bo = $('#bonus'); if (bo) bo.onclick = () => { S.game.day = makeDay(); save(); heroShown = {key:'', idx:-1}; viewBoard(); renderHud(); };
   if (startIdx !== target) { const h = $('#hero'); requestAnimationFrame(() => requestAnimationFrame(() => { h.style.cssText = pct(PP[target]); })); }
@@ -409,6 +410,9 @@ function finishLesson() {
   let landed = null;
   if (L.tile != null && pass) landed = markTile(L.tile, L.mode === 'review' ? 3 : starsN);
   if (landed) xp += 20;
+  const factI = landed ? nextFact() : null, examId = L.exam || null, examPc = Math.round(acc * 100);
+  if (examId) { if (!S.exams) S.exams = {}; if (examPc > (S.exams[examId] || 0)) S.exams[examId] = examPc; }
+  const allDone = LEVELS.every(l => isDone(l.id));
   addXP(xp); save(); renderHud();
   const onBoard = L.tile != null;
   const name = L.mode === 'level' ? L.lv.t : L.mode === 'practice' ? L.title : 'Powtórka';
@@ -423,6 +427,9 @@ function finishLesson() {
     ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
     <p class="muted">${esc(sub)}</p>
     ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
+    ${factI != null ? chestHTML(factI) : ''}
+    ${landed && READS[CITIES.indexOf(landed)] ? `<button class="btn soft block" id="resRead" style="margin-top:10px">Przeczytaj czytankę o mieście</button>` : ''}
+    ${examId === 'pilot' ? (examPc >= 80 && allDone ? diplomaBoxHTML() : `<p class="muted">${examPc >= 80 ? 'Świetny wynik! Dyplom odblokuje się po ukończeniu wszystkich leveli.' : 'Do zaliczenia egzaminu potrzeba 80%.'}</p>`) : ''}
     ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b>${esc(upg[0])} <span class="muted">· ${esc(upg[1])} · ${esc(upg[2])}</span></b><small>${esc(upg[4])}</small><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
     <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
    </div></div>
@@ -433,6 +440,9 @@ function finishLesson() {
   if (landed || upg || (pass && starsN === 3) || (mode0 === 'review' && acc >= 0.9)) confetti();
   const lvId = L.lv && L.lv.id, tile = L.tile, again = L.again, mode = L.mode;
   $('#lx').onclick = closeLesson;
+  const co = $('#chestOpen'); if (co) co.onclick = () => { co.hidden = true; $('#chestIn').hidden = false; confetti(); };
+  const rr = $('#resRead'); if (rr) rr.onclick = () => openReading(CITIES.indexOf(landed));
+  wireDiploma(examPc);
   const a = $('#again'); if (a) a.onclick = () => { if (mode === 'level') openBriefing(lvId, tile); else if (mode === 'review') startReview(); else if (again) again(); };
   const g = $('#goNext'); if (g) g.onclick = () => openBriefing(nextId);
   const t = $('#toMap'); if (t) t.onclick = closeLesson;

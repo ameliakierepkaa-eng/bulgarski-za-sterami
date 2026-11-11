@@ -1027,6 +1027,161 @@ const VERBS = [
  ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
 ];
 
+/* ---------------- DIALOGI ----------------
+   lines: [kto ('A' – rozmówca, 'T' – Ty), bułgarski, polski]. W kwestiach 'T' wybierasz właściwą odpowiedź. */
+const DIALOGS = [
+ {id:'kafe', t:'W kawiarni', bt:'В кафенето', lv:'A1', track:'day', lines:[
+  ['A','Добър ден! Какво ще желаете?','Dzień dobry! Co podać?'],
+  ['T','Добър ден! Едно кафе и една вода, моля.','Dzień dobry! Jedną kawę i jedną wodę, proszę.'],
+  ['A','С мляко ли искате кафето?','Kawę z mlekiem?'],
+  ['T','Да, с малко мляко.','Tak, z odrobiną mleka.'],
+  ['A','Нещо друго?','Coś jeszcze?'],
+  ['T','Не, благодаря. Колко струва?','Nie, dziękuję. Ile to kosztuje?'],
+  ['A','Четири евро.','Cztery euro.'],
+  ['T','Може ли да платя с карта?','Czy mogę zapłacić kartą?'],
+  ['A','Разбира се.','Oczywiście.']]},
+ {id:'gara', t:'Pytanie o drogę', bt:'Къде е гарата?', lv:'A1', track:'day', lines:[
+  ['T','Извинете, къде е гарата?','Przepraszam, gdzie jest dworzec?'],
+  ['A','Вървете направо и после завийте наляво.','Proszę iść prosto, a potem skręcić w lewo.'],
+  ['T','Далече ли е?','Czy to daleko?'],
+  ['A','Не, близо е. Пет минути пеша.','Nie, blisko. Pięć minut pieszo.'],
+  ['T','Благодаря много!','Dziękuję bardzo!'],
+  ['A','Няма защо. Приятен ден!','Nie ma za co. Miłego dnia!']]},
+ {id:'zapozn', t:'Poznajemy się', bt:'Запознанство', lv:'A2', track:'day', lines:[
+  ['A','Здравей! Аз съм Иван. Как се казваш?','Cześć! Jestem Iwan. Jak masz na imię?'],
+  ['T','Здравей! Казвам се Анна. Приятно ми е.','Cześć! Nazywam się Anna. Miło mi.'],
+  ['A','Откъде си?','Skąd jesteś?'],
+  ['T','От Полша съм. Уча български.','Jestem z Polski. Uczę się bułgarskiego.'],
+  ['A','Говориш много добре! Какво работиш?','Mówisz bardzo dobrze! Czym się zajmujesz?'],
+  ['T','Студентка съм и летя с автожир.','Jestem studentką i latam wiatrakowcem.'],
+  ['A','Наистина ли? Много интересно!','Naprawdę? Bardzo ciekawe!']]},
+ {id:'hotel', t:'W hotelu', bt:'В хотела', lv:'A2', track:'day', lines:[
+  ['T','Добър вечер! Имам резервация на името Ковалска.','Dobry wieczór! Mam rezerwację na nazwisko Kowalska.'],
+  ['A','Добър вечер! Да, двойна стая за две нощувки.','Dobry wieczór! Tak, pokój dwuosobowy na dwie noce.'],
+  ['T','Закуската включена ли е?','Czy śniadanie jest wliczone?'],
+  ['A','Да, закуската е от седем до десет часа.','Tak, śniadanie jest od siódmej do dziesiątej.'],
+  ['T','Каква е паролата за интернета?','Jakie jest hasło do internetu?'],
+  ['A','Паролата е на ключа. Стаята ви е на третия етаж.','Hasło jest na kluczu. Pani pokój jest na trzecim piętrze.'],
+  ['T','Благодаря. Има ли асансьор?','Dziękuję. Czy jest winda?'],
+  ['A','Да, вдясно от рецепцията.','Tak, na prawo od recepcji.']]},
+ {id:'lekar', t:'U lekarza', bt:'При лекаря', lv:'A2', track:'day', lines:[
+  ['A','Добър ден. Какво ви боли?','Dzień dobry. Co panią boli?'],
+  ['T','Боли ме гърлото и имам температура.','Boli mnie gardło i mam gorączkę.'],
+  ['A','От кога?','Od kiedy?'],
+  ['T','От вчера.','Od wczoraj.'],
+  ['A','Отворете уста, моля. Дишайте дълбоко.','Proszę otworzyć usta. Proszę głęboko oddychać.'],
+  ['T','Сериозно ли е?','Czy to coś poważnego?'],
+  ['A','Не, това е настинка. Ще ви дам рецепта.','Nie, to przeziębienie. Dam pani receptę.'],
+  ['T','Благодаря, докторе.','Dziękuję, panie doktorze.']]},
+ {id:'predi', t:'Przed lotem z instruktorem', bt:'Преди полета', lv:'A2', track:'air', lines:[
+  ['A','Добро утро! Готова ли си за полета?','Dzień dobry! Jesteś gotowa do lotu?'],
+  ['T','Добро утро! Да, готова съм.','Dzień dobry! Tak, jestem gotowa.'],
+  ['A','Провери ли горивото и маслото?','Sprawdziłaś paliwo i olej?'],
+  ['T','Да, проверих ги. Всичко е наред.','Tak, sprawdziłam je. Wszystko w porządku.'],
+  ['A','Какъв е вятърът днес?','Jaki jest dziś wiatr?'],
+  ['T','Вятърът е слаб, от запад.','Wiatr jest słaby, z zachodu.'],
+  ['A','Добре. Сложи си каската и затегни колана.','Dobrze. Załóż kask i zapnij pas.'],
+  ['T','Готово. Мога ли да запаля двигателя?','Gotowe. Mogę uruchomić silnik?'],
+  ['A','Да, запали двигателя.','Tak, uruchom silnik.']]},
+ {id:'kula', t:'Rozmowa z wieżą', bt:'Радиовръзка', lv:'B1', track:'air', lines:[
+  ['T','Кула, добър ден, автожир на точката на изчакване, готова за излитане.','Wieża, dzień dobry, wiatrakowiec w punkcie oczekiwania, gotowa do startu.'],
+  ['A','Добър ден. Изчакайте, каца самолет.','Dzień dobry. Proszę czekać, ląduje samolot.'],
+  ['T','Разбрано, чакам.','Zrozumiałam, czekam.'],
+  ['A','Пистата е свободна. Излитането е разрешено.','Pas jest wolny. Start dozwolony.'],
+  ['T','Излитането е разрешено, излитам.','Start dozwolony, startuję.'],
+  ['A','Докладвайте при напускане на зоната.','Proszę zgłosić opuszczenie strefy.'],
+  ['T','Ще докладвам при напускане на зоната.','Zgłoszę opuszczenie strefy.']]},
+ {id:'sled', t:'Omówienie po locie', bt:'След полета', lv:'B1', track:'air', lines:[
+  ['A','Как мина полетът?','Jak minął lot?'],
+  ['T','Добре, но кацането беше трудно.','Dobrze, ale lądowanie było trudne.'],
+  ['A','Защо?','Dlaczego?'],
+  ['T','Имаше силен страничен вятър.','Był silny wiatr boczny.'],
+  ['A','Справи се добре. Следващия път дръж скоростта по-висока.','Poradziłaś sobie dobrze. Następnym razem trzymaj większą prędkość.'],
+  ['T','Добре, ще запомня.','Dobrze, zapamiętam.'],
+  ['A','Запиши полета в летателната книжка.','Wpisz lot do dziennika lotów.'],
+  ['T','Веднага.','Już to robię.']]}
+];
+
+/* ---------------- SŁUCHANIE ZE ZROZUMIENIEM ----------------
+   qs: [pytanie, poprawna odpowiedź, błędna, błędna] */
+const LISTEN = [
+ {t:'Prognoza pogody', bg:'Добро утро. Днес времето ще бъде слънчево. Температурата ще бъде двайсет и пет градуса. Вятърът е слаб, от запад. Утре ще вали дъжд.', pl:'Dzień dobry. Dziś pogoda będzie słoneczna. Temperatura wyniesie dwadzieścia pięć stopni. Wiatr jest słaby, z zachodu. Jutro będzie padać deszcz.',
+  qs:[['Jaka będzie dziś pogoda?','słoneczna','deszczowa','mglista'],['Skąd wieje wiatr?','z zachodu','ze wschodu','z północy'],['Co będzie jutro?','deszcz','burza','śnieg']]},
+ {t:'Ogłoszenie na lotnisku', bg:'Внимание, моля. Полетът за Варна закъснява с трийсет минути. Пътниците да отидат на изход номер пет. Благодарим за разбирането.', pl:'Uwaga, proszę. Lot do Warny jest opóźniony o trzydzieści minut. Pasażerowie proszeni są o przejście do wyjścia numer pięć. Dziękujemy za zrozumienie.',
+  qs:[['Dokąd jest ten lot?','do Warny','do Sofii','do Burgas'],['O ile jest opóźniony?','o 30 minut','o 13 minut','o godzinę'],['Do którego wyjścia mają iść pasażerowie?','numer 5','numer 15','numer 3']]},
+ {t:'Moja rodzina', bg:'Казвам се Мария. Имам брат и сестра. Брат ми е пилот, а сестра ми е лекарка. Родителите ми живеят в Пловдив.', pl:'Nazywam się Maria. Mam brata i siostrę. Mój brat jest pilotem, a siostra lekarką. Moi rodzice mieszkają w Płowdiwie.',
+  qs:[['Jakie rodzeństwo ma Maria?','brata i siostrę','dwóch braci','dwie siostry'],['Kim jest jej brat?','pilotem','lekarzem','nauczycielem'],['Gdzie mieszkają rodzice?','w Płowdiwie','w Sofii','w Warnie']]},
+ {t:'W restauracji', bg:'Добър вечер. Маса за двама, моля. Бих искала шопска салата и супа. За пиене – една вода и чаша вино. Сметката, моля.', pl:'Dobry wieczór. Stolik dla dwojga, proszę. Chciałabym sałatkę szopską i zupę. Do picia – wodę i kieliszek wina. Rachunek, proszę.',
+  qs:[['Dla ilu osób jest stolik?','dla dwóch','dla trzech','dla czterech'],['Co zamawia do jedzenia?','sałatkę szopską i zupę','banicę i jogurt','mięso i chleb'],['Co zamawia do picia?','wodę i wino','kawę i sok','herbatę i piwo']]},
+ {t:'Mój dzień', bg:'Събуждам се в седем часа. Първо пия кафе и закусвам. В осем отивам на работа. Вечер се разхождам в парка. Лягам си в единайсет.', pl:'Budzę się o siódmej. Najpierw piję kawę i jem śniadanie. O ósmej idę do pracy. Wieczorem spaceruję w parku. Kładę się spać o jedenastej.',
+  qs:[['O której się budzi?','o siódmej','o szóstej','o ósmej'],['Co robi wieczorem?','spaceruje w parku','ogląda telewizję','gotuje kolację'],['O której kładzie się spać?','o jedenastej','o dziesiątej','o dwunastej']]},
+ {t:'Wycieczka', bg:'В събота отиваме на екскурзия до Рилския манастир. Автобусът тръгва в осем часа от гарата. Билетът струва двайсет евро. Вземете вода и удобни обувки.', pl:'W sobotę jedziemy na wycieczkę do Monastyru Rylskiego. Autobus odjeżdża o ósmej z dworca. Bilet kosztuje dwadzieścia euro. Weźcie wodę i wygodne buty.',
+  qs:[['Dokąd jest wycieczka?','do Monastyru Rylskiego','nad morze','do Płowdiwu'],['Skąd odjeżdża autobus?','z dworca','z lotniska','spod hotelu'],['Ile kosztuje bilet?','20 euro','12 euro','200 euro']]},
+ {t:'Komunikat pogodowy dla pilotów', bg:'Вятър двеста и седемдесет градуса, десет възела. Видимостта е добра. Базата на облаците е на три хиляди фута. Следобед има опасност от гръмотевични бури.', pl:'Wiatr dwieście siedemdziesiąt stopni, dziesięć węzłów. Widoczność jest dobra. Podstawa chmur jest na trzech tysiącach stóp. Po południu istnieje ryzyko burz.',
+  qs:[['Jaki jest wiatr?','270°, 10 węzłów','170°, 20 węzłów','270°, 20 węzłów'],['Na jakiej wysokości jest podstawa chmur?','3000 stóp','1300 stóp','13 000 stóp'],['Co grozi po południu?','burze','mgła','oblodzenie']]},
+ {t:'Przed startem', bg:'Правим предполетен оглед. Проверяваме горивото, маслото и лопатите на ротора. Слагаме каските и затягаме коланите. Включваме предварителното завъртане на ротора. Излитаме срещу вятъра.', pl:'Robimy przegląd przedlotowy. Sprawdzamy paliwo, olej i łopaty wirnika. Zakładamy kaski i zapinamy pasy. Włączamy wstępne rozkręcanie wirnika. Startujemy pod wiatr.',
+  qs:[['Co sprawdza załoga?','paliwo, olej i łopaty wirnika','radio i mapę','hamulce i opony'],['Co zakładają przed lotem?','kaski','kamizelki','rękawice'],['Jak startują?','pod wiatr','z wiatrem','z bocznym wiatrem']]}
+];
+
+/* ---------------- CZYTANKI O MIASTACH (indeks jak w CITIES) ----------------
+   s: [zdanie po bułgarsku, tłumaczenie], g: [słówko, znaczenie] */
+const READS = [
+ {s:[['София е столицата на България.','Sofia jest stolicą Bułgarii.'],['Градът е в подножието на планината Витоша.','Miasto leży u podnóża góry Witosza.'],['В центъра се намира катедралата „Свети Александър Невски“.','W centrum znajduje się katedra św. Aleksandra Newskiego.']], g:[['столица','stolica'],['подножие','podnóże'],['планина','góra, góry'],['намира се','znajduje się']]},
+ {s:[['Пловдив е вторият по големина град в България.','Płowdiw jest drugim co do wielkości miastem Bułgarii.'],['Той е построен на няколко хълма.','Jest zbudowany na kilku wzgórzach.'],['В Стария град има римски театър.','Na Starym Mieście jest rzymski teatr.']], g:[['по големина','co do wielkości'],['хълм','wzgórze'],['построен','zbudowany'],['римски','rzymski']]},
+ {s:[['Казанлък е в Розовата долина.','Kazanłyk leży w Dolinie Róż.'],['Тук през май и юни берат рози.','Tutaj w maju i czerwcu zbiera się róże.'],['От розите правят розово масло.','Z róż robi się olejek różany.']], g:[['долина','dolina'],['берат','zbierają'],['роза','róża'],['розово масло','olejek różany']]},
+ {s:[['Стара Загора е стар град с прави улици.','Stara Zagora to stare miasto o prostych ulicach.'],['В града има много липи.','W mieście jest dużo lip.'],['През пролетта липите ухаят чудесно.','Wiosną lipy cudownie pachną.']], g:[['прав','prosty'],['липа','lipa'],['ухаят','pachną'],['чудесно','cudownie']]},
+ {s:[['Бургас е голямо пристанище на Черно море.','Burgas to duży port nad Morzem Czarnym.'],['В Морската градина хората се разхождат край морето.','W Ogrodzie Morskim ludzie spacerują nad morzem.'],['Близо до града има три езера.','Blisko miasta są trzy jeziora.']], g:[['пристанище','port'],['градина','ogród'],['край','przy, nad'],['езеро','jezioro']]},
+ {s:[['Несебър е малък град на полуостров.','Nesebyr to małe miasto na półwyspie.'],['Старият град е в списъка на ЮНЕСКО.','Stare Miasto jest na liście UNESCO.'],['Тук има стари църкви и дървени къщи.','Są tu stare cerkwie i drewniane domy.']], g:[['полуостров','półwysep'],['списък','lista'],['църква','cerkiew'],['дървен','drewniany']]},
+ {s:[['Варна е най-големият град на българското море.','Warna to największe miasto nad bułgarskim morzem.'],['Наричат я морската столица.','Nazywają ją morską stolicą.'],['В музея се пази най-старото злато в света.','W muzeum przechowywane jest najstarsze złoto świata.']], g:[['наричат','nazywają'],['музей','muzeum'],['пази се','jest przechowywane'],['злато','złoto']]},
+ {s:[['Шумен е в Североизточна България.','Szumen leży w północno-wschodniej Bułgarii.'],['Близо до града е Мадарският конник.','Niedaleko miasta jest Jeździec z Madary.'],['Това е голям релеф на скала.','To duży relief wykuty w skale.']], g:[['североизточен','północno-wschodni'],['конник','jeździec'],['скала','skała'],['близо до','blisko']]},
+ {s:[['Русе е най-голямото българско пристанище на Дунав.','Ruse to największy bułgarski port na Dunaju.'],['Мост свързва Русе с Румъния.','Most łączy Ruse z Rumunią.'],['Заради красивите сгради го наричат „Малката Виена“.','Z powodu pięknych budynków nazywają je „Małym Wiedniem”.']], g:[['мост','most'],['свързва','łączy'],['сграда','budynek'],['заради','z powodu']]},
+ {s:[['Велико Търново е старата столица на България.','Wielkie Tyrnowo to dawna stolica Bułgarii.'],['Градът е над река Янтра.','Miasto leży nad rzeką Jantrą.'],['На хълма Царевец има голяма крепост.','Na wzgórzu Carewec stoi duża twierdza.']], g:[['стар','stary, dawny'],['река','rzeka'],['хълм','wzgórze'],['крепост','twierdza']]},
+ {s:[['Габрово е в подножието на Стара планина.','Gabrowo leży u podnóża Starej Płaniny.'],['Градът е известен с хумора си.','Miasto słynie z humoru.'],['Тук има Дом на хумора и сатирата.','Jest tu Dom Humoru i Satyry.']], g:[['известен с','znany z'],['хумор','humor'],['дом','dom'],['подножие','podnóże']]},
+ {s:[['Плевен е в Северна България.','Plewen leży w północnej Bułgarii.'],['В града има известна панорама.','W mieście jest słynna panorama.'],['Тя показва битката за Плевен през 1877 година.','Pokazuje bitwę o Plewen w 1877 roku.']], g:[['северен','północny'],['показва','pokazuje'],['битка','bitwa'],['година','rok']]},
+ {s:[['Видин е на брега на Дунав.','Widyń leży na brzegu Dunaju.'],['Тук се намира крепостта Баба Вида.','Znajduje się tu twierdza Baba Wida.'],['Тя е най-добре запазената средновековна крепост в България.','To najlepiej zachowana średniowieczna twierdza w Bułgarii.']], g:[['бряг','brzeg'],['запазен','zachowany'],['средновековен','średniowieczny'],['най-добре','najlepiej']]},
+ {s:[['Белоградчик е малък град в Северозападна България.','Biełogradczik to małe miasto w północno-zachodniej Bułgarii.'],['Белоградчишките скали са червени и имат странни форми.','Skały Biełogradczika są czerwone i mają dziwne kształty.'],['Между скалите има стара крепост.','Między skałami stoi stara twierdza.']], g:[['северозападен','północno-zachodni'],['червен','czerwony'],['странен','dziwny'],['между','między']]},
+ {s:[['Рила е най-високата планина в България.','Riła to najwyższe góry Bułgarii.'],['Връх Мусала е висок 2925 метра.','Szczyt Musała ma 2925 metrów wysokości.'],['В планината се намира Рилският манастир.','W górach znajduje się Monastyr Rylski.']], g:[['връх','szczyt'],['висок','wysoki'],['манастир','klasztor'],['най-висок','najwyższy']]},
+ {s:[['Банско е в подножието на Пирин.','Bansko leży u stóp Pirinu.'],['През зимата тук идват много скиори.','Zimą przyjeżdża tu wielu narciarzy.'],['В стария град има каменни къщи и механи.','Na starym mieście są kamienne domy i karczmy.']], g:[['зима','zima'],['скиор','narciarz'],['каменен','kamienny'],['механа','karczma']]},
+ {s:[['Мелник е най-малкият град в България.','Mielnik to najmniejsze miasto Bułgarii.'],['Около него има пясъчни пирамиди.','Wokół niego są piaskowe piramidy.'],['Градът е известен с червеното си вино.','Miasto słynie z czerwonego wina.']], g:[['около','wokół'],['пясъчен','piaskowy'],['пирамида','piramida'],['вино','wino']]}
+];
+
+/* ---------------- NOTATNIK PILOTA: ciekawostki techniczne (nagroda po lądowaniu) ----------------
+   [tytuł, treść, termin po bułgarsku, jego znaczenie] */
+const FACTS = [
+ ['Autorotacja to stan normalny','Wirnik wiatrakowca nie jest napędzany silnikiem. Powietrze przepływa przez tarczę wirnika od dołu do góry i to ono go obraca – dokładnie odwrotnie niż w śmigłowcu w locie z napędem, gdzie powietrze jest zasysane od góry.','авторотация','autorotacja'],
+ ['Tarcza pochylona do tyłu','Żeby powietrze wpływało w wirnik od spodu, tarcza wirnika musi być pochylona do tyłu względem kierunku lotu. Im wolniej lecisz, tym większego pochylenia potrzeba, by utrzymać obroty.','ъгъл на атака','kąt natarcia'],
+ ['Obszar napędzający i napędzany','Na łopacie w autorotacji są trzy strefy: przy piaście przeciągnięta, w środku napędzająca (siła aerodynamiczna „ciągnie” łopatę do przodu), a przy końcu napędzana, która hamuje. Obroty ustalają się tam, gdzie obie strefy się równoważą.','лопата','łopata'],
+ ['Obroty same się regulują','Wirnik nie ma regulatora obrotów. Gdy rośnie przeciążenie (np. w zakręcie), obroty rosną same; gdy maszyna jest odciążona, spadają. Dlatego obroty wirnika mówią pilotowi, jak bardzo wirnik jest obciążony.','обороти','obroty'],
+ ['Dlaczego odciążenie jest groźne','Przy przeciążeniu bliskim zera wirnik przestaje dostawać powietrze od spodu i szybko traci obroty, a wraz z nimi siłę nośną i sterowność. Stąd żelazna zasada: nie pchać gwałtownie drążka od siebie.','претоварване','przeciążenie'],
+ ['Przewrót przez nos','Jeśli linia ciągu śmigła przechodzi powyżej środka ciężkości, ciąg daje moment pochylający nos w dół. Zwykle równoważy go wirnik, ale przy odciążonym wirniku moment zostaje bez przeciwwagi i maszyna może przekoziołkować do przodu.','тяга','ciąg'],
+ ['Po co statecznik poziomy','Duży statecznik poziomy, najlepiej opływany strumieniem zaśmigłowym, tłumi ruchy pochylające i zmniejsza ryzyko oscylacji wzbudzanych przez pilota. Wczesne konstrukcje amatorskie często go nie miały.','стабилизатор','statecznik'],
+ ['Oscylacje wzbudzane przez pilota','Kadłub wisi pod wirnikiem jak wahadło i reaguje z opóźnieniem. Pilot, który „goni” ruchy maszyny, może wzmacniać kolejne wahania. Lekarstwem jest ustalenie drążka i zmniejszenie mocy, a nie coraz szybsze poprawki.','трептене','drganie, oscylacja'],
+ ['Wirnik wahliwy','Większość lekkich wiatrakowców ma wirnik dwułopatowy na jednym przegubie wahliwym – jak huśtawka. Gdy jedna łopata się wznosi, druga opada, co wyrównuje różnicę siły nośnej między łopatą nacierającą a powracającą.','главина','piasta'],
+ ['Łopata nacierająca i powracająca','W locie do przodu łopata idąca „pod wiatr” ma większą prędkość względem powietrza niż ta, która się cofa. Bez wahań wirnik przechylałby maszynę na bok – ten problem rozwiązał de la Cierva przegubami.','скорост','prędkość'],
+ ['Podwieszenie wirnika','Oś przegubu wahliwego leży nieco powyżej łopat. Dzięki temu przy wahaniach środek masy wirnika prawie się nie przesuwa i nie powstają drgania przenoszone na drążek.','ос','oś'],
+ ['Stożek wirnika','Łopaty w locie nie są płaskie – unoszą się lekko do góry, tworząc stożek. Jego kąt wynika z równowagi siły nośnej i siły odśrodkowej, dlatego rośnie przy dużym obciążeniu i małych obrotach.','центробежна сила','siła odśrodkowa'],
+ ['Wstępne rozkręcanie','Prerotator rozpędza wirnik na ziemi do części obrotów lotnych. Bywa mechaniczny (wałek lub pasek z silnika), hydrauliczny albo elektryczny. Bez niego rozbieg byłby bardzo długi.','предварително завъртане','wstępne rozkręcenie'],
+ ['Trzepotanie łopat przy starcie','Jeśli pilot rozpędza maszynę szybciej, niż rosną obroty wirnika, łopaty zaczynają gwałtownie się wahać i mogą uderzyć w ogon lub ziemię. Dlatego na rozbiegu prędkość dodaje się stopniowo, pilnując obrotów.','излитане','start'],
+ ['Skok zamiast rozbiegu','Niektóre wiatrakowce mają zmienny skok łopat. Wirnik rozkręca się na ziemi powyżej obrotów lotnych przy zerowym skoku, a potem skok się zwiększa – zgromadzona energia podrywa maszynę niemal pionowo.','стъпка','skok (łopaty)'],
+ ['Wiatrakowiec nie wpada w korkociąg','Przy zmniejszaniu prędkości wirnik dalej się kręci i daje siłę nośną, więc nie ma klasycznego przeciągnięcia skrzydła ani korkociągu. Maszyna zaczyna po prostu opadać, zachowując sterowność.','срив','przeciągnięcie'],
+ ['Druga strona krzywej mocy','Poniżej prędkości minimalnej mocy każde dalsze zwolnienie wymaga WIĘCEJ mocy, bo opór wirnika rośnie. Blisko ziemi to pułapka: maszyna leci wolno, z nosem w górze, na pełnej mocy – i mimo to opada.','мощност','moc'],
+ ['Opadanie pionowe','Wiatrakowiec może opadać pionowo jak spadochron, zwykle z prędkością rzędu kilku metrów na sekundę. Przed ziemią trzeba jednak nabrać prędkości postępowej, bo dopiero ona pozwala wyhamować opadanie przy wyrównaniu.','снижаване','zniżanie'],
+ ['Silnik Rotax 912','Najpopularniejszy silnik lekkich wiatrakowców to czterocylindrowy bokser. Głowice chłodzi ciecz, a cylindry – powietrze. Wersje mają 80 lub 100 KM przy masie około 60 kg.','двигател','silnik'],
+ ['Reduktor','Rotax 912 osiąga moc przy ponad 5000 obr./min – za dużo dla śmigła. Wbudowana przekładnia zmniejsza obroty śmigła mniej więcej 2,4 raza (w wersji 100 KM), dzięki czemu śmigło pracuje w sprawnym zakresie.','редуктор','reduktor'],
+ ['Sucha miska olejowa','W Rotaksie olej jest w osobnym zbiorniku, a do niego wypychają go gazy z karteru. Dlatego przed sprawdzeniem poziomu obraca się śmigłem, aż w zbiorniku zabulgocze – dopiero wtedy cały olej jest w zbiorniku.','масло','olej'],
+ ['Rozgrzewanie silnika','Przed startem olej musi osiągnąć około 50°C. Zimny olej jest gęsty i gorzej smaruje, a pełna moc na zimnym silniku przyspiesza zużycie i grozi uszkodzeniem.','температура','temperatura'],
+ ['Podwójny zapłon','Silniki lotnicze mają dwa niezależne układy zapłonowe i po dwie świece na cylinder. Podczas próby silnika wyłącza się je po kolei: mały spadek obrotów jest prawidłowy, duży albo brak spadku oznacza usterkę.','запалване','zapłon'],
+ ['Oblodzenie gaźnika','W gardzieli gaźnika powietrze rozpręża się i ochładza nawet o kilkanaście stopni, a parujące paliwo zabiera kolejne ciepło. Lód może się więc tworzyć przy +15°C i dużej wilgotności, zwłaszcza na małej mocy.','заледяване','oblodzenie'],
+ ['Turbosprężarka','Rotax 914 ma turbosprężarkę i daje 115 KM. Największą zaletą nie jest sama moc, lecz to, że silnik utrzymuje ją na dużej wysokości, gdzie zwykły silnik słabnie z powodu rzadkiego powietrza.','височина','wysokość'],
+ ['Wtrysk zamiast gaźników','Nowsze silniki (np. Rotax 912 iS i 915 iS) mają elektroniczny wtrysk paliwa z dwoma niezależnymi torami sterowania. Nie grozi im oblodzenie gaźnika, zużywają mniej paliwa i same dobierają mieszankę.','гориво','paliwo'],
+ ['Benzyna samochodowa czy lotnicza','Rotaksy najlepiej znoszą bezołowiową benzynę samochodową. Lotnicza 100LL zawiera ołów, który osadza się w silniku, więc przy lataniu na niej wymienia się olej dwa razy częściej.','бензин','benzyna'],
+ ['Skok śmigła','Śmigło o małym skoku daje lepsze przyspieszenie i wznoszenie, o dużym – większą prędkość przelotową. Śmigła przestawialne na ziemi ustawia się kompromisowo, a regulowane w locie pozwalają wybrać jedno i drugie.','витло','śmigło'],
+ ['Moment od śmigła','Śmigło pchające obraca się w jedną stronę, więc kadłub „chce” obracać się w przeciwną, a zawirowany strumień uderza w usterzenie pod kątem. Pilot równoważy to sterem kierunku, zwłaszcza przy zmianach mocy.','кормило','ster'],
+ ['Wysokość gęstościowa','W upale i wysoko w górach powietrze jest rzadsze. Silnik ma mniej mocy, śmigło mniej ciągu, a wirnik potrzebuje większej prędkości. Rozbieg na gorącym, wysoko położonym lotnisku może być nawet dwa razy dłuższy.','плътност','gęstość'],
+ ['Dlaczego wiatrakowiec znosi turbulencję','Wirnik ma bardzo duże obciążenie powierzchni łopat i wysokie obroty, więc podmuchy zmieniają jego siłę nośną znacznie mniej niż siłę nośną skrzydła. Dlatego w rzucającym powietrzu wiatrakowiec „płynie” spokojniej niż ultralekki samolot.','турбуленция','turbulencja'],
+ ['Rezonans naziemny','Śmigłowce z wirnikami wielołopatowymi na przegubach mogą wpaść na ziemi w niszczące drgania. Dwułopatowy wirnik wahliwy nie ma przegubów odchyleń, więc to zjawisko go praktycznie nie dotyczy.','вибрации','wibracje']
+];
+
 /* ---------------- GRA: WIEŻA KONTROLI ----------------
    [komenda po bułgarsku, co ma zrobić pilotka] – zwroty zbudowane ze słownictwa leveli lotniczych */
 const TOWER = [
