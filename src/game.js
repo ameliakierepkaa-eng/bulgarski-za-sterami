@@ -28,7 +28,14 @@ function makeDay() {
   return {date:today(), stage:st, finished:false,
     tiles:[{k:'new'}, {k:'recap'}, {k:'phr', ph:ph.id, idx}, {k:'words'}, {k:'mix'}, {k:'review'}].map(t => ({...t, done:false, stars:0}))};
 }
-function ensureDay() { const g = S.game; if (!g.day || g.day.date !== today()) { g.day = makeDay(); save(); } }
+/* Niedokończona plansza przechodzi na następny dzień razem z zaliczonymi polami – nowa powstaje dopiero po lądowaniu. */
+function ensureDay() {
+  const g = S.game;
+  if (g.day && g.day.date === today()) return;
+  if (g.day && !g.day.finished && Array.isArray(g.day.tiles) && g.day.tiles.length === 6 && g.day.tiles[0].k === 'new') { g.day.date = today(); g.day.carried = true; }
+  else g.day = makeDay();
+  save();
+}
 /* Jeden nowy level dziennie: zawsze pierwszy nieukończony, ok. 2 „Na co dzień” na 1 lotniczy.
    Nieukończony level wraca na planszę następnego dnia – nic się nie przeskakuje. */
 function nextDaily() {
@@ -142,8 +149,29 @@ function markTile(i, starsN) {
 }
 
 /* --- postać: pilotka w wiatrakowcu (własny rysunek) --- */
-/* Hangar: co 5 ukończonych leveli nowy model wiatrakowca – nazwy to bułgarskie ptaki (przy okazji słówka). */
-const GYROS = [['врабче','wróbel'],['синигер','sikorka'],['лястовица','jaskółka'],['кос','kos'],['славей','słowik'],['гугутка','sierpówka'],['кукувица','kukułka'],['кълвач','dzięcioł'],['сврака','sroka'],['гарван','kruk'],['чапла','czapla'],['щъркел','bocian'],['пеликан','pelikan'],['сокол','sokół'],['ястреб','jastrząb'],['сова','sowa'],['бухал','puchacz'],['лебед','łabędź'],['орел','orzeł']];
+/* Hangar: co 5 ukończonych leveli nowy model – prawdziwe wiatrakowce w kolejności historycznej.
+   [nazwa, rok / okres, kraj po polsku, kraj po bułgarsku, ciekawostka]. Rysunki są uproszczone, nie w skali. */
+const GYROS = [
+ ['Cierva C.4','1923','Hiszpania','Испания','Pierwszy wiatrakowiec, który naprawdę poleciał. Zbudował go Juan de la Cierva; przegubowe mocowanie łopat sprawiło, że maszyna przestała się przewracać na bok.'],
+ ['Cierva C.8','1928','Wielka Brytania','Великобритания','Wersja C.8L jako pierwszy wiropłat przeleciała nad kanałem La Manche – z Londynu do Paryża. Za sterami siedział sam de la Cierva.'],
+ ['Cierva C.19','1929','Wielka Brytania','Великобритания','Pierwszy wiatrakowiec Ciervy budowany seryjnie. Wirnik rozkręcało się przed startem strumieniem powietrza od śmigła, odchylonym przez usterzenie.'],
+ ['Pitcairn PCA-2','1931','USA','САЩ','Pierwszy wiropłat z amerykańskim certyfikatem. Amelia Earhart ustanowiła na nim rekord wysokości – ponad 5600 m.'],
+ ['Cierva C.30','1933','Wielka Brytania','Великобритания','Przełom: sterowanie bezpośrednie. Pilot pochyla całą głowicę wirnika, więc niepotrzebne są skrzydła ani lotki. W lotnictwie brytyjskim latał jako Avro Rota.'],
+ ['Kellett KD-1','1934','USA','САЩ','W 1939 r. woził pocztę z dachu budynku poczty w Filadelfii – to była pierwsza regularna poczta lotnicza obsługiwana przez wiropłat.'],
+ ['Kayaba Ka-1','1941','Japonia','Япония','Japoński wiatrakowiec obserwacyjny, wzorowany na amerykańskim Kellett KD-1.'],
+ ['Bensen B-8','1955','USA','САЩ','Mały jednoosobowy wiatrakowiec Igora Bensena do samodzielnej budowy w garażu. To on spopularyzował słowo „gyrocopter”.'],
+ ['Fairey Rotodyne','1957','Wielka Brytania','Великобритания','Pasażerski gigant na ok. 40 osób. Startował pionowo dzięki dyszom na końcach łopat, a w locie przelotowym wirnik kręcił się sam, jak w wiatrakowcu. Projekt przerwano w 1962 r.'],
+ ['Wallis WA-116','1961','Wielka Brytania','Великобритания','Maleńki wiatrakowiec Kena Wallisa. Egzemplarz „Little Nellie” zagrał w filmie o Jamesie Bondzie „Żyje się tylko dwa razy” (1967).'],
+ ['McCulloch J-2','1962','USA','САЩ','Dwumiejscowy wiatrakowiec z zamkniętą kabiną i miejscami obok siebie, z fabrycznym certyfikatem.'],
+ ['Air & Space 18A','lata 60.','USA','САЩ','Certyfikowany dwumiejscowy wiatrakowiec, który potrafi wykonać „skok”: mocno rozkręcony wirnik odrywa go od ziemi prawie bez rozbiegu.'],
+ ['RAF 2000','lata 90.','Kanada','Канада','Dwumiejscowy wiatrakowiec z zamkniętą kabiną, sprzedawany jako zestaw do samodzielnego montażu.'],
+ ['Magni M-16','od lat 90.','Włochy','Италия','Popularny wiatrakowiec szkolny w układzie tandem (uczeń z przodu, instruktor z tyłu). W 2019 r. James Ketchell obleciał na nim świat.'],
+ ['AutoGyro MT-03','od 2003','Niemcy','Германия','Otwarty tandem z Hildesheim – jeden z najczęściej spotykanych współczesnych wiatrakowców. Norman Surplus obleciał na nim kulę ziemską.'],
+ ['ELA 07','od 2004','Hiszpania','Испания','Lekki otwarty tandem z Andaluzji – wiatrakowce wróciły do ojczyzny swojego wynalazcy.'],
+ ['Xenon','od 2006','Polska','Полша','Wiatrakowiec produkowany w Polsce: zamknięta kabina i miejsca obok siebie, jak w samochodzie.'],
+ ['AutoGyro Calidus','2009','Niemcy','Германия','Opływowa, zamknięta kabina w układzie tandem – stworzony do szybkich i wygodnych przelotów.'],
+ ['PAL-V Liberty','od 2012 (prototyp)','Holandia','Нидерландия','Latający samochód: po drodze jeździ na trzech kołach, a po rozłożeniu wirnika i śmigła lata jako wiatrakowiec.']
+];
 const GYRO_STEP = 5;
 const capF = s => s[0].toUpperCase() + s.slice(1);
 const levelsDone = () => LEVELS.filter(l => isDone(l.id)).length;
@@ -179,20 +207,22 @@ function heroSVG(t = gyroTier()) {
 </svg>`;
 }
 function gyroCard() {
-  const n = levelsDone(), t = gyroTier(n), [bg, pl] = GYROS[t];
+  const n = levelsDone(), t = gyroTier(n), g = GYROS[t];
   const max = t >= GYROS.length - 1, need = max ? 0 : (t + 1) * GYRO_STEP - n;
   const pctv = max ? 100 : Math.round(100 * (GYRO_STEP - need) / GYRO_STEP);
   return `<section class="gyrocard"><a href="#profil" class="gyro-pic" aria-label="Hangar">${heroSVG(t)}</a><div class="gyro-txt">
     <span class="eyebrow">Twój wiatrakowiec · model ${t + 1}/${GYROS.length}</span>
-    <b><span lang="bg">„${esc(capF(bg))}”</span> <span class="muted">– ${esc(pl)}</span></b>
+    <b>${esc(g[0])} <span class="muted">· ${esc(g[1])} · <span lang="bg">${esc(g[3])}</span></span></b>
     <div class="bar"><i style="width:${pctv}%"></i></div>
-    <small>${max ? 'Masz najlepszy model w hangarze!' : `Jeszcze <b>${need}</b> ${plLv(need)} do modelu <span lang="bg">„${esc(capF(GYROS[t + 1][0]))}”</span> (${esc(GYROS[t + 1][1])})`}</small></div></section>`;
+    <small>${max ? 'Masz najnowszy model w hangarze!' : `Jeszcze <b>${need}</b> ${plLv(need)} do modelu ${esc(GYROS[t + 1][0])}`} · <a href="#profil">o tym modelu</a></small></div></section>`;
 }
 function hangarHTML() {
   const n = levelsDone(), t = gyroTier(n);
   return `<section class="card stack"><div><div class="eyebrow">Hangar</div><h3 style="margin:2px 0 0;font-family:var(--f-display);font-size:22px">Twoje wiatrakowce</h3>
-    <p class="muted" style="margin:4px 0 0">Co ${GYRO_STEP} ukończonych leveli dostajesz nowy model. Każdy nosi imię bułgarskiego ptaka. Ukończone levele: ${n}.</p></div>
-    <div class="hangar">${GYROS.map(([bg, pl], i) => `<div class="hg ${i <= t ? 'on' : ''} ${i === t ? 'cur' : ''}">${i <= t ? heroSVG(i) : `<span class="hg-lock">${ICON.lock}</span>`}<b lang="bg">${i <= t ? esc(capF(bg)) : '?'}</b><small>${i <= t ? esc(pl) : `po ${i * GYRO_STEP} levelach`}</small></div>`).join('')}</div></section>`;
+    <p class="muted" style="margin:4px 0 0">Co ${GYRO_STEP} ukończonych leveli dostajesz nowy model. To prawdziwe wiatrakowce – od pierwszego z 1923 r. do latającego samochodu. Rysunki są uproszczone. Ukończone levele: ${n}.</p></div>
+    <div class="hangar">${GYROS.map((g, i) => i <= t
+      ? `<details class="hg on ${i === t ? 'cur' : ''}" ${i === t ? 'open' : ''}><summary>${heroSVG(i)}<b>${esc(g[0])}</b><small>${esc(g[1])} · ${esc(g[2])}</small></summary><p>${esc(g[4])}</p><p class="muted">Kraj po bułgarsku: <b lang="bg">${esc(g[3])}</b></p></details>`
+      : `<div class="hg"><span class="hg-lock">${ICON.lock}</span><b>?</b><small>po ${i * GYRO_STEP} levelach</small></div>`).join('')}</div></section>`;
 }
 let heroShown = {key:'', idx:-1};
 
@@ -222,7 +252,7 @@ function viewBoard() {
       <p class="muted" style="margin:6px 0 0">20 pytań, ok. 4 minuty. Test dobierze lekcje na planszy do tego, co już umiesz.</p></div>
       <div class="row"><a class="btn" href="#test">Zacznij test wstępny</a><button class="btn ghost" id="skipTest">Zacznę od zera</button></div></section>`;
   }
-  html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · dziś</div>
+  html += `<div class="stagehead"><div class="eyebrow">Etap ${d.stage % CITIES.length + 1} z ${CITIES.length}${lap > 1 ? ` · runda ${lap}` : ''} · ${d.carried && !d.finished ? 'ciąg dalszy' : 'dziś'}</div>
     <h2 class="view">${d.finished ? `Wylądowałaś: <span lang="bg">${esc(to.bg)}</span>` : `<span lang="bg">${esc(from.bg)}</span> → <span lang="bg">${esc(to.bg)}</span>`}</h2>
     <p class="muted" style="margin:0">${d.finished ? 'Dzisiejsza trasa zaliczona. Pocztówka trafiła do kolekcji.' : `Przelot ${esc(from.pl)} – ${esc(to.pl)}: 5 lekcji i powtórka. Każde pole przesuwa Twój wiatrakowiec.`}</p></div>
    ${window.claude ? '' : '<a class="hintbar" href="#pomoc"><span>🔇</span><span>Lektor nie mówi po bułgarsku? <b>Zobacz, jak włączyć głos</b></span><span aria-hidden="true">→</span></a>'}
@@ -318,7 +348,7 @@ function finishLesson() {
     ${L.mode !== 'review' ? stars(starsN, 'bigstars') : ''}
     <p class="muted">${esc(sub)}</p>
     ${landed ? `<div class="card postcard" style="text-align:left"><div class="eyebrow">Pocztówka</div><div class="row" style="gap:12px;margin-top:6px">${spkBtn(landed.f)}<div style="flex:1;min-width:0"><b lang="bg">${esc(landed.f)}</b><div class="muted">${esc(landed.fpl)}</div></div></div></div>` : ''}
-    ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b><span lang="bg">„${esc(capF(upg[0]))}”</span> <span class="muted">– ${esc(upg[1])}</span></b><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
+    ${upg ? `<div class="card gyrocard upgrade"><span class="gyro-pic">${heroSVG(tier1)}</span><div class="gyro-txt" style="text-align:left"><span class="eyebrow">Nowy wiatrakowiec w hangarze!</span><b>${esc(upg[0])} <span class="muted">· ${esc(upg[1])} · ${esc(upg[2])}</span></b><small>${esc(upg[4])}</small><small>${tier1 < GYROS.length - 1 ? `Następny model za ${GYRO_STEP} leveli.` : 'To najlepszy model – gratulacje!'}</small></div></div>` : ''}
     <div class="kpis"><div class="kpi"><b>+${xp}</b><span>XP</span></div><div class="kpi"><b>${Math.round(acc * 100)}%</b><span>trafność</span></div><div class="kpi"><b>${streakNow()}</b><span>dni z rzędu</span></div></div>
    </div></div>
    <div class="lesson-foot"><div class="wrap foot-in"><div class="foot-btns">
