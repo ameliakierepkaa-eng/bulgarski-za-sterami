@@ -501,6 +501,28 @@ main{padding-top:30px}
 .tnode.locked .disc{border-color:var(--line)}
 .board{box-shadow:0 0 0 4px var(--cloud),0 20px 40px -22px color-mix(in srgb,var(--sky) 70%,transparent)}
 .board::after{display:none}
+/* gry: lot przez chmury, wisielec, dyktando */
+.skyfly{position:relative;height:300px;border-radius:22px;overflow:hidden;background:linear-gradient(180deg,var(--sky-top),var(--map))}
+.skyhero{position:absolute;left:8px;top:50%;width:84px;transform:translateY(-50%);z-index:2}
+.skyhero svg{display:block;width:100%;height:auto;animation:bob 2.4s ease-in-out infinite}
+.skyhero .rotor{transform-box:fill-box;transform-origin:center;animation:spin .28s linear infinite}
+.skyhero .prop{transform-box:fill-box;transform-origin:center;animation:spinv .18s linear infinite}
+.cloudbtn{position:absolute;left:100%;border:0;background:var(--cloud);color:var(--ink);font-weight:700;font-size:18px;padding:12px 22px;border-radius:999px;white-space:nowrap;
+  box-shadow:0 6px 14px -8px color-mix(in srgb,var(--ink) 60%,transparent);animation:cloudfly linear both}
+.cloudbtn::before,.cloudbtn::after{content:"";position:absolute;background:var(--cloud);border-radius:50%;z-index:-1}
+.cloudbtn::before{width:34px;height:34px;left:16px;top:-12px}
+.cloudbtn::after{width:26px;height:26px;right:20px;top:-8px}
+.cloudbtn.right{background:var(--ok-soft);outline:2.5px solid var(--ok)}
+.cloudbtn.wrong{background:var(--bad-soft);outline:2.5px solid var(--bad)}
+@keyframes cloudfly{from{left:72%}to{left:-70%}}
+.hangword{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.hangword span{width:34px;height:44px;border-bottom:3px solid var(--sky);display:grid;place-items:center;font-size:26px;font-weight:800;font-family:var(--f-display)}
+.hangword span.miss{color:var(--bad);border-color:var(--bad)}
+.kb button.hit{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);opacity:1}
+.kb button.nohit{opacity:.3}
+.kb button{color:var(--ink)}
+.shake{animation:shake .35s ease}
+@media (prefers-reduced-motion:reduce){.cloudbtn{left:auto;right:12px}}
 /* znaczniki tematu pola: codzienne / lotnicze */
 .th{font-style:normal}
 .th.air{color:var(--sky);font-weight:600}
@@ -513,9 +535,14 @@ main{padding-top:30px}
 @media (max-width:700px){
   nav.tabs{background:color-mix(in srgb,var(--cloud) 92%,transparent);border-color:transparent}
   nav.tabs a[aria-current="page"] .icon{background:var(--sky);color:var(--on-sky)}
-  .stat{background:none;padding:0}
-  .hud-in{gap:10px}
+  /* bez białego paska u góry: tytuł i liczniki leżą na niebie i przewijają się ze stroną */
+  .hud{position:static;background:transparent;box-shadow:none}
+  .hud::after{display:none}
+  body::before{background:transparent}
+  .stat{background:color-mix(in srgb,var(--cloud) 75%,transparent);padding:3px 9px}
+  .hud-in{gap:8px;padding-block:12px 0}
   .brand b{font-size:19px}
+  main{padding-top:14px}
   .foot-btns{flex-direction:column-reverse}
   .foot-btns .btn{min-height:54px;font-size:17px}
 }

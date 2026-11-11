@@ -501,6 +501,28 @@ main{padding-top:30px}
 .tnode.locked .disc{border-color:var(--line)}
 .board{box-shadow:0 0 0 4px var(--cloud),0 20px 40px -22px color-mix(in srgb,var(--sky) 70%,transparent)}
 .board::after{display:none}
+/* gry: lot przez chmury, wisielec, dyktando */
+.skyfly{position:relative;height:300px;border-radius:22px;overflow:hidden;background:linear-gradient(180deg,var(--sky-top),var(--map))}
+.skyhero{position:absolute;left:8px;top:50%;width:84px;transform:translateY(-50%);z-index:2}
+.skyhero svg{display:block;width:100%;height:auto;animation:bob 2.4s ease-in-out infinite}
+.skyhero .rotor{transform-box:fill-box;transform-origin:center;animation:spin .28s linear infinite}
+.skyhero .prop{transform-box:fill-box;transform-origin:center;animation:spinv .18s linear infinite}
+.cloudbtn{position:absolute;left:100%;border:0;background:var(--cloud);color:var(--ink);font-weight:700;font-size:18px;padding:12px 22px;border-radius:999px;white-space:nowrap;
+  box-shadow:0 6px 14px -8px color-mix(in srgb,var(--ink) 60%,transparent);animation:cloudfly linear both}
+.cloudbtn::before,.cloudbtn::after{content:"";position:absolute;background:var(--cloud);border-radius:50%;z-index:-1}
+.cloudbtn::before{width:34px;height:34px;left:16px;top:-12px}
+.cloudbtn::after{width:26px;height:26px;right:20px;top:-8px}
+.cloudbtn.right{background:var(--ok-soft);outline:2.5px solid var(--ok)}
+.cloudbtn.wrong{background:var(--bad-soft);outline:2.5px solid var(--bad)}
+@keyframes cloudfly{from{left:72%}to{left:-70%}}
+.hangword{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.hangword span{width:34px;height:44px;border-bottom:3px solid var(--sky);display:grid;place-items:center;font-size:26px;font-weight:800;font-family:var(--f-display)}
+.hangword span.miss{color:var(--bad);border-color:var(--bad)}
+.kb button.hit{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);opacity:1}
+.kb button.nohit{opacity:.3}
+.kb button{color:var(--ink)}
+.shake{animation:shake .35s ease}
+@media (prefers-reduced-motion:reduce){.cloudbtn{left:auto;right:12px}}
 /* znaczniki tematu pola: codzienne / lotnicze */
 .th{font-style:normal}
 .th.air{color:var(--sky);font-weight:600}
@@ -513,9 +535,14 @@ main{padding-top:30px}
 @media (max-width:700px){
   nav.tabs{background:color-mix(in srgb,var(--cloud) 92%,transparent);border-color:transparent}
   nav.tabs a[aria-current="page"] .icon{background:var(--sky);color:var(--on-sky)}
-  .stat{background:none;padding:0}
-  .hud-in{gap:10px}
+  /* bez białego paska u góry: tytuł i liczniki leżą na niebie i przewijają się ze stroną */
+  .hud{position:static;background:transparent;box-shadow:none}
+  .hud::after{display:none}
+  body::before{background:transparent}
+  .stat{background:color-mix(in srgb,var(--cloud) 75%,transparent);padding:3px 9px}
+  .hud-in{gap:8px;padding-block:12px 0}
   .brand b{font-size:19px}
+  main{padding-top:14px}
   .foot-btns{flex-direction:column-reverse}
   .foot-btns .btn{min-height:54px;font-size:17px}
 }
@@ -1575,6 +1602,37 @@ const VERBS = [
  ['pójść','отида','отида отидеш отиде отидем отидете отидат','отидох отиде отиде отидохме отидохте отидоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
  ['przyjść','дойда','дойда дойдеш дойде дойдем дойдете дойдат','дойдох дойде дойде дойдохме дойдохте дойдоха','Czasownik dokonany: teraźniejszy tylko po „да” i „ще”.',true],
  ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
+];
+
+/* ---------------- GRA: WIEŻA KONTROLI ----------------
+   [komenda po bułgarsku, co ma zrobić pilotka] – zwroty zbudowane ze słownictwa leveli lotniczych */
+const TOWER = [
+ ['Излитането е разрешено.','Startuj – masz zgodę na start.'],
+ ['Кацането е разрешено.','Ląduj – masz zgodę na lądowanie.'],
+ ['Изчакай пред пистата.','Zatrzymaj się i czekaj przed pasem.'],
+ ['Заеми пистата и чакай.','Wjedź na pas i czekaj.'],
+ ['Освободи пистата наляво.','Zjedź z pasa w lewo.'],
+ ['Мини на втори кръг.','Przerwij lądowanie i odejdź na drugi krąg.'],
+ ['Продължи подхода.','Kontynuuj podejście do lądowania.'],
+ ['Рулирай до точката на изчакване.','Kołuj do punktu oczekiwania.'],
+ ['Повтори, моля.','Powtórz ostatni komunikat.'],
+ ['Потвърди, моля.','Potwierdź, że zrozumiałaś.'],
+ ['Чакай, моля.','Czekaj na dalsze instrukcje.'],
+ ['Завий надясно с десет градуса.','Skręć w prawo o dziesięć stopni.'],
+ ['Завий наляво.','Skręć w lewo.'],
+ ['Поддържай хиляда фута.','Utrzymuj wysokość tysiąca stóp.'],
+ ['Снижи се до хиляда фута.','Zniżaj się do tysiąca stóp.'],
+ ['Набери височина.','Wznoś się.'],
+ ['Задай код седем нула нула нула.','Ustaw transponder na 7000.'],
+ ['Премини на канал две.','Przełącz radio na kanał drugi.'],
+ ['Докладвай при прелитане над моста.','Zgłoś się, gdy będziesz nad mostem.'],
+ ['Не влизай в зоната.','Nie wlatuj do strefy.'],
+ ['Запали двигателя.','Uruchom silnik.'],
+ ['Изгаси двигателя.','Wyłącz silnik.'],
+ ['Внимание, трафик на два часа.','Uważaj: inny statek powietrzny na godzinie drugiej.'],
+ ['Кацай срещу вятъра.','Ląduj pod wiatr.'],
+ ['Върни се на летището.','Wróć na lotnisko.'],
+ ['Провери горивото.','Sprawdź paliwo.']
 ];
 
 /* ---------------- GRY: PIOSENKI Z LUKĄ ----------------
@@ -3250,8 +3308,192 @@ function viewGames() {
     <button class="gamecard" data-game="songs"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18a3 3 0 1 1-2-2.8V5l12-2v12a3 3 0 1 1-2-2.8V6.4L9 7.8z"/></svg>'}</span><b>Piosenka z luką</b><span class="muted">Fragment bułgarskiej pieśni lub wiersza z jedną luką. Wybierz brakujące słowo: A, B, C czy D? ${LYRIC_ITEMS.length} zadań.</span><span class="qcount">Rekord: ${S.best.songs2 || 0}/10</span></button>
     <button class="gamecard" data-game="blitz"><span class="gicon">${'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>'}</span><b>Błyskawica 60 s</b><span class="muted">Ile słówek przetłumaczysz w minutę? Słówka z Twoich leveli.</span><span class="qcount">Rekord: ${S.best.blitz || 0}</span></button>
     <button class="gamecard" data-game="memo"><span class="gicon"><span class="glyph" lang="bg">Аа ⇄ Pp</span></span><b>Memory: pary</b><span class="muted">Odkrywaj karty i łącz słówka w pary: polskie z bułgarskim. Im mniej ruchów, tym lepiej.</span><span class="qcount">Rekord: ${S.best.memo ? S.best.memo + ' pkt' : '–'}</span></button>
+    ${[['clouds','☁','Lot przez chmury','Wiatrakowiec leci, a Ty łapiesz chmurę z dobrym tłumaczeniem, zanim odleci. Trzy pomyłki kończą lot.', S.best.clouds || 0],
+       ['hang','_ а _','Wisielec','Zgaduj bułgarskie słowo litera po literze, zanim skończy się paliwo. Dobre na pisownię.', (S.best.hang || 0) + '/5'],
+       ['scr','б а в','Rozsypanka','Ułóż słowo z pomieszanych liter.', (S.best.scr || 0) + '/8'],
+       ['dict','🔊','Dyktando 90 s','Lektor mówi słowo, Ty je wpisujesz. Ile zdążysz w półtorej minuty?', S.best.dict || 0],
+       ['tower','✈','Wieża kontroli','Słyszysz komendę przez radio. Co ma zrobić pilotka?', (S.best.tower || 0) + '/10'],
+       ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15']
+      ].map(([k, ic, t, d, rec]) => `<button class="gamecard" data-game="${k}"><span class="gicon"><span class="glyph" lang="bg">${ic}</span></span><b>${t}</b><span class="muted">${d}</span><span class="qcount">Rekord: ${rec}</span></button>`).join('')}
    </div><div id="gamebox" style="margin-top:18px"></div>`;
-  $$('[data-game]').forEach(b => b.onclick = () => { ({songs:startSongs, blitz:startBlitz, memo:startMemo})[b.dataset.game](); setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
+  gStop();
+  $$('[data-game]').forEach(b => b.onclick = () => { if (blitzT) { clearInterval(blitzT); blitzT = null; } gStop();
+    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF})[b.dataset.game]();
+    setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
+}
+/* ===== SZEŚĆ DODATKOWYCH GIER ===== */
+let gT = null;
+function gStop() { if (gT) { clearTimeout(gT); clearInterval(gT); gT = null; } }
+const gAlive = type => !!$('#gamebox') && G && G.type === type;
+const gWords = () => shuffle(reachedLevels().flatMap(l => l.w.map((_, i) => W(l, i))));
+const oneWord = it => { const b = first(it.w[1]).toLowerCase(); return /^[а-я]{4,9}$/.test(b) && !/[ыэё]/.test(b) ? b : null; };
+const gOneWords = n => { const seen = new Set(), out = []; for (const it of gWords()) { const w = oneWord(it); if (!w || seen.has(w)) continue; seen.add(w); out.push({it, w}); if (out.length >= n) break; } return out; };
+const gHead = (t, right) => `<div class="row" style="justify-content:space-between"><span class="eyebrow">${t}</span><span class="qcount">${right}</span></div>`;
+function gEnd(key, score, line, again, xp) {
+  gStop(); const rec = finishBest(key, score); addXP(xp == null ? Math.min(20, score) : xp); save(); renderHud();
+  $('#gamebox').innerHTML = `<div class="card stack" style="text-align:center"><span class="eyebrow">Koniec gry</span><b style="font-family:var(--f-display);font-size:26px">${esc(line)}${rec ? ' · rekord!' : ''}</b><span class="muted">Najlepszy wynik: ${S.best[key] || 0}</span><button class="btn" id="gAgain">Jeszcze raz</button></div>`;
+  $('#gAgain').onclick = again; if (rec && score > 0) confetti();
+}
+const gKb = (used, word) => `<div class="kb" id="gkb" aria-label="Klawiatura bułgarska">${KB.map((r, i) => `<div class="krow">${r.split(' ').map(k => `<button type="button" data-k="${k}" ${used && used.has(k) ? `disabled class="${word.includes(k) ? 'hit' : 'nohit'}"` : ''}>${k}</button>`).join('')}${!used && i === 2 ? '<button type="button" class="wide" data-k="⌫" aria-label="Usuń">⌫</button>' : ''}</div>`).join('')}</div>`;
+
+/* --- 1. Lot przez chmury --- */
+function startClouds() { gStop(); G = {type:'clouds', pool:gWords(), k:0, score:0, lives:3}; drawClouds(); }
+function drawClouds() {
+  const box = $('#gamebox'); if (!box) return; gStop();
+  if (G.lives <= 0) return gEnd('clouds', G.score, `${G.score} chmur`, startClouds);
+  const it = G.pool[G.k % G.pool.length], bg = first(it.w[1]);
+  const opts = shuffle([bg, ...distractWords(it, 2, 'bg')]), secs = Math.max(3.5, 8 - G.score * 0.25);
+  box.innerHTML = `<div class="card stack">${gHead('Lot przez chmury', `${'♥'.repeat(G.lives)}${'♡'.repeat(3 - G.lives)} · Punkty: ${G.score}`)}
+    <div class="prompt" style="text-align:center;margin:0">${esc(it.w[0])}</div>
+    <div class="skyfly"><div class="skyhero">${heroSVG()}</div>${opts.map((o, i) => `<button class="cloudbtn" lang="bg" data-v="${esc(o)}" style="top:${[10, 39, 68][i]}%;animation-duration:${secs}s;animation-delay:${(i * 0.3).toFixed(1)}s">${esc(o)}</button>`).join('')}</div>
+    <p class="muted" style="margin:0;font-size:14px">Dotknij chmury z dobrym tłumaczeniem, zanim odleci.</p></div>`;
+  let done = false;
+  const next = ok => {
+    if (done) return; done = true; gStop(); if (ok) G.score++; else G.lives--; G.k++;
+    $$('#gamebox .cloudbtn').forEach(x => { x.style.animationPlayState = 'paused'; if (x.dataset.v === bg) x.classList.add('right'); });
+    gT = setTimeout(() => { if (gAlive('clouds')) drawClouds(); }, ok ? 450 : 1200);
+  };
+  $$('#gamebox .cloudbtn').forEach(b => b.onclick = () => { if (done) return; const ok = b.dataset.v === bg; if (!ok) b.classList.add('wrong'); buzz(ok ? 15 : [40, 60, 40]); next(ok); });
+  gT = setTimeout(() => { if (gAlive('clouds')) next(false); }, (secs + 0.8) * 1000);
+}
+
+/* --- 2. Wisielec (paliwo zamiast szubienicy) --- */
+function startHang() { gStop(); G = {type:'hang', words:gOneWords(5), i:0, score:0, used:new Set(), miss:0}; drawHang(); }
+function drawHang() {
+  const box = $('#gamebox'); if (!box) return;
+  if (G.i >= G.words.length) return gEnd('hang', G.score, `${G.score} / ${G.words.length} słów`, startHang, G.score * 3);
+  const {it, w} = G.words[G.i], letters = [...w];
+  const won = letters.every(ch => G.used.has(ch)), over = won || G.miss >= 6;
+  box.innerHTML = `<div class="card stack">${gHead(`Wisielec · słowo ${G.i + 1}/${G.words.length}`, `Paliwo: ${'●'.repeat(6 - G.miss)}${'○'.repeat(G.miss)}`)}
+    <div class="muted" style="text-align:center">Po polsku: <b>${esc(it.w[0])}</b></div>
+    <div class="hangword" lang="bg">${letters.map(ch => `<span class="${over && !G.used.has(ch) ? 'miss' : ''}">${G.used.has(ch) || over ? esc(ch) : ''}</span>`).join('')}</div>
+    ${over ? `<div class="${won ? 'okbox' : 'badbox'}"><b>${won ? 'Brawo!' : 'Zabrakło paliwa'}</b><div class="row" style="gap:10px;flex-wrap:nowrap">${spkBtn(w)}<span><b lang="bg">${esc(w)}</b> · ${esc(translit(w))} · ${esc(it.w[0])}</span></div></div><button class="btn block" id="hNext">Dalej</button>` : gKb(G.used, w)}</div>`;
+  if (over) { $('#hNext').onclick = () => { G.i++; G.used = new Set(); G.miss = 0; drawHang(); }; return; }
+  $('#gkb').onclick = e => {
+    const b = e.target.closest('[data-k]'); if (!b || b.disabled) return; const k = b.dataset.k; G.used.add(k);
+    if (!w.includes(k)) { G.miss++; buzz(40); }
+    else if (letters.every(ch => G.used.has(ch))) { G.score++; buzz(15); if (audioOK() && S.autoVoice) speak(w); }
+    drawHang();
+  };
+}
+
+/* --- 3. Rozsypanka --- */
+function startScr() { gStop(); G = {type:'scr', words:gOneWords(8), i:0, score:0}; newScr(); }
+function newScr() {
+  if (G.i >= G.words.length) return gEnd('scr', G.score, `${G.score} / ${G.words.length} słów`, startScr, G.score * 2);
+  const w = G.words[G.i].w; let sh = shuffle([...w]); if (sh.join('') === w) sh = sh.reverse();
+  G.bank = sh.map((ch, id) => ({ch, id})); G.pick = []; G.hint = false; G.solved = false; drawScr();
+}
+function drawScr() {
+  const box = $('#gamebox'); if (!box) return; const {it, w} = G.words[G.i];
+  box.innerHTML = `<div class="card stack">${gHead(`Rozsypanka · ${G.i + 1}/${G.words.length}`, `Punkty: ${G.score}`)}
+    <div class="muted" style="text-align:center">Po polsku: <b>${esc(it.w[0])}</b>${G.hint ? ` · podpowiedź: <span class="mono">${esc(translit(w))}</span>` : ''}</div>
+    <div class="tiles" id="scrPick" lang="bg" style="justify-content:center">${G.pick.map(id => `<button class="tile" data-un="${id}">${esc(G.bank[id].ch)}</button>`).join('')}</div>
+    <div class="tiles bank" lang="bg" style="justify-content:center">${G.bank.map(t => `<button class="tile ${G.pick.includes(t.id) ? 'used' : ''}" data-pk="${t.id}">${esc(t.ch)}</button>`).join('')}</div>
+    ${G.solved ? `<div class="okbox"><b>Brawo!</b><div class="row" style="gap:10px;flex-wrap:nowrap">${spkBtn(w)}<span><b lang="bg">${esc(w)}</b> · ${esc(translit(w))}</span></div></div><button class="btn block" id="scNext">Dalej</button>`
+      : `<div class="row"><button class="btn soft" id="scHint" ${G.hint ? 'disabled' : ''}>Podpowiedź</button><button class="btn ghost" id="scSkip">Pomiń</button></div>`}</div>`;
+  if (G.solved) { $('#scNext').onclick = () => { G.i++; newScr(); }; return; }
+  $$('#gamebox [data-pk]').forEach(b => b.onclick = () => {
+    G.pick.push(+b.dataset.pk);
+    if (G.pick.length === G.bank.length) {
+      if (G.pick.map(id => G.bank[id].ch).join('') === w) { G.solved = true; if (!G.hint) G.score++; buzz(15); if (audioOK() && S.autoVoice) speak(w); }
+      else { buzz([40, 60, 40]); toast('Jeszcze nie – spróbuj inaczej.'); G.pick = []; }
+    }
+    drawScr();
+  });
+  $$('#gamebox [data-un]').forEach(b => b.onclick = () => { G.pick = G.pick.filter(id => id !== +b.dataset.un); drawScr(); });
+  $('#scHint').onclick = () => { G.hint = true; drawScr(); };
+  $('#scSkip').onclick = () => { toast(`To było: ${w}`); G.i++; newScr(); };
+}
+
+/* --- 4. Dyktando na czas --- */
+function gTyping(inp) {
+  inp.addEventListener('input', e => {
+    if (!S.translit || e.inputType !== 'insertText' || !e.data || e.data.length !== 1) return;
+    const lo = e.data.toLowerCase(), rep = LAT[lo]; if (!rep) return;
+    const pos = inp.selectionStart, before = inp.value.slice(0, pos - 1), after = inp.value.slice(pos), key = before.slice(-1).toLowerCase() + lo;
+    const nb = DI[key] ? before.slice(0, -1) + DI[key] : before + rep;
+    inp.value = nb + after; inp.setSelectionRange(nb.length, nb.length);
+  });
+}
+function startDict() {
+  gStop(); const box = $('#gamebox');
+  if (!audioOK()) { G = {type:'none'}; box.innerHTML = `<div class="card stack"><b>Ta gra potrzebuje lektora</b><span class="muted">Telefon nie ma jeszcze bułgarskiego głosu.</span><a class="btn soft" href="#pomoc">Zobacz, jak włączyć głos</a></div>`; return; }
+  G = {type:'dict', words:gOneWords(60), k:0, score:0, end:Date.now() + 90000};
+  gT = setInterval(() => {
+    if (!gAlive('dict')) { gStop(); return; }
+    const left = Math.max(0, G.end - Date.now()), bar = $('#dcBar'), tt = $('#dcT');
+    if (bar) bar.style.width = `${left / 900}%`; if (tt) tt.textContent = Math.ceil(left / 1000) + ' s';
+    if (left <= 0) gEnd('dict', G.score, `${G.score} słów`, startDict);
+  }, 250);
+  drawDict();
+}
+function drawDict() {
+  const box = $('#gamebox'); if (!box) return; const {it, w} = G.words[G.k % G.words.length];
+  box.innerHTML = `<div class="card stack">${gHead('Dyktando', `<span id="dcT">${Math.ceil(Math.max(0, G.end - Date.now()) / 1000)} s</span> · Punkty: ${G.score}`)}
+    <div class="bar"><i id="dcBar" style="width:${Math.max(0, G.end - Date.now()) / 900}%"></i></div>
+    <div style="text-align:center">${spkBtn(w, 'big')}<div class="muted" style="font-size:14px;margin-top:4px">Posłuchaj i wpisz słowo. Dotknij głośnika, żeby usłyszeć jeszcze raz.</div></div>
+    <input class="answer" id="gin" lang="bg" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Wpisz po bułgarsku" aria-label="Twoja odpowiedź">
+    ${gKb(null, '')}
+    <div class="row"><button class="btn" id="dcOk">Sprawdź</button><button class="btn ghost" id="dcSkip">Pomiń</button></div></div>`;
+  const inp = $('#gin'); gTyping(inp);
+  $('#gkb').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; inp.value = b.dataset.k === '⌫' ? inp.value.slice(0, -1) : inp.value + b.dataset.k; };
+  const check = () => {
+    if (norm(inp.value) === w) { G.score++; G.k++; buzz(15); drawDict(); }
+    else { buzz([40, 60, 40]); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); speak(w, true); }
+  };
+  $('#dcOk').onclick = check; inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); check(); } };
+  $('#dcSkip').onclick = () => { toast(`To było: ${w} (${it.w[0]})`); G.k++; drawDict(); };
+  speak(w);
+}
+
+/* --- 5. Wieża kontroli --- */
+function startTower() { gStop(); G = {type:'tower', qs:shuffle(TOWER).slice(0, 10), i:0, score:0}; drawTower(); }
+function drawTower() {
+  const box = $('#gamebox'); if (!box) return;
+  if (G.i >= G.qs.length) return gEnd('tower', G.score, `${G.score} / ${G.qs.length}`, startTower);
+  const q = G.qs[G.i], [bg, pl] = q, hear = audioOK();
+  const opts = shuffle([pl, ...shuffle(TOWER.filter(x => x !== q).map(x => x[1])).slice(0, 3)]);
+  box.innerHTML = `<div class="card stack">${gHead(`Wieża kontroli · ${G.i + 1}/${G.qs.length}`, `Wynik: ${G.score}`)}
+    ${hear ? `<div class="row" style="gap:12px;flex-wrap:nowrap">${spkBtn(bg, 'big')}<div><b>Wieża nadaje…</b><div class="muted" style="font-size:14px">Posłuchaj komendy.</div><button class="chip" id="twShow" style="margin-top:6px">Pokaż tekst</button><div class="lline" id="twTxt" lang="bg" hidden>${esc(bg)}</div></div></div>`
+      : `<div class="lline" lang="bg">„${esc(bg)}”</div><div class="tr-line" style="text-align:left">${esc(translit(bg))}</div>`}
+    <b>Co masz zrobić?</b>${optsHTML(opts, false, true)}<div id="twFb"></div></div>`;
+  const sh = $('#twShow'); if (sh) sh.onclick = () => { $('#twTxt').hidden = false; sh.hidden = true; };
+  let done = false;
+  $$('#gamebox .opt').forEach(b => b.onclick = () => {
+    if (done) return; done = true; const ok = b.dataset.v === pl; if (ok) G.score++; buzz(ok ? 15 : [40, 60, 40]);
+    $$('#gamebox .opt').forEach(x => { if (x.dataset.v === pl) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+    $('#twFb').innerHTML = `<div class="${ok ? 'okbox' : 'badbox'}"><b>${ok ? 'Zrozumiałaś!' : 'Nie tym razem'}</b><div lang="bg">${esc(bg)}</div><div class="tr-line" style="text-align:left">${esc(translit(bg))}</div><div>${esc(pl)}</div></div><button class="btn block" id="twNext" style="margin-top:10px">Dalej</button>`;
+    $('#twNext').onclick = () => { G.i++; drawTower(); };
+  });
+  if (hear) speak(bg);
+}
+
+/* --- 6. Prawda czy fałsz na czas --- */
+function startTF() {
+  gStop(); const pool = gWords().slice(0, 15);
+  const qs = pool.map(it => { const truth = Math.random() < 0.5; return {bg:first(it.w[1]), real:it.w[0], claim: truth ? it.w[0] : distractWords(it, 1, 'pl')[0], truth}; });
+  G = {type:'tf', qs, i:0, score:0}; drawTF();
+}
+function drawTF() {
+  const box = $('#gamebox'); if (!box) return; gStop();
+  if (G.i >= G.qs.length) return gEnd('tf', G.score, `${G.score} / ${G.qs.length}`, startTF);
+  const q = G.qs[G.i];
+  box.innerHTML = `<div class="card stack" style="text-align:center">${gHead(`Prawda czy fałsz · ${G.i + 1}/${G.qs.length}`, `Wynik: ${G.score}`)}
+    <div class="bar"><i id="tfBar" style="width:100%;transition:width 4s linear"></i></div>
+    <div class="fbg" lang="bg">${esc(q.bg)}</div><div class="prompt" style="margin:0">= ${esc(q.claim)}?</div>
+    <div class="foot-btns"><button class="btn ok" data-a="1">Prawda</button><button class="btn bad" data-a="0">Fałsz</button></div><div id="tfFb" style="min-height:26px"></div></div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => { const b = $('#tfBar'); if (b) b.style.width = '0%'; }));
+  let done = false;
+  const answer = a => {
+    if (done) return; done = true; gStop(); const ok = a !== null && a === q.truth; if (ok) G.score++; buzz(ok ? 15 : [40, 60, 40]);
+    const b = $('#tfBar'); if (b) { b.style.transition = 'none'; b.style.width = getComputedStyle(b).width; }
+    $('#tfFb').innerHTML = `<b style="color:var(--${ok ? 'ok' : 'bad'})">${ok ? 'Dobrze!' : a === null ? 'Za wolno!' : 'Pudło!'}</b> <span lang="bg">${esc(q.bg)}</span> = ${esc(q.real)}`;
+    $$('#gamebox [data-a]').forEach(x => x.disabled = true);
+    gT = setTimeout(() => { if (gAlive('tf')) { G.i++; drawTF(); } }, ok ? 650 : 1500);
+  };
+  $$('#gamebox [data-a]').forEach(b => b.onclick = () => answer(b.dataset.a === '1'));
+  gT = setTimeout(() => { if (gAlive('tf')) answer(null); }, 4000);
 }
 /* --- Piosenka z luką --- */
 const LYRIC_ITEMS = LYRICS.flatMap((l, li) => l.gaps.map(([w, wrong], gi) => ({li, gi, w, wrong})));

@@ -1027,6 +1027,37 @@ const VERBS = [
  ['wrócić','върна се','върна върнеш върне върнем върнете върнат','върнах върна върна върнахме върнахте върнаха','Czasownik dokonany i zwrotny: „се” stoi przed nim, gdy coś jest wcześniej – „ще се върна”, „вчера се върнах”.',true,true]
 ];
 
+/* ---------------- GRA: WIEŻA KONTROLI ----------------
+   [komenda po bułgarsku, co ma zrobić pilotka] – zwroty zbudowane ze słownictwa leveli lotniczych */
+const TOWER = [
+ ['Излитането е разрешено.','Startuj – masz zgodę na start.'],
+ ['Кацането е разрешено.','Ląduj – masz zgodę na lądowanie.'],
+ ['Изчакай пред пистата.','Zatrzymaj się i czekaj przed pasem.'],
+ ['Заеми пистата и чакай.','Wjedź na pas i czekaj.'],
+ ['Освободи пистата наляво.','Zjedź z pasa w lewo.'],
+ ['Мини на втори кръг.','Przerwij lądowanie i odejdź na drugi krąg.'],
+ ['Продължи подхода.','Kontynuuj podejście do lądowania.'],
+ ['Рулирай до точката на изчакване.','Kołuj do punktu oczekiwania.'],
+ ['Повтори, моля.','Powtórz ostatni komunikat.'],
+ ['Потвърди, моля.','Potwierdź, że zrozumiałaś.'],
+ ['Чакай, моля.','Czekaj na dalsze instrukcje.'],
+ ['Завий надясно с десет градуса.','Skręć w prawo o dziesięć stopni.'],
+ ['Завий наляво.','Skręć w lewo.'],
+ ['Поддържай хиляда фута.','Utrzymuj wysokość tysiąca stóp.'],
+ ['Снижи се до хиляда фута.','Zniżaj się do tysiąca stóp.'],
+ ['Набери височина.','Wznoś się.'],
+ ['Задай код седем нула нула нула.','Ustaw transponder na 7000.'],
+ ['Премини на канал две.','Przełącz radio na kanał drugi.'],
+ ['Докладвай при прелитане над моста.','Zgłoś się, gdy będziesz nad mostem.'],
+ ['Не влизай в зоната.','Nie wlatuj do strefy.'],
+ ['Запали двигателя.','Uruchom silnik.'],
+ ['Изгаси двигателя.','Wyłącz silnik.'],
+ ['Внимание, трафик на два часа.','Uważaj: inny statek powietrzny na godzinie drugiej.'],
+ ['Кацай срещу вятъра.','Ląduj pod wiatr.'],
+ ['Върни се на летището.','Wróć na lotnisko.'],
+ ['Провери горивото.','Sprawdź paliwo.']
+];
+
 /* ---------------- GRY: PIOSENKI Z LUKĄ ----------------
    Tylko utwory sprzed 1929 r. (pieśni ludowe, hymny i wiersze śpiewane jako pieśni – domena publiczna).
    Współczesnych tekstów nie cytujemy (prawa autorskie). gaps: [słowo z tekstu, 3 błędne odpowiedzi] */
