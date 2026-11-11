@@ -38,12 +38,53 @@ function viewPhrases() {
   if (phFilter !== 'all' && phFilter !== 'lv' && !cats.includes(phFilter)) phFilter = 'all';
   const n = myPhrases(phFilter).length;
   $('#view').innerHTML = `<h2 class="view">Zwroty</h2><p class="muted" style="margin-top:0">Twoja talia rośnie z każdym levelem: nowe kategorie zwrotów i zdania z odblokowanych lekcji. Teraz masz ${myPhrases().length} zwrotów.</p>
-   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
-   ${phMode !== 'lista' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista'],['tlumacz','Tłumacz']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
+   ${phMode !== 'lista' && phMode !== 'tlumacz' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
    <div id="phbox"></div>`;
   $$('[data-m]').forEach(b => b.onclick = () => { phMode = b.dataset.m; viewPhrases(); });
   $$('[data-f]').forEach(b => b.onclick = () => { phFilter = b.dataset.f; FC = null; MG = null; viewPhrases(); });
-  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else drawPhraseList();
+  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else drawPhraseList();
+}
+/* ===== TŁUMACZ (maszynowy, przez internet – serwis MyMemory) ===== */
+let trDir = 'pl|bg', trText = '';
+async function translateText(text, pair) {
+  const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(pair)}`);
+  if (!r.ok) throw new Error('net');
+  const j = await r.json(), out = j && j.responseData && j.responseData.translatedText;
+  if (!out || +j.responseStatus !== 200 || /MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(out)) throw new Error(/WARNING/i.test(out || '') ? 'limit' : 'api');
+  const ta = document.createElement('textarea'); ta.innerHTML = out; return ta.value.replace(/(^|\s)(най|по|Най|По) - /g, '$1$2-');
+}
+function drawTranslator() {
+  const toBg = trDir === 'pl|bg', hist = (S.tr || []).slice(0, 12);
+  const gt = () => `https://translate.google.com/?sl=${toBg ? 'pl' : 'bg'}&tl=${toBg ? 'bg' : 'pl'}&op=translate`;
+  $('#phbox').innerHTML = `<section class="card stack" style="margin-top:12px">
+    <div class="row" style="justify-content:space-between"><b style="font-family:var(--f-display);font-size:20px">${toBg ? 'polski → български' : 'български → polski'}</b><button class="chip" id="trSwap">Zamień kierunek ⇄</button></div>
+    <textarea class="answer" id="trIn" rows="3" maxlength="300" ${toBg ? '' : 'lang="bg"'} placeholder="${toBg ? 'Wpisz zdanie po polsku…' : 'Напиши изречение на български…'}">${esc(trText)}</textarea>
+    <div class="row"><button class="btn" id="trGo">Przetłumacz</button><a class="btn ghost" href="${gt()}" target="_blank" rel="noopener">Tłumacz Google ↗</a></div>
+    <div id="trOut" aria-live="polite"></div>
+    <p class="muted" style="margin:0;font-size:13px">Tłumaczenie maszynowe – potrzebny internet, do 300 znaków. Wpisany tekst jest wysyłany do darmowego serwisu MyMemory, więc nie wpisuj tu danych osobistych. Zdarzają się błędy; zwroty z lekcji są sprawdzone.</p></section>
+    ${hist.length ? `<div class="eyebrow" style="margin:18px 0 8px">Ostatnie tłumaczenia</div><div class="plist">${hist.map((h, i) => `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(h.bg)}</div><div class="tr">${esc(translit(h.bg))}</div><div class="pl">${esc(h.pl)}</div></div>${spkBtn(h.bg)}<button class="xbtn" data-trdel="${i}" aria-label="Usuń">${ICON.x}</button></div>`).join('')}</div>` : ''}`;
+  const inp = $('#trIn'); inp.oninput = () => { trText = inp.value; };
+  $('#trSwap').onclick = () => { trDir = toBg ? 'bg|pl' : 'pl|bg'; trText = ''; drawTranslator(); };
+  $$('[data-trdel]').forEach(b => b.onclick = () => { S.tr.splice(+b.dataset.trdel, 1); save(); drawTranslator(); });
+  const go = async () => {
+    const text = inp.value.trim(), out = $('#trOut'); if (!text) { inp.focus(); return; }
+    if (!navigator.onLine) { out.innerHTML = '<div class="badbox"><b>Brak internetu</b><span>Tłumacz działa tylko online.</span></div>'; return; }
+    $('#trGo').disabled = true; out.innerHTML = '<span class="muted">Tłumaczę…</span>';
+    try {
+      const res = await translateText(text, trDir), bg = toBg ? res : text, pl = toBg ? text : res;
+      out.innerHTML = `<div class="okbox"><div class="row" style="gap:10px;flex-wrap:nowrap;align-items:flex-start">${toBg ? spkBtn(bg) : ''}<div style="flex:1;min-width:0"><div class="lline" ${toBg ? 'lang="bg"' : ''}>${esc(res)}</div>${toBg ? `<div class="tr-line" style="text-align:left">${esc(translit(res))}</div>` : ''}</div></div>
+        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button></div></div>`;
+      $('#trCopy').onclick = async () => { try { await navigator.clipboard.writeText(res); toast('Skopiowano.'); } catch (e) { toast('Nie udało się skopiować.'); } };
+      S.tr = [{pl, bg}, ...(S.tr || []).filter(h => h.pl !== pl)].slice(0, 12); save();
+      if (toBg && audioOK() && S.autoVoice) speak(bg);
+    } catch (e) {
+      out.innerHTML = `<div class="badbox"><b>${e.message === 'limit' ? 'Dzienny limit darmowego tłumacza został wyczerpany' : 'Nie udało się przetłumaczyć'}</b><span>Spróbuj później albo użyj przycisku „Tłumacz Google”.</span></div>`;
+    }
+    const b = $('#trGo'); if (b) b.disabled = false;
+  };
+  $('#trGo').onclick = go;
+  inp.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } };
 }
 function drawFlash() {
   const key = phFilter;

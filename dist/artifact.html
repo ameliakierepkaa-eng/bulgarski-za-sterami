@@ -1656,7 +1656,7 @@ function getRef(ref) {
 const KEY = 'bg-za-sterami-v1';
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true}; }
+function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[]}; }
 let S = defaults();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
 /* motyw: auto (jak w systemie) / jasny / ciemny */
@@ -2712,6 +2712,62 @@ function hangarHTML() {
 }
 let heroShown = {key:'', idx:-1};
 
+/* ===== MAPY PLANSZY: krajobraz dopasowany do miasta docelowego (indeks w CITIES) ===== */
+const SCENE_OF = [['gory','Витоша'],['rzeka','река Марица'],['roze','Розова долина'],['rownina','Тракийска низина'],['morze','Черно море'],['morze','Черно море'],['morze','Черно море'],['rownina','Шуменско плато'],['dunaj','река Дунав'],['rzeka','река Янтра'],['gory','Стара планина'],['rownina','Дунавска равнина'],['dunaj','река Дунав'],['skaly','Белоградчишки скали'],['jeziora','Седемте рилски езера'],['gory','Пирин'],['skaly','Мелнишки пирамиди']];
+function boardScene(ci) {
+  const [kind, label] = SCENE_OF[ci] || SCENE_OF[0];
+  const rings = (cx, cy, rot, rs) => `<g fill="none" stroke="var(--relief)" stroke-width="1.2">${rs.map(([rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${cx} ${cy})"/>`).join('')}</g>`;
+  const mt = (x, y, s) => `<path d="M${x - s} ${y}L${x} ${y - s * 1.3}L${x + s} ${y}Z" fill="var(--relief)" opacity=".7"/><path d="M${x - s * .3} ${y - s * .91}L${x} ${y - s * 1.3}L${x + s * .3} ${y - s * .91}L${x + s * .1} ${y - s * .8}L${x} ${y - s * .93}L${x - s * .1} ${y - s * .8}Z" fill="var(--surface)"/>`;
+  const tree = (x, y) => `<path d="M${x} ${y - 11}l-5.5 11h11z" fill="var(--ok)" opacity=".5"/>`;
+  const trees = pts => pts.map(([x, y]) => tree(x, y)).join('');
+  const wave = (x, y) => `<path d="M${x} ${y}q5-4 10 0t10 0" fill="none" stroke="var(--surface)" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>`;
+  const waves = pts => pts.map(([x, y]) => wave(x, y)).join('');
+  const field = (pts, col, op) => `<path d="M${pts}Z" fill="var(--${col})" opacity="${op}"/>`;
+  const S_ = {
+    gory: () => rings(54, 150, -15, [[60,38],[44,27],[28,16]]) + rings(310, 300, 20, [[52,34],[36,23],[20,12]]) + rings(52, 470, 8, [[46,28],[30,18]])
+      + mt(40, 168, 26) + mt(74, 172, 34) + mt(300, 318, 30) + mt(332, 322, 22) + mt(40, 486, 24) + mt(70, 490, 18) + mt(330, 520, 20)
+      + trees([[150,150],[166,158],[140,166],[196,470],[212,478],[182,482],[330,150],[316,160],[30,330],[46,338],[330,440]])
+      + `<ellipse cx="184" cy="268" rx="15" ry="7" fill="var(--water)"/>`,
+    jeziora: () => rings(180, 330, 0, [[150,210],[120,170]]) + mt(40, 150, 28) + mt(330, 200, 30) + mt(34, 420, 24) + mt(332, 470, 26) + mt(180, 120, 20)
+      + [[176,180,17,9],[150,236,13,7],[204,262,19,10],[168,318,14,8],[196,366,12,6],[160,424,20,10],[190,486,15,8]].map(([x, y, a, b]) => `<ellipse cx="${x}" cy="${y}" rx="${a}" ry="${b}" fill="var(--water)"/><ellipse cx="${x - a * .3}" cy="${y - b * .25}" rx="${a * .35}" ry="${b * .3}" fill="var(--surface)" opacity=".5"/>`).join('')
+      + `<path d="M176 189q-20 22-24 40M152 243q30 6 48 12M204 272q-24 22-34 40M170 326q16 20 24 34M194 372q-22 26-32 44M162 434q18 26 26 44" fill="none" stroke="var(--water)" stroke-width="2" stroke-linecap="round"/>`
+      + trees([[60,300],[76,310],[300,330],[316,340],[70,540],[300,560]]),
+    morze: () => `<path d="M360 0H318C300 50 330 96 312 150C296 198 328 250 310 306C296 352 326 402 308 456C294 500 322 552 306 600C302 616 306 630 304 640H360Z" fill="var(--water)"/>`
+      + `<path d="M318 0C300 50 330 96 312 150C296 198 328 250 310 306C296 352 326 402 308 456C294 500 322 552 306 600C302 616 306 630 304 640" fill="none" stroke="var(--gold)" stroke-width="5" opacity=".45"/>`
+      + waves([[326,60],[334,120],[324,200],[336,262],[326,340],[334,420],[324,500],[332,572]])
+      + `<g transform="translate(338 300)"><path d="M-9 4h18l-4 6h-10z" fill="var(--ink)"/><path d="M0 3V-16l11 15z" fill="var(--surface)" stroke="var(--ink)" stroke-width="1"/><path d="M-1.5 2V-12l-8 12z" fill="var(--earth)"/></g>`
+      + `<g transform="translate(300 400)"><path d="M-4 0h8l-1.5-22h-5z" fill="var(--surface)" stroke="var(--ink)" stroke-width="1"/><path d="M-2.9-8h5.8M-2.5-15h5" stroke="var(--earth)" stroke-width="3"/><path d="M-3-22h6v-5h-6z" fill="var(--gold)" stroke="var(--ink)" stroke-width="1"/></g>`
+      + `<path d="M30 110q5-6 10 0q5-6 10 0M60 130q4-5 8 0q4-5 8 0M36 470q5-6 10 0q5-6 10 0" fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round" opacity=".55"/>`
+      + rings(46, 250, -10, [[40,24],[24,14]]) + field('20 540L120 520L140 590L30 610', 'ok', '.14') + trees([[40,360],[56,368],[150,560],[30,160]]),
+    dunaj: () => `<path d="M0 96C60 84 110 110 180 100S300 84 360 98V128C300 114 240 132 180 130S60 114 0 126Z" fill="var(--water)"/>`
+      + waves([[30,108],[110,114],[236,112],[310,104]])
+      + `<g transform="translate(96 108)"><path d="M-16 0h32l-5 7h-22z" fill="var(--ink)"/><rect x="-7" y="-7" width="13" height="7" fill="var(--surface)" stroke="var(--ink)" stroke-width="1"/><rect x="0" y="-13" width="4" height="6" fill="var(--earth)"/></g>`
+      + field('0 128L0 0L360 0L360 98C300 84 240 96 180 100S60 84 0 96', 'ok', '.10')
+      + field('20 300L120 286L132 350L26 366', 'gold', '.22') + field('232 430L340 416L346 486L240 500', 'ok', '.16') + field('24 520L110 508L120 570L30 584', 'gold', '.2')
+      + `<path d="M30 316l96-13M30 332l98-13M30 348l100-13M240 448l100-13M242 466l102-13" stroke="var(--relief)" stroke-width="1" opacity=".8"/>`
+      + rings(320, 250, 15, [[36,22],[20,12]]) + trees([[40,200],[56,208],[330,340],[316,350],[200,560],[216,568]]),
+    rzeka: () => `<path d="M150 0C120 60 220 110 190 180S110 250 160 320S250 380 200 450S110 520 150 580S190 620 180 640" fill="none" stroke="var(--water)" stroke-width="11" stroke-linecap="round"/>`
+      + `<path d="M150 0C120 60 220 110 190 180S110 250 160 320S250 380 200 450S110 520 150 580S190 620 180 640" fill="none" stroke="var(--surface)" stroke-width="1.2" stroke-dasharray="6 10" opacity=".7"/>`
+      + `<g transform="translate(176 318)"><path d="M-22 0q22-18 44 0" fill="none" stroke="var(--ink)" stroke-width="2.4"/><path d="M-22 0h44M-11-7v7M0-9.5v9.5M11-7v7" stroke="var(--ink)" stroke-width="1.4"/></g>`
+      + rings(46, 140, -12, [[42,26],[26,15],[12,7]]) + rings(318, 230, 18, [[40,25],[24,14]]) + rings(50, 430, 6, [[40,24],[24,14]]) + rings(316, 520, -8, [[38,22],[22,12]])
+      + trees([[30,250],[46,258],[330,120],[314,130],[330,400],[40,540],[56,548]]),
+    roze: () => mt(30, 120, 24) + mt(62, 124, 30) + mt(100, 122, 22) + mt(270, 118, 22) + mt(306, 124, 30) + mt(340, 120, 22) + mt(40, 598, 20) + mt(320, 600, 24)
+      + [0,1,2,3,4,5,6].map(r => { const y = 210 + r * 52; return `<path d="M24 ${y}Q180 ${y + 16} 336 ${y}" fill="none" stroke="var(--ok)" stroke-width="5" opacity=".28" stroke-linecap="round"/>` + [40,72,104,136,168,200,232,264,296,326].map((x, i) => `<circle cx="${x}" cy="${y + 15 * (1 - Math.pow((x - 180) / 156, 2)) - 1}" r="${i % 3 ? 3.2 : 4}" fill="var(--${i % 4 === 1 ? 'gold' : 'earth'})" opacity=".7"/>`).join(''); }).join('')
+      + `<path d="M0 168C80 150 130 180 200 166S300 150 360 172" fill="none" stroke="var(--water)" stroke-width="3" stroke-linecap="round"/>`,
+    rownina: () => field('14 110L150 96L160 190L20 206', 'gold', '.26') + field('170 100L346 84L346 176L176 192', 'ok', '.16') + field('14 226L120 214L128 316L18 330', 'ok', '.14')
+      + field('236 250L346 238L346 340L242 352', 'gold', '.24') + field('14 420L140 406L150 500L20 516', 'gold', '.2') + field('220 470L346 458L346 560L226 574', 'ok', '.15')
+      + `<path d="M22 130l130-13M22 150l132-13M22 170l134-13M240 272l104-11M242 294l102-11M244 316l100-11M22 440l122-12M22 462l124-12M22 484l126-12" stroke="var(--relief)" stroke-width="1"/>`
+      + [[200,120],[230,136],[262,116],[300,134],[330,150],[40,250],[70,270],[96,246],[246,496],[282,512],[318,494]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="var(--gold)"/><circle cx="${x}" cy="${y}" r="2" fill="var(--ink)" opacity=".7"/>`).join('')
+      + `<path d="M0 372C70 356 130 388 200 372S300 352 360 370" fill="none" stroke="var(--water)" stroke-width="4" stroke-linecap="round"/>`
+      + `<g transform="translate(320 400)"><path d="M0 0v-20M-10-26l20 12M10-26l-20 12" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/><path d="M-5 0h10l-2-10h-6z" fill="var(--earth)" opacity=".8"/></g>`
+      + trees([[176,560],[192,568],[40,560]]),
+    skaly: () => [[36,190,16,58],[64,200,12,44],[88,186,15,66],[296,330,15,62],[322,342,12,46],[340,326,13,70],[40,500,14,54],[66,510,11,40],[300,560,13,50],[326,566,11,38],[150,150,10,34],[210,560,10,34]].map(([x, y, w, h], i) => `<path d="M${x - w} ${y}Q${x - w * 1.1} ${y - h * .6} ${x - w * .5} ${y - h}Q${x} ${y - h * 1.14} ${x + w * .5} ${y - h}Q${x + w * 1.1} ${y - h * .6} ${x + w} ${y}Z" fill="var(--earth)" opacity="${i % 2 ? .3 : .42}"/><path d="M${x - w * .5} ${y - h * .55}q${w * .5} ${h * .08} ${w} 0M${x - w * .7} ${y - h * .25}q${w * .7} ${h * .08} ${w * 1.4} 0" fill="none" stroke="var(--ink)" stroke-width=".8" opacity=".35"/>`).join('')
+      + rings(180, 300, 0, [[70,44],[48,28],[26,14]]) + trees([[150,420],[166,428],[240,200],[256,208],[30,330],[330,150]])
+      + `<path d="M0 396C60 382 120 404 180 392S300 380 360 394" fill="none" stroke="var(--water)" stroke-width="3" stroke-linecap="round"/>`
+  };
+  return {kind, label, svg: (S_[kind] || S_.gory)()};
+}
+
 function viewBoard() {
   ensureDay();
   const d = S.game.day, from = city(d.stage), to = city(d.stage + 1);
@@ -2722,9 +2778,11 @@ function viewBoard() {
   const key = d.date + '#' + d.stage;
   const startIdx = heroShown.key === key && heroShown.idx >= 0 && heroShown.idx < target ? heroShown.idx : target;
   const pct = ([x, y]) => `left:${(x / 360 * 100).toFixed(2)}%;top:${(y / 640 * 100).toFixed(2)}%`;
+  const PP = d.stage % 2 ? P.map(([x, y]) => [360 - x, y]) : P;   /* co drugi etap trasa biegnie lustrzanie */
+  const scene = boardScene((d.stage + 1) % CITIES.length);
   let segs = '';
   for (let k = 0; k < 7; k++) {
-    const [x1, y1] = P[k], [x2, y2] = P[k + 1], done = k < target;
+    const [x1, y1] = PP[k], [x2, y2] = PP[k + 1], done = k < target;
     segs += `<path d="M${x1} ${y1} C${x1} ${y1 - 46} ${x2} ${y2 + 46} ${x2} ${y2}" fill="none" stroke="${done ? 'var(--earth)' : 'var(--ink)'}" stroke-width="${done ? 4 : 2}" stroke-linecap="round" ${done ? '' : 'stroke-dasharray="1 9" opacity=".55"'}/>`;
   }
   let grid = '';
@@ -2747,31 +2805,26 @@ function viewBoard() {
     <svg class="board-bg" viewBox="0 0 360 640" preserveAspectRatio="none" aria-hidden="true">
       <rect width="360" height="640" fill="var(--map)"/>
       <g stroke="var(--map-line)" stroke-width="1">${grid}</g>
-      <path d="M360 330C338 350 344 380 326 400C310 420 322 450 304 474C290 494 300 520 286 545C276 566 290 600 280 640H360Z" fill="var(--water)" opacity=".6"/>
-      <g fill="none" stroke="var(--water)" stroke-width="1.3"><path d="M318 440q6-4 12 0t12 0"/><path d="M306 520q6-4 12 0t12 0"/><path d="M318 600q6-4 12 0t12 0"/></g>
-      <path d="M0 205C40 200 60 230 90 262S150 290 180 300S220 350 240 380S290 400 318 418" fill="none" stroke="var(--water)" stroke-width="4" stroke-linecap="round"/>
-      <ellipse cx="196" cy="236" rx="16" ry="8" transform="rotate(-15 196 236)" fill="var(--water)"/>
-      <g fill="none" stroke="var(--relief)" stroke-width="1.3">${contours(42, 118, -20, [[52,32],[38,23],[25,15],[12,7]])}${contours(328, 250, 25, [[44,28],[30,19],[17,10]])}${contours(58, 476, 10, [[38,22],[24,14],[12,7]])}</g>
-      <path d="M38 121l4-8 4 8z" fill="var(--ink)"/><text x="49" y="121" font-size="9" fill="var(--muted)" style="font-family:var(--f-mono)">2925</text>
-      <path d="M324 253l4-8 4 8z" fill="var(--ink)"/><text x="296" y="270" font-size="9" fill="var(--muted)" style="font-family:var(--f-mono)">2191</text>
+      ${scene.svg}
+      <text x="336" y="623" text-anchor="end" font-size="14" font-weight="800" fill="var(--muted)" lang="bg" style="font-family:var(--f-display);letter-spacing:.06em">${esc(scene.label)}</text>
       <g transform="translate(314 64)"><circle r="20" fill="none" stroke="var(--ink)" stroke-width="1" opacity=".45"/><path d="M0-25L4 0H-4z" fill="var(--earth)"/><path d="M0 25L4 0H-4z" fill="var(--ink)" opacity=".7"/><path d="M-25 0L0 3V-3zM25 0L0 3V-3z" fill="var(--ink)" opacity=".4"/><text y="-29" text-anchor="middle" font-size="10" font-weight="600" fill="var(--ink)" style="font-family:var(--f-mono)">N</text></g>
       <g transform="translate(24 618)"><path d="M0 0H60M0-4V4M30-3V3M60-4V4" stroke="var(--ink)" stroke-width="1.2"/><rect y="-2" width="30" height="4" fill="var(--ink)"/><text x="66" y="3.5" font-size="9" fill="var(--ink)" style="font-family:var(--f-mono)">10 NM</text></g>
-      <g class="cloud c1" fill="var(--surface)" opacity=".75"><circle cx="300" cy="372" r="12"/><circle cx="314" cy="366" r="15"/><circle cx="330" cy="373" r="10"/><rect x="290" y="372" width="48" height="10" rx="5"/></g>
-      <g class="cloud c2" fill="var(--surface)" opacity=".75"><circle cx="40" cy="306" r="10"/><circle cx="54" cy="300" r="13"/><circle cx="68" cy="306" r="9"/><rect x="31" y="305" width="45" height="9" rx="4.5"/></g>
+      <g class="cloud c1" fill="var(--surface)" opacity=".8"><circle cx="170" cy="372" r="12"/><circle cx="184" cy="366" r="15"/><circle cx="200" cy="373" r="10"/><rect x="160" y="372" width="48" height="10" rx="5"/></g>
+      <g class="cloud c2" fill="var(--surface)" opacity=".8"><circle cx="160" cy="206" r="10"/><circle cx="174" cy="200" r="13"/><circle cx="188" cy="206" r="9"/><rect x="151" y="205" width="45" height="9" rx="4.5"/></g>
       ${segs}
     </svg>
-    <div class="cityp start" style="${pct(P[0])}"><b lang="bg">${esc(from.bg)}</b><span>${esc(from.pl)}${from.icao ? ` · <i class="mono">${from.icao}</i>` : ''}</span></div>
-    <div class="cityp dest ${d.finished ? 'reached' : ''}" style="${pct(P[7])}"><b lang="bg">${esc(to.bg)}</b><span>${esc(to.pl)}${to.icao ? ` · <i class="mono">${to.icao}</i>` : ''}</span></div>
+    <div class="cityp start" style="${pct(PP[0])}"><b lang="bg">${esc(from.bg)}</b><span>${esc(from.pl)}${from.icao ? ` · <i class="mono">${from.icao}</i>` : ''}</span></div>
+    <div class="cityp dest ${d.finished ? 'reached' : ''}" style="${pct(PP[7])}"><b lang="bg">${esc(to.bg)}</b><span>${esc(to.pl)}${to.icao ? ` · <i class="mono">${to.icao}</i>` : ''}</span></div>
     ${d.tiles.map((t, i) => {
       const st = t.done ? 'done' : i === cur ? 'cur' : 'locked';
       const T = TILE[t.k];
       const lvl = isLevelTile(t) ? resolveLevel(t) : null;
       const ico = lvl ? illus(lvl.unit) : T.icon;
-      return `<button class="tnode ${st}" style="${pct(P[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
+      return `<button class="tnode ${st}" style="${pct(PP[i + 1])}" data-tile="${i}" ${st === 'locked' ? 'disabled' : ''} aria-label="Lekcja ${i + 1}: ${esc(tileTitle(t))}${st === 'locked' ? ' – zablokowana' : st === 'done' ? ' – zaliczona' : ''}">
         <span class="disc">${t.done ? ICON.check : st === 'locked' ? ICON.lock : ico}</span>
         <span class="tcap"><b>${i < 5 ? `${i + 1}. ` : ''}${T.cap}</b><small>${t.done ? `<span class="ministars">${'★'.repeat(t.stars || 0)}</span>` : T.sub}</small></span></button>`;
     }).join('')}
-    <div class="hero" id="hero" style="${pct(P[startIdx])}">${heroSVG()}</div>
+    <div class="hero" id="hero" style="${pct(PP[startIdx])}">${heroSVG()}</div>
    </div>`;
   if (d.finished) {
     html += `<section class="card postcard stack"><div class="eyebrow">Nowa pocztówka</div><div class="row" style="gap:12px">${spkBtn(to.f)}<div style="min-width:0;flex:1"><b lang="bg" style="font-size:18px">${esc(to.f)}</b><div class="muted">${esc(to.fpl)}</div></div></div>
@@ -2790,7 +2843,7 @@ function viewBoard() {
   $$('[data-tile]').forEach(b => b.onclick = () => startTile(+b.dataset.tile));
   const sk = $('#skipTest'); if (sk) sk.onclick = () => { S.placement = {skipped:true}; save(); viewBoard(); };
   const bo = $('#bonus'); if (bo) bo.onclick = () => { S.game.day = makeDay(); save(); heroShown = {key:'', idx:-1}; viewBoard(); renderHud(); };
-  if (startIdx !== target) { const h = $('#hero'); requestAnimationFrame(() => requestAnimationFrame(() => { h.style.cssText = pct(P[target]); })); }
+  if (startIdx !== target) { const h = $('#hero'); requestAnimationFrame(() => requestAnimationFrame(() => { h.style.cssText = pct(PP[target]); })); }
   heroShown = {key, idx:target};
 }
 
@@ -2891,12 +2944,53 @@ function viewPhrases() {
   if (phFilter !== 'all' && phFilter !== 'lv' && !cats.includes(phFilter)) phFilter = 'all';
   const n = myPhrases(phFilter).length;
   $('#view').innerHTML = `<h2 class="view">Zwroty</h2><p class="muted" style="margin-top:0">Twoja talia rośnie z każdym levelem: nowe kategorie zwrotów i zdania z odblokowanych lekcji. Teraz masz ${myPhrases().length} zwrotów.</p>
-   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
-   ${phMode !== 'lista' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
+   <div class="seg modes" role="group" aria-label="Tryb">${[['fiszki','Fiszki'],['dopasuj','Dopasuj pary'],['lista','Lista'],['tlumacz','Tłumacz']].map(([k, t]) => `<button data-m="${k}" aria-pressed="${phMode === k}">${t}</button>`).join('')}</div>
+   ${phMode !== 'lista' && phMode !== 'tlumacz' ? `<div class="chips" style="margin:12px 0">${[['all','Wszystkie moje'], ['lv','Z leveli'], ...cats.map(c => [c, c])].map(([k, t]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${phFilter === k}">${esc(t)}</button>`).join('')}</div>` : ''}
    <div id="phbox"></div>`;
   $$('[data-m]').forEach(b => b.onclick = () => { phMode = b.dataset.m; viewPhrases(); });
   $$('[data-f]').forEach(b => b.onclick = () => { phFilter = b.dataset.f; FC = null; MG = null; viewPhrases(); });
-  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else drawPhraseList();
+  if (phMode === 'fiszki') drawFlash(); else if (phMode === 'dopasuj') drawMatchGame(); else if (phMode === 'tlumacz') drawTranslator(); else drawPhraseList();
+}
+/* ===== TŁUMACZ (maszynowy, przez internet – serwis MyMemory) ===== */
+let trDir = 'pl|bg', trText = '';
+async function translateText(text, pair) {
+  const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(pair)}`);
+  if (!r.ok) throw new Error('net');
+  const j = await r.json(), out = j && j.responseData && j.responseData.translatedText;
+  if (!out || +j.responseStatus !== 200 || /MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(out)) throw new Error(/WARNING/i.test(out || '') ? 'limit' : 'api');
+  const ta = document.createElement('textarea'); ta.innerHTML = out; return ta.value.replace(/(^|\s)(най|по|Най|По) - /g, '$1$2-');
+}
+function drawTranslator() {
+  const toBg = trDir === 'pl|bg', hist = (S.tr || []).slice(0, 12);
+  const gt = () => `https://translate.google.com/?sl=${toBg ? 'pl' : 'bg'}&tl=${toBg ? 'bg' : 'pl'}&op=translate`;
+  $('#phbox').innerHTML = `<section class="card stack" style="margin-top:12px">
+    <div class="row" style="justify-content:space-between"><b style="font-family:var(--f-display);font-size:20px">${toBg ? 'polski → български' : 'български → polski'}</b><button class="chip" id="trSwap">Zamień kierunek ⇄</button></div>
+    <textarea class="answer" id="trIn" rows="3" maxlength="300" ${toBg ? '' : 'lang="bg"'} placeholder="${toBg ? 'Wpisz zdanie po polsku…' : 'Напиши изречение на български…'}">${esc(trText)}</textarea>
+    <div class="row"><button class="btn" id="trGo">Przetłumacz</button><a class="btn ghost" href="${gt()}" target="_blank" rel="noopener">Tłumacz Google ↗</a></div>
+    <div id="trOut" aria-live="polite"></div>
+    <p class="muted" style="margin:0;font-size:13px">Tłumaczenie maszynowe – potrzebny internet, do 300 znaków. Wpisany tekst jest wysyłany do darmowego serwisu MyMemory, więc nie wpisuj tu danych osobistych. Zdarzają się błędy; zwroty z lekcji są sprawdzone.</p></section>
+    ${hist.length ? `<div class="eyebrow" style="margin:18px 0 8px">Ostatnie tłumaczenia</div><div class="plist">${hist.map((h, i) => `<div class="prow"><div class="txt"><div class="bg" lang="bg">${esc(h.bg)}</div><div class="tr">${esc(translit(h.bg))}</div><div class="pl">${esc(h.pl)}</div></div>${spkBtn(h.bg)}<button class="xbtn" data-trdel="${i}" aria-label="Usuń">${ICON.x}</button></div>`).join('')}</div>` : ''}`;
+  const inp = $('#trIn'); inp.oninput = () => { trText = inp.value; };
+  $('#trSwap').onclick = () => { trDir = toBg ? 'bg|pl' : 'pl|bg'; trText = ''; drawTranslator(); };
+  $$('[data-trdel]').forEach(b => b.onclick = () => { S.tr.splice(+b.dataset.trdel, 1); save(); drawTranslator(); });
+  const go = async () => {
+    const text = inp.value.trim(), out = $('#trOut'); if (!text) { inp.focus(); return; }
+    if (!navigator.onLine) { out.innerHTML = '<div class="badbox"><b>Brak internetu</b><span>Tłumacz działa tylko online.</span></div>'; return; }
+    $('#trGo').disabled = true; out.innerHTML = '<span class="muted">Tłumaczę…</span>';
+    try {
+      const res = await translateText(text, trDir), bg = toBg ? res : text, pl = toBg ? text : res;
+      out.innerHTML = `<div class="okbox"><div class="row" style="gap:10px;flex-wrap:nowrap;align-items:flex-start">${toBg ? spkBtn(bg) : ''}<div style="flex:1;min-width:0"><div class="lline" ${toBg ? 'lang="bg"' : ''}>${esc(res)}</div>${toBg ? `<div class="tr-line" style="text-align:left">${esc(translit(res))}</div>` : ''}</div></div>
+        <div class="row" style="margin-top:6px"><button class="btn soft" id="trCopy" style="min-height:38px;padding:6px 16px">Kopiuj</button></div></div>`;
+      $('#trCopy').onclick = async () => { try { await navigator.clipboard.writeText(res); toast('Skopiowano.'); } catch (e) { toast('Nie udało się skopiować.'); } };
+      S.tr = [{pl, bg}, ...(S.tr || []).filter(h => h.pl !== pl)].slice(0, 12); save();
+      if (toBg && audioOK() && S.autoVoice) speak(bg);
+    } catch (e) {
+      out.innerHTML = `<div class="badbox"><b>${e.message === 'limit' ? 'Dzienny limit darmowego tłumacza został wyczerpany' : 'Nie udało się przetłumaczyć'}</b><span>Spróbuj później albo użyj przycisku „Tłumacz Google”.</span></div>`;
+    }
+    const b = $('#trGo'); if (b) b.disabled = false;
+  };
+  $('#trGo').onclick = go;
+  inp.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } };
 }
 function drawFlash() {
   const key = phFilter;

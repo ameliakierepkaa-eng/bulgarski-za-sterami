@@ -93,7 +93,7 @@ function getRef(ref) {
 const KEY = 'bg-za-sterami-v1';
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const yesterday = () => { const d = new Date(); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true}; }
+function defaults() { return {v:1, updatedAt:0, xp:0, goal:30, daily:{date:'', xp:0}, streak:0, lastDay:'', lv:{}, mistakes:{}, placement:null, autoVoice:true, translit:true, rate:0.9, track:'day', answered:0, correct:0, game:{stage:0, day:null, visited:[0]}, best:{}, theme:'auto', haptics:true, tr:[]}; }
 let S = defaults();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) {}
 /* motyw: auto (jak w systemie) / jasny / ciemny */
