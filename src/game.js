@@ -38,13 +38,16 @@ function ensureDay() {
 }
 /* Jeden nowy level dziennie: zawsze pierwszy nieukończony, ok. 2 „Na co dzień” na 1 lotniczy.
    Nieukończony level wraca na planszę następnego dnia – nic się nie przeskakuje. */
+/* Rytm zależy od numeru etapu (codzienny, codzienny, lotniczy), a nie od liczby zaliczonych leveli –
+   inaczej po teście wstępnym, który zalicza wiele leveli „Na co dzień”, plansza długo dawała same lotnicze. */
 function nextDaily() {
   const d = nextLevel('day'), a = nextLevel('air');
   if (!d || !a) return d || a;
-  const nd = TRACK.day.filter(l => isDone(l.id)).length, na = TRACK.air.filter(l => isDone(l.id)).length;
-  return na * 2 < nd ? a : d;
+  const st = S.game.day ? S.game.day.stage : S.game.stage;
+  return st % 3 === 2 ? a : d;
 }
 function resolveLevel(t) {
+  if (t.k === 'new' && !t.done) return nextDaily();
   if (t.id && LV[t.id]) return LV[t.id];
   if (t.k === 'new') return nextDaily();
   if (t.k === 'day') return nextLevel('day');
