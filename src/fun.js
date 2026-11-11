@@ -273,12 +273,13 @@ function viewGames() {
        ['dict','🔊','Dyktando 90 s','Lektor mówi słowo, Ty je wpisujesz. Ile zdążysz w półtorej minuty?', S.best.dict || 0],
        ['tower','✈','Wieża kontroli','Słyszysz komendę przez radio. Co ma zrobić pilotka?', (S.best.tower || 0) + '/10'],
        ['tf','✓ ✗','Prawda czy fałsz','Słowo i tłumaczenie – masz 4 sekundy, żeby zdecydować, czy się zgadza.', (S.best.tf || 0) + '/15'],
+       ['ws','▦','Wykreślanka','Znajdź 6 bułgarskich słów ukrytych w kwadracie liter – poziomo, pionowo i na ukos.', (S.best.ws || 0) + ' pkt'],
        ['listen','👂','Słuchanie ze zrozumieniem','Krótki tekst czytany przez lektora – prognoza, ogłoszenie, komunikat dla pilotów – i trzy pytania.', (S.best.listen || 0) + '/3']
       ].map(([k, ic, t, d, rec]) => `<button class="gamecard" data-game="${k}"><span class="gicon"><span class="glyph" lang="bg">${ic}</span></span><b>${t}</b><span class="muted">${d}</span><span class="qcount">Rekord: ${rec}</span></button>`).join('')}
    </div><div id="gamebox" style="margin-top:18px"></div>`;
   gStop();
   $$('[data-game]').forEach(b => b.onclick = () => { if (blitzT) { clearInterval(blitzT); blitzT = null; } gStop();
-    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF, listen:startListen})[b.dataset.game]();
+    ({songs:startSongs, blitz:startBlitz, memo:startMemo, clouds:startClouds, hang:startHang, scr:startScr, dict:startDict, tower:startTower, tf:startTF, listen:startListen, ws:startWS})[b.dataset.game]();
     setTimeout(() => $('#gamebox').scrollIntoView({behavior:'smooth', block:'start'}), 30); });
 }
 /* ===== SZEŚĆ DODATKOWYCH GIER ===== */
@@ -558,6 +559,64 @@ function endMemo() {
   addXP(Math.round(pts / 10)); save(); renderHud();
   $('#gamebox').insertAdjacentHTML('beforeend', `<div class="card stack" style="text-align:center;margin-top:12px"><b style="font-family:var(--f-display);font-size:24px">Wszystkie pary! ${pts} pkt${rec ? ' · rekord!' : ''}</b><span class="muted">${G.moves} ruchów (idealnie: 6) · +${Math.round(pts / 10)} XP</span><button class="btn" id="gAgain">Nowa plansza</button></div>`);
   $('#gAgain').onclick = startMemo;
+}
+
+/* --- Wykreślanka --- */
+const WS_N = 9, WS_ABC = 'абвгдежзийклмнопрстуфхцчшщъюя';
+function startWS() {
+  gStop();
+  const cand = gOneWords(60).filter(x => x.w.length <= 8), grid = Array.from({length:WS_N}, () => Array(WS_N).fill('')), words = [];
+  for (const c of cand) {
+    if (words.length >= 6) break; const ls = [...c.w];
+    for (let a = 0; a < 150; a++) {
+      const [dr, dc] = pick([[0, 1], [1, 0], [1, 1]]);
+      const r0 = Math.floor(Math.random() * (WS_N - dr * (ls.length - 1))), c0 = Math.floor(Math.random() * (WS_N - dc * (ls.length - 1)));
+      if (!ls.every((ch, k) => { const g = grid[r0 + dr * k][c0 + dc * k]; return !g || g === ch; })) continue;
+      ls.forEach((ch, k) => { grid[r0 + dr * k][c0 + dc * k] = ch; });
+      words.push({w:c.w, pl:c.it.w[0], cells:ls.map((_, k) => (r0 + dr * k) * WS_N + c0 + dc * k), found:false}); break;
+    }
+  }
+  grid.forEach(row => row.forEach((v, i) => { if (!v) row[i] = WS_ABC[Math.floor(Math.random() * WS_ABC.length)]; }));
+  G = {type:'ws', grid, words, sel:null, prev:null, down:null, t0:Date.now(), hint:false}; drawWS();
+}
+function wsLine(a, b) {
+  const r1 = Math.floor(a / WS_N), c1 = a % WS_N, r2 = Math.floor(b / WS_N), c2 = b % WS_N, dr = Math.sign(r2 - r1), dc = Math.sign(c2 - c1);
+  if (!(r1 === r2 || c1 === c2 || Math.abs(r2 - r1) === Math.abs(c2 - c1))) return null;
+  const n = Math.max(Math.abs(r2 - r1), Math.abs(c2 - c1)) + 1;
+  return [...Array(n)].map((_, k) => (r1 + dr * k) * WS_N + c1 + dc * k);
+}
+function wsTry(a, b) {
+  const line = wsLine(a, b); G.sel = null;
+  if (line && line.length > 1) {
+    const s = line.map(i => G.grid[Math.floor(i / WS_N)][i % WS_N]).join(''), rev = [...s].reverse().join('');
+    const hit = G.words.find(x => !x.found && (x.w === s || x.w === rev));
+    if (hit) { hit.found = true; hit.cells = line; buzz(15); if (audioOK() && S.autoVoice) speak(hit.w); }
+    else buzz([40, 60, 40]);
+  }
+  if (G.words.every(x => x.found)) {
+    const sec = Math.round((Date.now() - G.t0) / 1000), pts = Math.max(10, (G.hint ? 100 : 200) - sec);
+    drawWS(); gT = setTimeout(() => { if (gAlive('ws')) gEnd('ws', pts, `${pts} pkt · ${sec} s`, startWS, 8); }, 900); return;
+  }
+  drawWS();
+}
+function drawWS() {
+  const box = $('#gamebox'); if (!box) return;
+  const found = new Set(G.words.filter(x => x.found).flatMap(x => x.cells)), left = G.words.filter(x => !x.found).length;
+  box.innerHTML = `<div class="card stack">${gHead('Wykreślanka', `Zostało: ${left}`)}
+    <div class="wsgrid" id="wsg" lang="bg">${G.grid.flatMap((row, r) => row.map((ch, c) => { const i = r * WS_N + c; return `<button type="button" data-c="${i}" class="${found.has(i) ? 'f' : ''} ${G.sel === i ? 's' : ''}">${ch}</button>`; })).join('')}</div>
+    <div class="wslist">${G.words.map(x => `<span class="${x.found ? 'f' : ''}">${esc(x.pl)}${x.found || G.hint ? ` = <b lang="bg">${esc(x.w)}</b>` : ''}</span>`).join('')}</div>
+    <div class="row"><button class="btn soft" id="wsHint" ${G.hint ? 'disabled' : ''}>Pokaż bułgarskie słowa</button><button class="btn ghost" id="wsNew">Nowa plansza</button></div>
+    <p class="muted" style="margin:0;font-size:14px">Dotknij pierwszej i ostatniej litery słowa albo przeciągnij po nim palcem. Podpowiedź obniża wynik.</p></div>`;
+  const g = $('#wsg'), cellAt = e => { const el = document.elementFromPoint(e.clientX, e.clientY); const b = el && el.closest('#wsg [data-c]'); return b ? +b.dataset.c : null; };
+  g.onpointerdown = e => { const i = cellAt(e); if (i == null) return; e.preventDefault(); G.prev = G.sel; G.down = i; if (G.sel == null) { G.sel = i; const b = g.querySelector(`[data-c="${i}"]`); if (b) b.classList.add('s'); } };
+  g.onpointerup = e => {
+    const i = cellAt(e), d = G.down; G.down = null; if (i == null || d == null) return;
+    if (i !== d) return wsTry(d, i);                                 /* przeciągnięcie */
+    if (G.prev != null && G.prev !== i) return wsTry(G.prev, i);      /* drugie dotknięcie */
+    if (G.prev === i) { G.sel = null; drawWS(); }                    /* odznaczenie */
+  };
+  $('#wsHint').onclick = () => { G.hint = true; drawWS(); };
+  $('#wsNew').onclick = startWS;
 }
 
 /* ===== MÓJ SŁOWNICZEK ===== */

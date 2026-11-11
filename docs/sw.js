@@ -1,6 +1,6 @@
 // Service worker: aplikacja działa bez internetu po pierwszym otwarciu.
 // Wersję podstawia build – każda publikacja tworzy nową pamięć podręczną.
-const VERSION = '202611111008';
+const VERSION = '202611111411';
 const CACHE = 'bg-za-sterami-' + VERSION;
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 

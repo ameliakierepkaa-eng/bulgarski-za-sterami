@@ -523,6 +523,19 @@ main{padding-top:30px}
 .kb button{color:var(--ink)}
 .shake{animation:shake .35s ease}
 @media (prefers-reduced-motion:reduce){.cloudbtn{left:auto;right:12px}}
+/* bez przybliżania: podwójne dotknięcie nie powiększa ekranu, pola tekstowe mają min. 16 px (iPhone nie zoomuje) */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{touch-action:manipulation}
+button,.kb button,.opt,.tile,.mt,.mc{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+input,textarea,select{font-size:max(16px,1em)}
+/* wykreślanka */
+.wsgrid{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;touch-action:none;user-select:none;-webkit-user-select:none}
+.wsgrid button{aspect-ratio:1;border:0;border-radius:9px;background:var(--surface2);color:var(--ink);font-weight:700;font-size:clamp(15px,4.6vw,20px);padding:0;touch-action:none}
+.wsgrid button.s{background:var(--sky);color:var(--on-sky)}
+.wsgrid button.f{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.wslist{display:flex;flex-wrap:wrap;gap:6px}
+.wslist span{border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.wslist span.f{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
 /* dialogi, słowniczek, skrzynia, kalendarz */
 .chat{display:flex;flex-direction:column;gap:8px}
 .bub{max-width:92%;background:var(--surface);border-radius:20px 20px 20px 6px;padding:10px 12px;box-shadow:var(--soft)}
